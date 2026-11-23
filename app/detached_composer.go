@@ -22,9 +22,9 @@ import (
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/message"
 	"github.com/hkdb/aerion/internal/oauth2"
+	"github.com/hkdb/aerion/internal/pgp"
 	"github.com/hkdb/aerion/internal/platform"
 	"github.com/hkdb/aerion/internal/settings"
-	"github.com/hkdb/aerion/internal/pgp"
 	"github.com/hkdb/aerion/internal/smime"
 	"github.com/hkdb/aerion/internal/smtp"
 	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
@@ -291,11 +291,8 @@ func (c *ComposerApp) connectIPC(ctx context.Context) error {
 	// Register message handler before connecting
 	c.ipcClient.OnMessage(c.handleIPCMessage)
 
-	// Connect with token authentication
-	connectCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	if err := c.ipcClient.Connect(connectCtx, c.ipcToken); err != nil {
+	// The client uses this context for its read loop after authentication.
+	if err := c.ipcClient.Connect(ctx, c.ipcToken); err != nil {
 		return fmt.Errorf("failed to connect to IPC server: %w", err)
 	}
 

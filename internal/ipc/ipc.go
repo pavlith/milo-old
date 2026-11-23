@@ -67,7 +67,7 @@ type Server interface {
 // Client represents an IPC client that connects to the main window's server.
 type Client interface {
 	// Connect establishes a connection to the server.
-	// The token is sent as part of the authentication handshake.
+	// The token is sent during authentication, and ctx controls the read loop's lifetime.
 	Connect(ctx context.Context, token string) error
 
 	// Close gracefully closes the connection.

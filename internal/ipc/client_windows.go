@@ -26,16 +26,16 @@ func NewPipeClient(address string) *PipeClient {
 
 // Connect establishes a connection to the server and authenticates.
 func (c *PipeClient) Connect(ctx context.Context, token string) error {
-	// Set connection timeout
-	timeout := ConnectTimeout
+	dialCtx, cancel := context.WithTimeout(ctx, ConnectTimeout)
+	defer cancel()
 
-	conn, err := winio.DialPipeContext(ctx, c.address)
+	conn, err := winio.DialPipeContext(dialCtx, c.address)
 	if err != nil {
 		return fmt.Errorf("failed to connect to server: %w", err)
 	}
 
 	// Set deadline for the connection attempt
-	conn.SetDeadline(time.Now().Add(timeout))
+	conn.SetDeadline(time.Now().Add(ConnectTimeout))
 	defer conn.SetDeadline(time.Time{})
 
 	c.SetConnection(conn)
