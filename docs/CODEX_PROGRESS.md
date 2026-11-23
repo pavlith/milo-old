@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated: 2026-11-23. Audit and Tailwind 4 are complete. The next migration stage is theme consolidation. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-23. Audit, Tailwind 4 and theme consolidation are complete. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -9,7 +9,7 @@ Updated: 2026-11-23. Audit and Tailwind 4 are complete. The next migration stage
 | Codex preparation | Complete | Short root/frontend instructions, verified map and this handoff added; documentation checks only. |
 | Stage 1: Audit | Complete | Inspected the locked dependencies, existing UI and stylesheet inputs. Captured the four local baseline results. |
 | Stage 2: Tailwind 4 | Complete | Validated both Vite entries, extension CSS and representative computed styles in Linux WebKitGTK. Native application validation remains listed below. |
-| Stage 3: Themes | Not started | Follow §7; no theme/settings changes made. |
+| Stage 3: Themes | Complete | Validated the two palettes, settings migration, both native Linux windows and detached composer IPC. |
 | Stage 4: shadcn-svelte | Not started | Follow §§5–6; existing wrappers untouched. |
 | Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
@@ -25,7 +25,6 @@ Updated: 2026-11-23. Audit and Tailwind 4 are complete. The next migration stage
 
 ## Decisions
 
-- Stage 2 updates the build and styling primitives. Theme consolidation and the shadcn component integration follow in stages 3 and 4.
 - Keep always-loaded instructions small; load the map, relevant source and specification sections on demand. Store only durable deltas here; do not repeat the specification or raw logs.
 - Use only `main` and `dev`, per the user's preference. The user authorized moving preparation to `dev`, committing/pushing the updates and deleting the old preparation branch after verifying commit preservation. Workflow source: [CONTRIBUTING.md](../CONTRIBUTING.md#repository-branches).
 - Initial preparation was published as `ea325d5` on `chore/codex-preparation`; renaming to `dev` preserves that commit. The specification was initially untracked; now include it in Git with only its branch policy updated so fresh clones have the requirements.
@@ -46,6 +45,15 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - An offscreen Linux WebKitGTK 2.52.6 smoke check loaded styles referenced by each production entry. It verified 28 theme selectors, semantic opacity, dark variants, ring and disabled styles, extension layout utilities, editor and spellcheck styles, iframe isolation and virtual row positioning. Interactive Wails GUI workflows and Windows/macOS WebViews remain unverified.
 - `go test -tags webkit2_41 ./...` passed in packages that compiled. Packages requiring GDK/GLib failed to build because development files are absent. Native Wails build requires those files, GTK/WebKitGTK development packages and the Wails CLI.
 
+## Stage 3 themes
+
+- Nord (`nord-dark`) and Dracula (`dracula`) are the only selectable palettes. Both HTML entries start in Nord with the `.dark` class. Shared HSL tokens, radius, avatars and Tailwind utilities serve both windows. Adjusted Dracula muted text and Nord destructive backgrounds for contrast.
+- Go preserves the two saved values, uses Nord on fresh installs and writes Nord back over invalid or legacy `theme_mode` rows. The setter rejects unsupported input. The main window applies the saved theme before mounting. The picker previews locally, saves through Wails and sends the saved theme to open composers. Detached composers subscribe before reading the shared settings. The IPC reader stays active after authentication.
+- Removed the Nord Light block and nine CSS files under `frontend/src/themes/` (`adwaita.css`, `breeze.css`, `built-in.css`, `catppuccin.css`, `github.css`, `pop.css`, `tokyo-night.css`, `vs-code.css`, `yaru.css`). Removed OS theme listeners and obsolete translations. The Wails system-theme methods remain available for compatibility.
+- Frontend check and lint passed. Production build passed with baseline warnings. Knip still exits 1 for baseline findings and reports one fewer unused export. Both built HTML entries reference CSS with exactly two palettes. Offscreen WebKitGTK 2.52.6 verified all semantic tokens, dark variants, opacity, rings, avatars, light editor styles and spellcheck under both themes.
+- `go test -tags webkit2_41 ./...`, `go vet -tags webkit2_41 ./...`, `go test -race ./internal/settings` and the Wails build passed using GTK/WebKitGTK development files in a temporary sysroot. The Windows IPC package cross-compiled and passed vet.
+- Native Wails on Linux under Xvfb verified a fresh install, legacy write-back, theme preview and cancel, save and restart, updates to a running composer, newly opened composers, light and dark editor bodies, and rich signatures. A local message fixture verified both mail rendering modes, iframe isolation and remote image blocking in both themes. Windows/macOS WebViews and live mail send/sync were outside this smoke test.
+
 ## Documentation/workflow review
 
 - Reviewed documentation inventory and branch instructions across root, frontend, docs, packaging and archive material. Replaced task/versioned-branch guidance in AGENTS, contributions, translations and migration specification; linked release and Flathub exceptions to the shared workflow.
@@ -56,4 +64,4 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 
 ## Next action
 
-Stage 3: consolidate themes to Nord and Dracula using specification §7. Start with the shared CSS registry and Go/TypeScript settings paths in the map. Use the Stage 2 frontend results for comparison.
+Stage 4 — shadcn-svelte integration. Follow §§5–6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).

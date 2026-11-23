@@ -70,7 +70,7 @@ Although Linux is a first-class citizen here, it also works on:
 - Basic Local and IMAP Search
 - Notification that brings focus to the e-mail when clicked
 - Auto-Sync when system wakes from suspend
-- Multiple color themes (More to come...)
+- Nord and Dracula themes, with separate dark options for mail content and the composer body
 - PGP & S/MIME support
 - 1st party extension system with the following shipped:
     - Calendar (ALPHA) - Disabled by Default
