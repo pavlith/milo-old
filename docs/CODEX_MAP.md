@@ -18,7 +18,7 @@ Paths verified against the working tree on 2026-11-23; all paths below are repos
 | --- | --- | --- |
 | Dependencies/checks | `frontend/package.json`, `frontend/package-lock.json`, `frontend/eslint.config.js`, `frontend/knip.json` | npm scripts and dependency baseline. |
 | Build/aliases | `frontend/vite.config.ts`, `frontend/tsconfig.json`, `frontend/svelte.config.js` | `$lib`, `$`, `$extensions`, `$wailsjs`; extension dependency aliases and TS inclusion. |
-| Tailwind 3 wiring | `frontend/tailwind.config.js`, `frontend/postcss.config.js`, `frontend/src/app.css` | HSL variable channels, animations, typography, extension content scanning, editor styles. |
+| Tailwind 4 wiring | `frontend/vite.config.ts`, `frontend/src/app.css` | Vite plugin and shared CSS configuration for both windows. Explicit scan paths, HSL token mappings, custom dark variant, animations and editor styles. |
 | Theme CSS | `frontend/src/themes.css`, `frontend/src/themes/` | Registry; `nord.css`, `dracula.css`, `_defaults.css`, `_utilities.css` are relevant to eventual consolidation. |
 | Theme/settings flow | `internal/settings/store.go`, `internal/settings/store_test.go`, `frontend/src/lib/stores/settings.svelte.ts`, `frontend/src/lib/stores/theme.svelte.ts`, `frontend/src/lib/components/settings/GeneralTab.svelte` | Current default is system; theme store serves both windows and handles IPC/system events. |
 | Existing UI foundation | `frontend/src/lib/components/ui/`, `frontend/src/lib/utils.ts` | Bits UI wrappers, custom switch/toasts, `cn`; `frontend/components.json` does **not** exist yet. |

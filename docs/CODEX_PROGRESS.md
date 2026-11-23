@@ -1,30 +1,31 @@
 # Codex progress
 
-Updated: 2026-11-23. Scope: repository preparation and two-branch development workflow. **UI migration has not started.** Requirements remain in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md); navigation is in [CODEX_MAP.md](CODEX_MAP.md).
+Updated: 2026-11-23. Audit and Tailwind 4 are complete. The next migration stage is theme consolidation. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
 | Milestone | Status | Evidence / exit condition |
 | --- | --- | --- |
 | Codex preparation | Complete | Short root/frontend instructions, verified map and this handoff added; documentation checks only. |
-| Specification §11, stage 1: Audit | Partial | Structure/integration points inspected; baseline checks and detailed component/API inventory remain. |
-| Stage 2: Tailwind 4 | Not started | Follow specification §4 after audit baseline. |
+| Stage 1: Audit | Complete | Inspected the locked dependencies, existing UI and stylesheet inputs. Captured the four local baseline results. |
+| Stage 2: Tailwind 4 | Complete | Validated both Vite entries, extension CSS and representative computed styles in Linux WebKitGTK. Native application validation remains listed below. |
 | Stage 3: Themes | Not started | Follow §7; no theme/settings changes made. |
 | Stage 4: shadcn-svelte | Not started | Follow §§5–6; existing wrappers untouched. |
 | Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
 | Stage 7: Validation | Not started | Follow §§10–12; preparation checks are not migration acceptance. |
 
-## Verified starting point
+## Audit and Tailwind decisions
 
-- Manifests declare Svelte `^5.16.0`, Vite `^6.0.6`, Tailwind `^3.4.17`, Bits UI `^1.0.0-next.74`, tailwind-merge `^2.6.0`, tailwind-variants `^0.3.0`; these are declared ranges, not installed-version claims. Go module requires Go 1.25.0 and Wails v2.16.0.
-- UI wrappers and `cn` already exist; shadcn configuration does not. Tailwind/PostCSS still use v3 wiring and HSL channels.
-- Themes still include light/system and multiple palettes; Go default is `system`. Both windows share theme application, with different injected Go bindings.
-- Extensions live outside frontend; alias resolution, TypeScript inclusion and Tailwind scanning already account for them. Dialog wrappers contain application-specific scroll-lock fixes.
+- Baseline `65bbb51` locked Tailwind 3.4.19, Vite 6.4.1, Svelte 5.53.9 and Bits UI 1.8.0. Both windows import `app.css`. The old Tailwind/PostCSS configs supplied the semantic colors, fonts, breakpoints and three named animations. The CSS theme registry supplies HSL channels for application chrome, the editor and avatar utilities. The shared theme store applies the selected palette and mirrors dark mode on the root.
+- Dialog, alert dialog, select, tabs and menus wrap Bits UI. App dialogs, message/folder menus and the calendar MiniCalendar also use primitives directly. The Tailwind changes keep their APIs and dialog scroll-lock fixes. TipTap, viewer iframe, toast, switch and virtualization remain in place.
+- Tailwind and `@tailwindcss/vite` are at 4.3.5. Upgraded `tailwind-merge` to 3.7.1 for `cn`. Removed the direct PostCSS and Autoprefixer dependencies and the unused typography plugin and Tailwind Variants. Kept the npm lockfile and regenerated Flatpak npm sources.
+- Vite loads the Tailwind plugin. `app.css` holds `@theme inline` mappings for existing HSL channels, `@theme` constants, the class-based dark variant and explicit sources for both HTML entries, app source and `extensions/**/frontend/`. Preserved the CSS palette files and editor rules. Reinstated semantic border, placeholder and enabled-button cursor defaults. Updated outline and small shadow/blur classes and removed the previously inert `ml-13` that v4 would activate. The three named animations carry forward in CSS. Existing dialog `animate-in`/exit classes had no corresponding plugin output in the baseline.
+- Knip's one dependency exception covers `tailwindcss`, which the Vite build resolves from the CSS import. See the [Tailwind upgrade guide](https://tailwindcss.com/docs/upgrade-guide) and [source detection guide](https://tailwindcss.com/docs/detecting-classes-in-source-files).
 
 ## Decisions
 
-- Preparation does not authorize UI migration despite the specification's broader implementation directive. Application source, dependencies and themes remain untouched.
+- Stage 2 updates the build and styling primitives. Theme consolidation and the shadcn component integration follow in stages 3 and 4.
 - Keep always-loaded instructions small; load the map, relevant source and specification sections on demand. Store only durable deltas here; do not repeat the specification or raw logs.
 - Use only `main` and `dev`, per the user's preference. The user authorized moving preparation to `dev`, committing/pushing the updates and deleting the old preparation branch after verifying commit preservation. Workflow source: [CONTRIBUTING.md](../CONTRIBUTING.md#repository-branches).
 - Initial preparation was published as `ea325d5` on `chore/codex-preparation`; renaming to `dev` preserves that commit. The specification was initially untracked; now include it in Git with only its branch policy updated so fresh clones have the requirements.
@@ -32,9 +33,18 @@ Updated: 2026-11-23. Scope: repository preparation and two-branch development wo
 
 ## Validation and limitations
 
-- Preparation checks passed: existing map paths and relative Markdown links, package scripts, absent shadcn config and short instructions (10 root / 11 frontend lines). Generated `frontend/dist` is explicitly marked absent. Whitespace and staged file scope checked before committing.
-- No frontend/Go checks, production build, Wails build or GUI tests run: this change is documentation-only. Existing check failures and native runtime behavior are therefore unknown.
-- Initial commit attempt failed because 1Password SSH signing could not connect to its socket. Signing was not disabled; see Git history for the subsequent commit result.
+Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI run](https://github.com/pavlith/petchkin/actions/runs/45226067256) also passed on `dev`.
+
+| Check | Tailwind 3 baseline | Tailwind 4 |
+| --- | --- | --- |
+| `npm run check` | 0 errors, 0 warnings | 0 errors, 0 warnings |
+| `npm run lint` | Passed | Passed |
+| `npm run build` | Passed with existing chunk and dynamic-import warnings | Passed with the same warnings and both HTML entries |
+| `npm run knip` | Exit 1, existing unused items | Exit 1, same findings except removed Tailwind Variants |
+
+- Compared production CSS selectors and confirmed that app and extension utilities remain generated. Vite dev served both HTML inputs and the shared CSS, including calendar and contacts utilities.
+- An offscreen Linux WebKitGTK 2.52.6 smoke check loaded styles referenced by each production entry. It verified 28 theme selectors, semantic opacity, dark variants, ring and disabled styles, extension layout utilities, editor and spellcheck styles, iframe isolation and virtual row positioning. Interactive Wails GUI workflows and Windows/macOS WebViews remain unverified.
+- `go test -tags webkit2_41 ./...` passed in packages that compiled. Packages requiring GDK/GLib failed to build because development files are absent. Native Wails build requires those files, GTK/WebKitGTK development packages and the Wails CLI.
 
 ## Documentation/workflow review
 
@@ -44,8 +54,6 @@ Updated: 2026-11-23. Scope: repository preparation and two-branch development wo
 - Corrected contribution prerequisites and nonexistent frontend test command against manifests/CI; identified frontend README as template background rather than SvelteKit guidance.
 - Remaining documentation debt outside branching: `docs/EXT_RULES.md` references missing `docs/EXTENSION_ARCHITECTURE.md` and older OAuth registration paths, while `docs/EXTENSIONS.md` describes newer shared credentials. Reconcile those architecture rules against code in a separate focused review; do not infer permission to refactor from stale prose. Historical changelog, archive, security/legal records and external Flathub branch examples are retained.
 
-## Next actions when migration is requested
+## Next action
 
-1. Finish stage 1: resolve installed/locked versions and component consumers, including direct Bits UI use in extensions; establish the four frontend script results and applicable Go/Wails baseline using map commands. Separate pre-existing failures from new regressions.
-2. Compare current official Tailwind 4 and shadcn-svelte Vite guidance with existing configs and customized wrappers; record compatibility decisions before dependency edits.
-3. Proceed through specification §11 in order, stopping for critical failures. Update this file after each milestone with changed paths, actual validation results, decisions and the next action; retain native/GUI scenarios as unverified until exercised.
+Stage 3: consolidate themes to Nord and Dracula using specification §7. Start with the shared CSS registry and Go/TypeScript settings paths in the map. Use the Stage 2 frontend results for comparison.
