@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
   <!-- Aerion app icon master (vF2b). Tile + glyph are pure vector; glyph
-       geometry measured from the legacy raster mark (brand/icon-legacy.png)
+       geometry measured from the original raster mark
        and composed per the adopted vF2b layout: 198x228 glyph box (15%
        vertical stretch) optically centered on a 256x256 r52 gradient tile.
        SCALABLE VARIANT: derived from brand/glyph-icon.svg minus the drop-shadow

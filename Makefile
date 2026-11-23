@@ -52,7 +52,6 @@ LDFLAGS := -X '$(MODULE)/internal/oauth2.GoogleClientID=$(GOOGLE_CLIENT_ID)' \
 BUILD_TAGS := webkit2_41
 
 # NOTE: AppImage build target has been removed due to webkit bundling incompatibility.
-# See archive/AppImage/README.md for details on what was tried and why it didn't work.
 # Use Flatpak packaging instead for cross-distro distribution.
 
 # Installation directories (can be overridden)
@@ -151,7 +150,7 @@ clean:
 
 # Clean downloaded tools (deprecated - AppImage removed)
 tools-clean:
-	@echo "Note: AppImage support has been removed. See archive/AppImage/ for details."
+	@echo "Note: AppImage support has been removed. Use Flatpak for cross-distro distribution."
 	@echo "Use 'make clean' to clean build artifacts."
 
 # Install frontend dependencies
