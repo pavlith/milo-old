@@ -1360,9 +1360,8 @@ Each extension owns its translation files, parallel to (and never mixed into) co
 extensions/<name>/frontend/i18n/
   index.ts                       # exports registerExtensionI18n()
   locales/
-    en.json                      # mandatory — English source of truth
-    zh-HK.json                   # other locales — added by translators in follow-up PRs
-    ...
+    en.json                      # English source of truth
+    ru.json                      # Complete Russian translation
 ```
 
 The extension's `index.ts` is a one-liner per locale file using the same `svelte-i18n` `register()` API the core uses:
@@ -1373,30 +1372,11 @@ import { register } from 'svelte-i18n'
 
 export function registerExtensionI18n() {
   register('en', () => import('./locales/en.json'))
-  register('zh-HK', () => import('./locales/zh-HK.json'))
-  // ... add a line per locale that ships ...
+  register('ru', () => import('./locales/ru.json'))
 }
 ```
 
-**Auto-discovery — no host edits per extension.** The core's `initI18n()` uses [Vite's `import.meta.glob`](https://vite.dev/guide/features.html#glob-import) to find every extension's `i18n/index.ts` at build time and call its `registerExtensionI18n()` automatically:
-
-```ts
-// frontend/src/lib/i18n/index.ts
-const extensionRegistrars = import.meta.glob<{
-  registerExtensionI18n: () => void
-}>('../../../../extensions/*/frontend/i18n/index.ts', { eager: true })
-
-export async function initI18n(savedLocale?: string): Promise<void> {
-  for (const mod of Object.values(extensionRegistrars)) {
-    mod.registerExtensionI18n?.()
-  }
-
-  init({ fallbackLocale: 'en', initialLocale: savedLocale || detectSystemLocale() })
-  await waitLocale()
-}
-```
-
-Adding a new extension's i18n is purely a file drop under `extensions/<name>/frontend/i18n/` — no edit to `frontend/src/lib/i18n/index.ts` required. Vite resolves the glob at build time, so the registration calls are statically baked into the bundle (no runtime filesystem reads).
+**Auto-discovery.** Core's `initI18n()` uses Vite's `import.meta.glob` to find each extension's `frontend/i18n/index.ts` at build time and call its `registerExtensionI18n()` before loading messages. Add the files above and run `npm run check:locales` from `frontend/`. See the [translation guide](LANGUAGE.md).
 
 **Why `register()` allows merging:** `svelte-i18n` accepts multiple loaders per locale code. When a locale activates, all registered loaders for that code resolve in parallel and their dictionaries merge into one namespace. Core ships `common.*`, `viewer.*`, `composer.*`; an extension ships `contacts.*` (or whatever its own namespace is) — no key collision possible as long as namespaces are distinct.
 
@@ -2257,7 +2237,7 @@ Whether the extension is first-party or third-party (if an intake opens), the re
 7. **Per-extension SQLite isolation.** Extensions never read or write each other's tables; cross-extension data goes through `coreapi.Core.Extension(id)` typed handles. If your extension's bridge takes another extension's `*Store` as a dependency, it's wrong.
 8. **OAuth credentials are scoped per extension.** If the extension needs OAuth, it owns its own credential slot (`<provider>-<extension-id>`) and uses the Auth Broker; it doesn't reuse Aerion core's mail slot unless the manifest declares `first_party_uses_core_for_scopes` (see [§ OAuth client configurations](#oauth-client-configurations)) — and that field is honored only for first-party extensions.
 9. **Frontend is independent.** No refactors to existing mail components to "share" code with the extension. Extension components stay self-contained under `extensions/<name>/frontend/`. The kit (`frontend/src/lib/components/kit/`) holds neutral primitives extensions can consume, but anything mail-specific stays mail-specific.
-10. **Extension owns its i18n.** New strings live under `extensions/<name>/frontend/i18n/locales/<code>.json` (own files, not mixed into core's `frontend/src/lib/i18n/locales/<code>.json`). At minimum `en.json` ships with the PR. Other locales are added later by translators in separate PRs; absence falls back to English at runtime. See [§ Extension i18n](#extension-i18n).
+10. **Extension owns its i18n.** New strings live under `extensions/<name>/frontend/i18n/locales/<code>.json` (own files, not mixed into core's `frontend/src/lib/i18n/locales/<code>.json`). Ship `en.json` and `ru.json` together with matching keys. See [§ Extension i18n](#extension-i18n).
 11. **Documentation updated.** `docs/EXTENSIONS.md` § Wails-bound surface gains a row per new bridge method.
 
 The bridge architecture is what makes this checklist enforceable as a code review rather than a multi-week audit.

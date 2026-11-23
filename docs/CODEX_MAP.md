@@ -19,7 +19,7 @@ Paths verified against the working tree on 2026-11-23; all paths below are repos
 | Dependencies/checks | `frontend/package.json`, `frontend/package-lock.json`, `frontend/eslint.config.js`, `frontend/knip.json` | npm scripts and dependency baseline. |
 | Build/aliases | `frontend/vite.config.ts`, `frontend/tsconfig.json`, `frontend/svelte.config.js` | `$lib`, `$`, `$extensions`, `$wailsjs`; extension dependency aliases and TS inclusion. |
 | Tailwind 4 wiring | `frontend/vite.config.ts`, `frontend/src/app.css` | Vite plugin and shared CSS configuration for both windows. Explicit scan paths, HSL token mappings, custom dark variant, animations and editor styles. |
-| Theme CSS | `frontend/src/themes.css`, `frontend/src/themes/` | Nord and Dracula palettes; shared radius, avatar defaults and utilities. |
+| Theme CSS | `frontend/src/themes.css` | Nord and Dracula palettes; shared radius, avatar defaults and utilities. |
 | Theme/settings flow | `internal/settings/store.go`, `internal/settings/store_test.go`, `frontend/src/lib/stores/settings.svelte.ts`, `frontend/src/lib/stores/theme.svelte.ts`, `frontend/src/lib/components/settings/{SettingsDialog,GeneralTab}.svelte` | Nord is the default. Both window entry points apply the shared palettes. The detached composer receives saved changes via IPC. |
 | Existing UI foundation | `frontend/src/lib/components/ui/`, `frontend/src/lib/utils.ts` | Bits UI wrappers, custom switch/toasts, `cn`; `frontend/components.json` does **not** exist yet. |
 | Dialog regression guards | `frontend/src/lib/components/ui/dialog/dialog-content.svelte`, `frontend/src/lib/components/ui/alert-dialog/alert-dialog-content.svelte`, `frontend/src/lib/stores/dialogGuard.ts` | Scroll-lock/pointer-events fix for chained dialogs; background reload guard. |
@@ -28,11 +28,12 @@ Paths verified against the working tree on 2026-11-23; all paths below are repos
 | Viewer and menus | `frontend/src/lib/components/viewer/EmailBody.svelte`, `frontend/src/lib/components/viewer/ConversationViewer.svelte`, `frontend/src/lib/components/common/MessageContextMenu.svelte` | HTML isolation, message actions, keyboard and menu behavior. |
 | Composer/signatures | `frontend/src/lib/components/composer/`, `frontend/src/lib/components/settings/account/SignatureEditor.svelte`, `frontend/src/lib/spellcheck/` | TipTap, light editor body, spellcheck and attachment behavior; styles also in app CSS. |
 | Notifications/input | `frontend/src/lib/stores/toast.ts`, `frontend/src/lib/components/ui/toast/`, `frontend/src/lib/stores/keyboard.svelte.ts`, `frontend/src/lib/keyboard/shortcuts.ts`, `frontend/src/lib/i18n/` | Preserve APIs, shortcuts and translations. |
+| UI locales | `frontend/src/lib/i18n/`, `extensions/{calendar,contacts}/frontend/i18n/`, `frontend/scripts/validate-locales.mjs` | English and Russian catalogs, extension registration and CI validation. Both entry points resolve the saved locale before mount. |
 | Extensions outside frontend | `extensions/calendar/frontend/`, `extensions/contacts/frontend/` | Included by Vite/TS/Tailwind; `extensions/calendar/frontend/components/MiniCalendar.svelte` imports Bits UI Popover directly. |
 
 ## Commands and supporting documentation
 
-- Frontend, from `frontend/`: `npm ci`, then `npm run check`, `npm run lint`, `npm run build`, `npm run knip`. Build hooks copy spellcheck dictionaries; no frontend test script is currently defined.
+- Frontend, from `frontend/`: `npm ci`, then `npm run check` (includes `npm run check:locales`), `npm run lint`, `npm run build`, `npm run knip`. Build hooks copy spellcheck dictionaries; no frontend test script is currently defined.
 - Go, from root: targeted `go test` / `go vet` for changed packages; full suite `go test ./...` (`make test`). Full-module compilation needs generated output `frontend/dist` (absent at preparation time) because of `go:embed`; CI builds frontend first. Linux needs GTK/WebKit development libraries.
 - Wails, from root: `make dev`, `make build`; Makefile uses `webkit2_41`. Read `docs/BUILD.md` and `Makefile` for native build prerequisites. Do not print expanded credential-bearing build flags.
 - CI reference: `.github/workflows/ci.yml` (pushes to `main`/`dev` and pull requests; Node 24, Go 1.25, native libraries and frontend-before-Go build order).

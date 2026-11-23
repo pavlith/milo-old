@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-23. Audit, Tailwind 4 and theme consolidation are complete. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-23. Audit, Tailwind 4, theme consolidation and pre-v1 cleanup are complete. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -10,6 +10,7 @@ Updated 2026-11-23. Audit, Tailwind 4 and theme consolidation are complete. Requ
 | Stage 1: Audit | Complete | Inspected the locked dependencies, existing UI and stylesheet inputs. Captured the four local baseline results. |
 | Stage 2: Tailwind 4 | Complete | Validated both Vite entries, extension CSS and representative computed styles in Linux WebKitGTK. Native application validation remains listed below. |
 | Stage 3: Themes | Complete | Validated the two palettes, settings migration, both native Linux windows and detached composer IPC. |
+| Pre-v1 cleanup and localization | Complete | Removed system-theme compatibility and unused archives. Mail, Contacts and Calendar ship English and Russian. |
 | Stage 4: shadcn-svelte | Not started | Follow §§5–6; existing wrappers untouched. |
 | Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
@@ -61,6 +62,15 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Workflow update checked by parsing YAML and asserting the push branches/PR trigger. Guidance links, instruction size and whitespace checked; application tests/builds not run for documentation and trigger-only changes. GitHub CI results remain separate from these local checks.
 - Corrected contribution prerequisites and nonexistent frontend test command against manifests/CI; identified frontend README as template background rather than SvelteKit guidance.
 - Remaining documentation debt outside branching: `docs/EXT_RULES.md` references missing `docs/EXTENSION_ARCHITECTURE.md` and older OAuth registration paths, while `docs/EXTENSIONS.md` describes newer shared credentials. Reconcile those architecture rules against code in a separate focused review; do not infer permission to refactor from stale prose. Historical changelog, archive, security/legal records and external Flathub branch examples are retained.
+
+## Pre-v1 cleanup and localization
+
+- Removed the Wails system-theme endpoints and the unused platform theme files. Invalid or missing themes use Nord without a database write-back. Nord, Dracula, detached theme IPC and the independent mail and editor backgrounds are retained.
+- Removed the archived AppImage work, old Go backup and retired raster icon. Modern icons, Flatpak, Wails v2, desktop integration, mail and OAuth flows, schema migrations and database rollback support stay in place.
+- Removed 38 catalog files for 13 former UI locales. The English and Russian catalogs cover 965 core, 142 Contacts and 315 Calendar messages. Both windows read the persisted preference before mount, and saving a language updates open composers through IPC. See [LANGUAGE.md](LANGUAGE.md) for selection, fallback and dictionary behavior.
+- The locale validator runs with `npm run check` in CI. It passed for all three catalogs and rejected malformed JSON, altered keys, types and placeholders, malformed ICU syntax and unsupported registrations in isolated fixtures. Production assets contain six translation chunks (one EN and one RU per catalog).
+- Frontend check and lint passed. Production build passed with the baseline Vite warnings. Knip reported the baseline findings with two fewer unused exports and no new findings. Native Linux Wails build, `make generate`, full Go tests and vet with `webkit2_41`, settings/IPC race tests and desktop file validation passed. AppStream reports the same historical release-note warning and notices as the base revision.
+- The Linux WebKitGTK smoke test used isolated data under Xvfb. It covered both windows and themes, Russian system detection, switching with a composer open, saved-language restart, unsupported preference fallback, Russian date formatting, Contacts and Calendar, OAuth labels, the draft dialog, tooltips and editor content retention. Windows/macOS WebViews and live mail, calendar or OAuth servers were outside this run.
 
 ## Next action
 

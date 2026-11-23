@@ -33,7 +33,7 @@ Before promoting `dev`, merge any newer `origin/main` commits into `dev`, includ
 
 ### Translation Pull Requests
 
-Aerion accepts translation contributions targeting `dev`.
+Submit English and Russian translation updates to `dev`.
 
 Please read the [Translation Contribution Guide](docs/LANGUAGE.md) thoroughly prior to submitting any pull requests.
 

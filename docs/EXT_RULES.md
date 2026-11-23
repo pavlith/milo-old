@@ -136,8 +136,8 @@ Companion docs:
 - **R29.** All UI strings use `$_('namespace.key')` from svelte-i18n.
   English source is `frontend/src/lib/i18n/locales/en.json` (core) or
   `extensions/<name>/frontend/i18n/locales/en.json` (extension).
-  Non-English locales get English placeholders by default for new keys;
-  translators upgrade them.
+  Add the corresponding Russian translation in `ru.json` in the same change.
+  Run `npm run check:locales` (see [LANGUAGE.md](LANGUAGE.md)).
 
 ## 8 · Migrations + bindings
 
