@@ -82,10 +82,6 @@ export function GetShowTitleBar() {
   return window['go']['app']['ComposerApp']['GetShowTitleBar']();
 }
 
-export function GetSystemTheme() {
-  return window['go']['app']['ComposerApp']['GetSystemTheme']();
-}
-
 export function GetThemeMode() {
   return window['go']['app']['ComposerApp']['GetThemeMode']();
 }

@@ -373,8 +373,6 @@ export function GetStartHidden():Promise<boolean>;
 
 export function GetStartHiddenActive():Promise<boolean>;
 
-export function GetSystemTheme():Promise<string>;
-
 export function GetTermsAccepted():Promise<boolean>;
 
 export function GetThemeMode():Promise<string>;

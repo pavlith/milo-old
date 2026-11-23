@@ -710,10 +710,6 @@ export function GetStartHiddenActive() {
   return window['go']['app']['App']['GetStartHiddenActive']();
 }
 
-export function GetSystemTheme() {
-  return window['go']['app']['App']['GetSystemTheme']();
-}
-
 export function GetTermsAccepted() {
   return window['go']['app']['App']['GetTermsAccepted']();
 }

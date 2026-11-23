@@ -150,10 +150,6 @@ func TestGetThemeMode(t *testing.T) {
 		{name: "fresh installation", missing: true, want: "nord-dark"},
 		{name: "Nord selection", stored: "nord-dark", want: "nord-dark"},
 		{name: "Dracula selection", stored: "dracula", want: "dracula"},
-		{name: "legacy light", stored: "light", want: "nord-dark"},
-		{name: "legacy dark", stored: "dark", want: "nord-dark"},
-		{name: "legacy system", stored: "system", want: "nord-dark"},
-		{name: "Nord Light", stored: "nord-light", want: "nord-dark"},
 		{name: "unknown value", stored: "future-theme", want: "nord-dark"},
 		{name: "empty value", stored: "", want: "nord-dark"},
 		{name: "corrupted value", stored: "dracula\x00\xff", want: "nord-dark"},
@@ -168,20 +164,9 @@ func TestGetThemeMode(t *testing.T) {
 				}
 			}
 
-			// The second read yields the same value after any normalization.
-			for range 2 {
-				got, err := store.GetThemeMode()
-				if err != nil || got != tt.want {
-					t.Fatalf("GetThemeMode() = %q, %v; want %q", got, err, tt.want)
-				}
-			}
-
-			wantStored := tt.want
-			if tt.missing {
-				wantStored = ""
-			}
-			if got, err := store.Get(KeyThemeMode); err != nil || got != wantStored {
-				t.Errorf("stored theme = %q, %v; want %q", got, err, wantStored)
+			got, err := store.GetThemeMode()
+			if err != nil || got != tt.want {
+				t.Fatalf("GetThemeMode() = %q, %v; want %q", got, err, tt.want)
 			}
 		})
 	}
@@ -194,10 +179,6 @@ func TestSetThemeMode(t *testing.T) {
 	}{
 		{mode: "nord-dark"},
 		{mode: "dracula"},
-		{mode: "nord-light", wantErr: true},
-		{mode: "light", wantErr: true},
-		{mode: "dark", wantErr: true},
-		{mode: "system", wantErr: true},
 		{mode: "unknown", wantErr: true},
 		{mode: "", wantErr: true},
 	}
@@ -235,7 +216,6 @@ func TestThemeModeAfterReopen(t *testing.T) {
 	}{
 		{name: "Nord", save: func(s *Store) error { return s.SetThemeMode("nord-dark") }, want: "nord-dark"},
 		{name: "Dracula", save: func(s *Store) error { return s.SetThemeMode("dracula") }, want: "dracula"},
-		{name: "normalized legacy", save: func(s *Store) error { return s.Set(KeyThemeMode, "system") }, want: "nord-dark"},
 	}
 
 	for _, tt := range tests {

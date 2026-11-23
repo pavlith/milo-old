@@ -478,24 +478,14 @@ func (s *Store) SetMessageListSortOrder(sortOrder string) error {
 	return s.Set(KeyMessageListSortOrder, sortOrder)
 }
 
-// GetThemeMode returns the saved theme, replacing unsupported stored values with Nord.
+// GetThemeMode returns the saved theme or Nord if no supported theme is set.
 func (s *Store) GetThemeMode() (string, error) {
-	var mode string
-	err := s.db.QueryRow("SELECT value FROM settings WHERE key = ?", KeyThemeMode).Scan(&mode)
-	switch {
-	case err == sql.ErrNoRows:
-		return DefaultThemeMode, nil
-	case err != nil:
-		return DefaultThemeMode, fmt.Errorf("failed to get theme mode: %w", err)
-	case isSupportedThemeMode(mode):
-		return mode, nil
-	}
-
-	// A different window may have saved a valid theme since the read.
-	_, err = s.db.Exec("UPDATE settings SET value = ? WHERE key = ? AND value NOT IN (?, ?)",
-		DefaultThemeMode, KeyThemeMode, ThemeModeNordDark, ThemeModeDracula)
+	mode, err := s.Get(KeyThemeMode)
 	if err != nil {
-		return DefaultThemeMode, fmt.Errorf("failed to normalize theme mode: %w", err)
+		return DefaultThemeMode, err
+	}
+	if isSupportedThemeMode(mode) {
+		return mode, nil
 	}
 	return DefaultThemeMode, nil
 }

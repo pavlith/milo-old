@@ -50,8 +50,6 @@ export function GetSMIMESignPolicy(arg1:string):Promise<string>;
 
 export function GetShowTitleBar():Promise<boolean>;
 
-export function GetSystemTheme():Promise<string>;
-
 export function GetThemeMode():Promise<string>;
 
 export function HasPGPKey(arg1:string):Promise<boolean>;
