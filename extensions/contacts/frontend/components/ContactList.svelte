@@ -191,7 +191,7 @@
           bind:this={searchInputEl}
           type="text"
           placeholder={$_('contacts.list.searchPlaceholder')}
-          class="bg-transparent border-none outline-none text-sm py-1.5 w-full min-w-[200px] text-foreground"
+          class="bg-transparent border-none outline-hidden text-sm py-1.5 w-full min-w-[200px] text-foreground"
           value={searchInput}
           oninput={onSearchInput}
           onkeydown={handleSearchKeydown}

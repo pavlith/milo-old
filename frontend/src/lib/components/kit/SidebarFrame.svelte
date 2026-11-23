@@ -71,7 +71,7 @@
   role="navigation"
   aria-label={label ?? title ?? 'Sidebar'}
   tabindex={focusable ? 0 : undefined}
-  class="w-60 flex-shrink-0 flex flex-col pt-3 border-r border-border outline-none {narrow ? 'bg-background' : 'bg-muted/30'} {narrow ? 'responsive-sidebar-overlay' : ''} {overlayVisible ? 'responsive-sidebar-visible' : ''} {extraClass}"
+  class="w-60 flex-shrink-0 flex flex-col pt-3 border-r border-border outline-hidden {narrow ? 'bg-background' : 'bg-muted/30'} {narrow ? 'responsive-sidebar-overlay' : ''} {overlayVisible ? 'responsive-sidebar-visible' : ''} {extraClass}"
   {onkeydown}
   {onfocus}
   {onmousedown}

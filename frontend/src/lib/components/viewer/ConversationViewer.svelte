@@ -1640,7 +1640,7 @@
                 <!-- Message Body (visible when expanded) -->
                 {#if isExpanded}
                   <div class="px-4 pb-4 pt-0">
-                    <div class="ml-13 pl-3 border-l-2 border-border">
+                    <div class="pl-3 border-l-2 border-border">
                       <!-- Read Receipt Banner -->
                       {#if shouldShowReadReceiptBanner(msg) && readReceiptPolicy === 'ask'}
                         <div class="flex items-center justify-between gap-3 px-3 py-2 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">

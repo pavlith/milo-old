@@ -175,7 +175,7 @@
     // Legacy always-reserved column ("Always show checkbox" setting ON):
     // opacity fade instead of width reveal — invisible until hover on
     // desktop, faintly visible on narrow (#30)
-    checkboxAlways: 'opacity-0 group-hover:opacity-40 hover:!opacity-100 max-[767px]:opacity-40 max-[767px]:active:opacity-100',
+    checkboxAlways: 'opacity-0 group-hover:opacity-40 hover:opacity-100! max-[767px]:opacity-40 max-[767px]:active:opacity-100',
     checkboxInner: {
       micro: 'w-3 h-3',
       compact: 'w-4 h-4',
@@ -460,7 +460,7 @@
   <div
     data-conversation-row
     draggable={getLayoutMode() !== 'narrow'}
-    class="group relative w-full flex items-start touch-pan-y {densityClasses.row[density]} text-left border-b border-border transition-colors duration-300 cursor-pointer outline-none {selected
+    class="group relative w-full flex items-start touch-pan-y {densityClasses.row[density]} text-left border-b border-border transition-colors duration-300 cursor-pointer outline-hidden {selected
       ? 'bg-primary/20'
       : 'hover:bg-muted/50'} {getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' ? 'border-l-2 border-l-primary' : ''} {swipeAnim === 'select' ? 'swipe-select-anim' : ''} {swipeAnim === 'delete' ? 'swipe-delete-anim' : ''}"
     onclick={handleRowClick}

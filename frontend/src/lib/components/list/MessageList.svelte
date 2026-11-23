@@ -1444,7 +1444,7 @@
             bind:this={searchInputRef}
             type="text"
             placeholder={$_('messageList.searchMessages')}
-            class="bg-transparent border-none outline-none text-sm py-1.5 w-full min-w-[200px]"
+            class="bg-transparent border-none outline-hidden text-sm py-1.5 w-full min-w-[200px]"
             bind:value={searchQuery}
             oninput={handleSearchInput}
             onkeydown={handleSearchKeydown}
@@ -1519,7 +1519,7 @@
             >
               <DropdownMenu.Item
                 onSelect={syncFolder}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground"
+                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
               >
                 <Icon icon="mdi:refresh" class="w-4 h-4 mr-2" />
                 {$_('messageList.syncFolder')}
@@ -1527,7 +1527,7 @@
               <DropdownMenu.Separator class="-mx-1 my-1 h-px bg-border" />
               <DropdownMenu.Item
                 onSelect={forceSyncFolder}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground"
+                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
               >
                 <Icon icon="mdi:refresh-auto" class="w-4 h-4 mr-2" />
                 {$_('messageList.forceResync')}
@@ -1572,7 +1572,7 @@
               {/if}
               <DropdownMenu.Item
                 onSelect={() => setFilter(opt.value)}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent focus:text-accent-foreground"
+                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
               >
                 <Icon icon="mdi:check" class="w-4 h-4 mr-2 {filterMode === opt.value ? '' : 'invisible'}" />
                 {opt.label}
@@ -1724,7 +1724,7 @@
             <div class="flex justify-center py-4">
               <button
                 bind:this={loadMoreButtonRef}
-                class="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
+                class="text-sm text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
                 onclick={() => performServerSearch(0)}
                 disabled={isServerSearching}
               >
@@ -1801,7 +1801,7 @@
           <div class="flex justify-center py-4">
             <button
               bind:this={loadMoreButtonRef}
-              class="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
+              class="text-sm text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
               onclick={() => loadMoreSearchResults()}
               disabled={isSearching}
             >
@@ -1874,7 +1874,7 @@
         <div class="flex justify-center py-4">
           <button
             bind:this={loadMoreButtonRef}
-            class="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
+            class="text-sm text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded px-2 py-1"
             onclick={() => {
               // Continue from the true end of the loaded window, not a
               // page-size increment — after a preserved reload (sync or

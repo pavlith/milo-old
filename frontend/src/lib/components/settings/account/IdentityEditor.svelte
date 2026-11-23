@@ -258,7 +258,7 @@
               id="signatureText"
               bind:value={signatureText}
               placeholder="Plain text version for text-only emails..."
-              class="w-full min-h-[80px] p-3 text-sm bg-background border border-input rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring font-mono"
+              class="w-full min-h-[80px] p-3 text-sm bg-background border border-input rounded-md resize-y focus:outline-hidden focus:ring-2 focus:ring-ring font-mono"
             ></textarea>
             <p class="text-xs text-muted-foreground">
               {$_('identity.plainTextHelp')}

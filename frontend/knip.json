@@ -6,5 +6,6 @@
     "composer.html"
   ],
   "project": ["src/**/*.{ts,svelte}"],
-  "includeEntryExports": false
+  "includeEntryExports": false,
+  "ignoreDependencies": ["tailwindcss"]
 }

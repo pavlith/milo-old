@@ -683,7 +683,7 @@
               type="url"
               bind:value={newKeyServerURL}
               placeholder="https://"
-              class="flex-1 px-3 py-1.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              class="flex-1 px-3 py-1.5 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
               onkeydown={(e) => { if (e.key === 'Enter') handleAddKeyServer() }}
             />
             <Button variant="outline" size="sm" onclick={handleAddKeyServer} disabled={addingKeyServer || !newKeyServerURL.trim()}>
@@ -714,7 +714,7 @@
             type="email"
             bind:value={keyLookupEmail}
             placeholder={$_('security.searchByEmail')}
-            class="flex-1 px-3 py-1.5 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="flex-1 px-3 py-1.5 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
             onkeydown={(e) => { if (e.key === 'Enter') handleKeyLookup() }}
           />
           <Button variant="outline" size="sm" onclick={handleKeyLookup} disabled={keyLookupLoading || !keyLookupEmail.trim()}>
@@ -949,7 +949,7 @@
             type="password"
             bind:value={importPassword}
             placeholder={$_('security.certificatePasswordPlaceholder')}
-            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
             onkeydown={(e) => { if (e.key === 'Enter') handleImport() }}
           />
           <p class="text-xs text-muted-foreground mt-1">{$_('security.certificatePasswordHelp')}</p>
@@ -1021,7 +1021,7 @@
             type="email"
             bind:value={recipientImportEmail}
             placeholder="recipient@example.com"
-            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
             onkeydown={(e) => { if (e.key === 'Enter') handleImportRecipientCert() }}
           />
           <p class="text-xs text-muted-foreground mt-1">{$_('security.recipientEmailHelp')}</p>
@@ -1071,7 +1071,7 @@
             type="password"
             bind:value={pgpImportPassphrase}
             placeholder={$_('security.keyPassphrasePlaceholder')}
-            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
             onkeydown={(e) => { if (e.key === 'Enter') handleImportPGP() }}
           />
           <p class="text-xs text-muted-foreground mt-1">{$_('security.keyPassphraseHelp')}</p>
@@ -1121,7 +1121,7 @@
             type="email"
             bind:value={pgpRecipientImportEmail}
             placeholder="recipient@example.com"
-            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 rounded-md border border-border bg-background text-sm focus:outline-hidden focus:ring-2 focus:ring-primary"
             onkeydown={(e) => { if (e.key === 'Enter') handleImportPGPRecipientKey() }}
           />
           <p class="text-xs text-muted-foreground mt-1">{$_('security.recipientEmailHelpKey')}</p>

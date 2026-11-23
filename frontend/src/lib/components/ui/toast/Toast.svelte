@@ -33,7 +33,7 @@
 </script>
 
 <div
-  class="flex items-start gap-3 p-4 rounded-lg border shadow-lg backdrop-blur-sm {colors[toast.type]} animate-slide-in"
+  class="flex items-start gap-3 p-4 rounded-lg border shadow-lg backdrop-blur-xs {colors[toast.type]} animate-slide-in"
   role="alert"
 >
   <Icon icon={icons[toast.type]} class="w-5 h-5 flex-shrink-0 mt-0.5 {iconColors[toast.type]}" />

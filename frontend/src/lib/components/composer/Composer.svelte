@@ -2057,7 +2057,7 @@
         bind:value={subject}
         type="text"
         placeholder={$_('composer.subject')}
-        class="flex-1 bg-transparent text-sm focus:outline-none"
+        class="flex-1 bg-transparent text-sm focus:outline-hidden"
         onkeydown={(e) => {
           // Tab skips security rows + toolbar and goes directly to body
           if (e.key === 'Tab' && !e.shiftKey) {

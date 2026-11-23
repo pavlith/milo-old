@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 // Extensions live outside frontend/ at the repo root (../extensions/<name>/frontend/...).
@@ -32,7 +33,7 @@ const NODE_MODULES_DIR = path.resolve(__dirname, './node_modules')
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [svelte()],
+  plugins: [tailwindcss(), svelte()],
   resolve: {
     alias: {
       '$lib': path.resolve('./src/lib'),
