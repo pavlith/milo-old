@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatTimeSince } from '$lib/utils/date'
   // EventDetail — the read-only body content rendered inside DetailOverlay
   // when an event is selected. Fetches the event via Calendar_GetEvent
   // whenever eventId changes; renders a labeled vertical key/value layout
@@ -197,11 +198,8 @@
   const lastSyncLabel = $derived.by(() => {
     const last = calendarInfo?.calendar?.lastSyncedAt ?? 0
     if (last === 0) return $_('calendar.detail.lastSyncNever')
-    const elapsed = Math.floor(Date.now() / 1000) - last
-    if (elapsed < 60) return $_('calendar.detail.lastSync', { values: { time: 'just now' } })
-    if (elapsed < 3600) return $_('calendar.detail.lastSync', { values: { time: `${Math.floor(elapsed / 60)}m ago` } })
-    if (elapsed < 86400) return $_('calendar.detail.lastSync', { values: { time: `${Math.floor(elapsed / 3600)}h ago` } })
-    return $_('calendar.detail.lastSync', { values: { time: `${Math.floor(elapsed / 86400)}d ago` } })
+    const time = formatTimeSince(last * 1000, $locale)
+    return $_('calendar.detail.lastSync', { values: { time } })
   })
 
   function humanizeRRule(rruleText: string): { human: string; raw: string } {
@@ -248,13 +246,14 @@
   }
 
   function humanizeByDay(byDay: string): string {
-    const map: Record<string, string> = {
-      MO: 'Monday', TU: 'Tuesday', WE: 'Wednesday', TH: 'Thursday',
-      FR: 'Friday', SA: 'Saturday', SU: 'Sunday',
-    }
+    const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
+    const formatter = new Intl.DateTimeFormat($locale || undefined, { weekday: 'long', timeZone: 'UTC' })
     const days = byDay.split(',')
       .map(d => d.replace(/^[+-]?\d+/, '').toUpperCase())
-      .map(d => map[d] || d)
+      .map(day => {
+        const index = weekdays.indexOf(day)
+        return index < 0 ? day : formatter.format(new Date(Date.UTC(2024, 0, 7 + index)))
+      })
     return days.join(', ')
   }
 

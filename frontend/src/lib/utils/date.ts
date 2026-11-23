@@ -1,6 +1,11 @@
-import { format, isToday, isYesterday, isThisWeek, isThisYear } from 'date-fns'
+import { format, formatDistanceToNow, isToday, isYesterday, isThisWeek, isThisYear } from 'date-fns'
 import { get } from 'svelte/store'
 import { _ } from '$lib/i18n'
+import { getDateFnsLocale } from '$lib/i18n/dateFnsLocale'
+
+export function formatTimeSince(timestamp: number, localeCode: string | null | undefined): string {
+  return formatDistanceToNow(timestamp, { addSuffix: true, locale: getDateFnsLocale(localeCode) })
+}
 
 /**
  * Format a date relative to now for message list display
@@ -12,8 +17,9 @@ import { _ } from '$lib/i18n'
  * - This year: "Dec 15"
  * - Older: "Dec 15, 2023"
  */
-export function formatRelativeDate(date: Date): string {
+export function formatRelativeDate(date: Date, localeCode: string | null | undefined): string {
   const t = get(_)
+  const locale = getDateFnsLocale(localeCode)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMinutes = Math.floor(diffMs / (1000 * 60))
@@ -24,26 +30,30 @@ export function formatRelativeDate(date: Date): string {
   }
 
   if (diffMinutes < 60) {
-    return `${diffMinutes}m`
+    return localeCode === 'ru'
+      ? new Intl.NumberFormat('ru', { style: 'unit', unit: 'minute' }).format(diffMinutes)
+      : `${diffMinutes}m`
   }
 
   if (diffHours < 24 && isToday(date)) {
-    return `${diffHours}h`
+    return localeCode === 'ru'
+      ? new Intl.NumberFormat('ru', { style: 'unit', unit: 'hour' }).format(diffHours)
+      : `${diffHours}h`
   }
 
   if (isYesterday(date)) {
     return t('date.yesterday')
   }
 
-  if (isThisWeek(date)) {
-    return format(date, 'EEEE')
+  if (isThisWeek(date, { locale })) {
+    return format(date, 'EEEE', { locale })
   }
 
   if (isThisYear(date)) {
-    return format(date, 'MMM d')
+    return format(date, locale ? 'd MMM' : 'MMM d', { locale })
   }
 
-  return format(date, 'MMM d, yyyy')
+  return format(date, locale ? 'd MMM yyyy' : 'MMM d, yyyy', { locale })
 }
 
 /**

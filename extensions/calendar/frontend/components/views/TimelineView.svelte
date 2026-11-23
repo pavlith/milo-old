@@ -15,7 +15,7 @@
   // opens with `defaultStart` snapped to that slot.
 
   import { onMount, onDestroy } from 'svelte'
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import EventCard from '$extensions/calendar/frontend/components/EventCard.svelte'
   import { events } from '$extensions/calendar/frontend/stores/events.svelte'
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
@@ -45,7 +45,7 @@
   // date and format in UTC so the strings stay DST-safe — we only want the
   // hour-of-day labels for the column gutter, not real timed values.
   const hourLabels = $derived.by(() => {
-    const fmt = new Intl.DateTimeFormat(undefined, {
+    const fmt = new Intl.DateTimeFormat($locale || undefined, {
       hour: '2-digit', hour12: false, timeZone: 'UTC',
     })
     const out: string[] = []
@@ -881,13 +881,13 @@
               onclick={(e) => onBlockClick(block.instance, e)}
             >
               <div class="font-mono text-[10px] text-muted-foreground leading-tight">
-                {new Intl.DateTimeFormat(undefined, {
+                {new Intl.DateTimeFormat($locale || undefined, {
                   hour: '2-digit', minute: '2-digit', hour12: false,
                   timeZone: calendarSettings.effectiveTimezone,
                 }).format(new Date(block.instance.instanceStartUnix * 1000))}
               </div>
               <div class="truncate leading-tight">
-                {block.instance.summary || '(no title)'}
+                {block.instance.summary || $_('calendar.detail.noTitle')}
               </div>
             </button>
           {/each}

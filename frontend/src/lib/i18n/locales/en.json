@@ -34,7 +34,8 @@
     "done": "Done",
     "confirm": "Confirm",
     "saveChanges": "Save Changes",
-    "none": "None"
+    "none": "None",
+    "select": "Select"
   },
   "sidebar": {
     "compose": "Compose",
@@ -168,7 +169,8 @@
     "focusMessage": "Focus message",
     "exitFocus": "Exit focus mode",
     "darkMailToLight": "Show this email without dark filter",
-    "darkMailToDark": "Apply dark filter to this email"
+    "darkMailToDark": "Apply dark filter to this email",
+    "date": "Date"
   },
   "composer": {
     "newMessage": "New Message",
@@ -381,7 +383,12 @@
     "defaultBcc": "Default BCC",
     "defaultBccHelp": "Automatically added to the BCC field when composing from an enabled account.",
     "defaultReplyTo": "Default Reply-To",
-    "defaultReplyToHelp": "Sets the Reply-To address for messages composed from an enabled account."
+    "defaultReplyToHelp": "Sets the Reply-To address for messages composed from an enabled account.",
+    "mail": "Mail",
+    "activeExtension": "Active extension",
+    "extensionsEdit": "Edit extension settings",
+    "extensionsLoadFailed": "Failed to load extensions",
+    "extensionsToggleFailed": "Failed to change the state of {name}"
   },
   "settingsGeneral": {
     "display": "Display",
@@ -993,6 +1000,30 @@
       "continue": "Continue",
       "successToast": "Write access enabled for {name}",
       "failureToast": "Failed to enable write access: {message}"
+    },
+    "credentials": {
+      "title": "OAuth Credentials",
+      "advanced": "(advanced)",
+      "description": "Choose which OAuth Client ID and Secret to use when adding Google and Microsoft mail accounts. The supplied credentials work for most users. Use your own if your organization requires it or if you need separate provider quotas.",
+      "googleMail": "Google Mail",
+      "microsoftMail": "Microsoft Mail",
+      "custom": "Custom",
+      "unset": "Not configured",
+      "source": "Credential source:",
+      "leaveBlank": "Leave blank to keep the current value",
+      "pasteId": "Paste the client ID",
+      "pasteSecret": "Paste the client secret",
+      "idRequired": "Client ID is required",
+      "secretRequired": "Client secret is required",
+      "switched": "{name} now uses {source}",
+      "switchFailed": "Failed to switch credentials",
+      "saved": "Credentials for {name} saved",
+      "saveFailed": "Failed to save credentials",
+      "clear": "Delete saved credentials",
+      "clearConfirm": "Delete your saved custom credentials for {name}? You will need to enter them again to use them.",
+      "cleared": "Saved custom credentials for {name} deleted",
+      "clearFailed": "Failed to delete saved credentials",
+      "hasCustom": "You also have saved custom credentials. Select Custom to use them."
     }
   }
 }

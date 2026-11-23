@@ -433,33 +433,32 @@ func TestSetGetBoolSettings(t *testing.T) {
 }
 
 func TestSetGetLanguage(t *testing.T) {
-	tests := []struct {
-		name      string
-		language  string
-		wantValue string
-	}{
-		{name: "english", language: "en", wantValue: "en"},
-		{name: "empty", language: "", wantValue: ""},
-		{name: "zh-TW", language: "zh-TW", wantValue: "zh-TW"},
+	store := NewStore(openTestDB(t))
+	checkLanguage := func(want string) {
+		t.Helper()
+		got, err := store.GetLanguage()
+		if err != nil || got != want {
+			t.Fatalf("GetLanguage() = %q, %v; want %q", got, err, want)
+		}
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			store := NewStore(openTestDB(t))
-
-			if err := store.SetLanguage(tt.language); err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-
-			got, err := store.GetLanguage()
-			if err != nil {
-				t.Fatalf("unexpected error on get: %v", err)
-			}
-			if got != tt.wantValue {
-				t.Errorf("got %q, want %q", got, tt.wantValue)
-			}
-		})
+	checkLanguage("")
+	for _, language := range []string{"en", "ru"} {
+		if err := store.SetLanguage(language); err != nil {
+			t.Fatal(err)
+		}
+		checkLanguage(language)
 	}
+	for _, unsupported := range []string{"", "ru-RU", "de", "future-locale"} {
+		if err := store.SetLanguage(unsupported); err == nil {
+			t.Errorf("SetLanguage(%q) unexpectedly succeeded", unsupported)
+		}
+		checkLanguage("ru")
+	}
+	if err := store.Set(KeyLanguage, "future-locale"); err != nil {
+		t.Fatal(err)
+	}
+	checkLanguage("en")
 }
 
 func TestSetGetRunBackground(t *testing.T) {

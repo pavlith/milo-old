@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatTimeSince } from '$lib/utils/date'
   // CalendarSettingsDialog — Calendar extension's settings.
   //
   // Two sections:
@@ -6,7 +7,7 @@
   //      Delete, last-sync info. Add CalDAV button at the bottom.
   //   2. Alarms — informational copy (per-source toggles deferred).
 
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Select from '$lib/components/ui/select'
   import { Button } from '$lib/components/ui/button'
@@ -238,19 +239,12 @@
     return $_('calendar.settings.intervalHours', { values: { n: n / 60 } })
   }
 
-  // Relative last-sync time. Uses chosen tz only for label fidelity; the
-  // relative-time logic is tz-agnostic.
   function lastSyncLabel(src: backend.Source): string {
     if (!src.lastSyncedAt || src.lastSyncedAt === 0) {
       return $_('calendar.settings.lastSyncNever')
     }
-    const elapsed = Math.floor(Date.now() / 1000) - src.lastSyncedAt
-    let when: string
-    if (elapsed < 60) when = 'just now'
-    else if (elapsed < 3600) when = `${Math.floor(elapsed / 60)}m`
-    else if (elapsed < 86400) when = `${Math.floor(elapsed / 3600)}h`
-    else when = `${Math.floor(elapsed / 86400)}d`
-    return $_('calendar.settings.lastSync', { values: { time: when } })
+    const time = formatTimeSince(src.lastSyncedAt * 1000, $locale)
+    return $_('calendar.settings.lastSync', { values: { time } })
   }
 
   function calendarCountLabel(src: backend.Source): string {

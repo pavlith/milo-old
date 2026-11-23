@@ -12,7 +12,7 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import { formatRelativeDate } from '$lib/utils/date'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   // @ts-ignore - wailsjs path
   import { message } from '../../../../wailsjs/go/models'
   // @ts-ignore - wailsjs path
@@ -610,7 +610,7 @@
 
         <!-- Date -->
         <span class="{densityClasses.dateText[density]} text-muted-foreground flex-shrink-0 ml-auto">
-          {formatRelativeDate(new Date(conversation.latestDate))}
+          {formatRelativeDate(new Date(conversation.latestDate), $locale)}
         </span>
       </div>
 

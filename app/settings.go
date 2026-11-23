@@ -6,6 +6,7 @@ import (
 
 	"github.com/hkdb/aerion/internal/account"
 	"github.com/hkdb/aerion/internal/certificate"
+	"github.com/hkdb/aerion/internal/ipc"
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/settings"
 	"github.com/hkdb/aerion/internal/smtp"
@@ -298,10 +299,18 @@ func (a *App) GetLanguage() (string, error) {
 	return a.settingsStore.GetLanguage()
 }
 
-// SetLanguage sets the language preference
-// Valid values: "en", "zh-TW", "zh-HK", "zh-CN"
+// SetLanguage persists the UI locale and notifies open composers.
 func (a *App) SetLanguage(language string) error {
-	return a.settingsStore.SetLanguage(language)
+	if err := a.settingsStore.SetLanguage(language); err != nil {
+		return err
+	}
+	if a.ipcServer != nil {
+		msg, err := ipc.NewMessage(ipc.TypeLanguageChanged, ipc.LanguageChangedPayload{Language: language})
+		if err == nil {
+			_ = a.ipcServer.Broadcast(msg)
+		}
+	}
+	return nil
 }
 
 // GetComposerMode returns the default compose mode ("inline" or "detached")

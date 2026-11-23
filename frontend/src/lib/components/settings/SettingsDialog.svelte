@@ -5,13 +5,13 @@
   import * as Tabs from '$lib/components/ui/tabs'
   import { Button } from '$lib/components/ui/button'
   // @ts-ignore - wailsjs path
-  import { GetReadReceiptResponsePolicy, SetReadReceiptResponsePolicy, GetMarkAsReadDelay, SetMarkAsReadDelay, GetMessageListDensity, SetMessageListDensity, SetThemeMode, GetShowTitleBar, SetShowTitleBar, GetRunBackground, SetRunBackground, GetStartHidden, SetStartHidden, GetAutostart, SetAutostart, GetLanguage, SetLanguage, GetComposerMode, SetComposerMode, GetMailtoMode, SetMailtoMode, GetComposerFormat, SetComposerFormat, GetNativeTitleBar, SetNativeTitleBar, GetAlwaysLoadImages, SetAlwaysLoadImages, GetDarkMailContent, SetDarkMailContent, GetDarkComposerBody, SetDarkComposerBody, GetAccentBarUnread, SetAccentBarUnread, GetAccentUnreadStyle, SetAccentUnreadStyle, GetShowMessageListCircles, SetShowMessageListCircles, GetShowMessageListProfilePics, SetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, SetAlwaysShowMessageCheckbox, GetShowViewerCircles, SetShowViewerCircles, GetSpellcheckEnabled, SetSpellcheckEnabled, GetSpellcheckLanguages, SetSpellcheckLanguages, QuitApp } from '../../../../wailsjs/go/app/App.js'
+  import { GetReadReceiptResponsePolicy, SetReadReceiptResponsePolicy, GetMarkAsReadDelay, SetMarkAsReadDelay, GetMessageListDensity, SetMessageListDensity, SetThemeMode, GetShowTitleBar, SetShowTitleBar, GetRunBackground, SetRunBackground, GetStartHidden, SetStartHidden, GetAutostart, SetAutostart, SetLanguage, GetComposerMode, SetComposerMode, GetMailtoMode, SetMailtoMode, GetComposerFormat, SetComposerFormat, GetNativeTitleBar, SetNativeTitleBar, GetAlwaysLoadImages, SetAlwaysLoadImages, GetDarkMailContent, SetDarkMailContent, GetDarkComposerBody, SetDarkComposerBody, GetAccentBarUnread, SetAccentBarUnread, GetAccentUnreadStyle, SetAccentUnreadStyle, GetShowMessageListCircles, SetShowMessageListCircles, GetShowMessageListProfilePics, SetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, SetAlwaysShowMessageCheckbox, GetShowViewerCircles, SetShowViewerCircles, GetSpellcheckEnabled, SetSpellcheckEnabled, GetSpellcheckLanguages, SetSpellcheckLanguages, QuitApp } from '../../../../wailsjs/go/app/App.js'
   import { addToast } from '$lib/stores/toast'
-  import { getThemeMode, setMessageListDensity as updateDensityStore, setThemeMode as updateThemeStore, setShowTitleBar as updateShowTitleBarStore, setRunBackground as updateRunBackgroundStore, setStartHidden as updateStartHiddenStore, setAutostart as updateAutostartStore, setLanguage as updateLanguageStore, setComposerMode as updateComposerModeStore, setMailtoMode as updateMailtoModeStore, setComposerFormat as updateComposerFormatStore, setNativeTitleBar as updateNativeTitleBarStore, setAlwaysLoadImages as updateAlwaysLoadImagesStore, setDarkMailContent as updateDarkMailContentStore, setDarkComposerBody as updateDarkComposerBodyStore, setAccentBarUnread as updateAccentBarUnreadStore, setAccentUnreadStyle as updateAccentUnreadStyleStore, setShowMessageListCircles as updateShowMessageListCirclesStore, setShowMessageListProfilePics as updateShowMessageListProfilePicsStore, setAlwaysShowMessageCheckbox as updateAlwaysShowMessageCheckboxStore, setShowViewerCircles as updateShowViewerCirclesStore, setSpellcheckEnabled as updateSpellcheckEnabledStore, setSpellcheckLanguages as updateSpellcheckLanguagesStore, type MessageListDensity, type ComposerMode, type ComposerFormat } from '$lib/stores/settings.svelte'
+  import { getThemeMode, setMessageListDensity as updateDensityStore, setThemeMode as updateThemeStore, setShowTitleBar as updateShowTitleBarStore, setRunBackground as updateRunBackgroundStore, setStartHidden as updateStartHiddenStore, setAutostart as updateAutostartStore, setComposerMode as updateComposerModeStore, setMailtoMode as updateMailtoModeStore, setComposerFormat as updateComposerFormatStore, setNativeTitleBar as updateNativeTitleBarStore, setAlwaysLoadImages as updateAlwaysLoadImagesStore, setDarkMailContent as updateDarkMailContentStore, setDarkComposerBody as updateDarkComposerBodyStore, setAccentBarUnread as updateAccentBarUnreadStore, setAccentUnreadStyle as updateAccentUnreadStyleStore, setShowMessageListCircles as updateShowMessageListCirclesStore, setShowMessageListProfilePics as updateShowMessageListProfilePicsStore, setAlwaysShowMessageCheckbox as updateAlwaysShowMessageCheckboxStore, setShowViewerCircles as updateShowViewerCirclesStore, setSpellcheckEnabled as updateSpellcheckEnabledStore, setSpellcheckLanguages as updateSpellcheckLanguagesStore, type MessageListDensity, type ComposerMode, type ComposerFormat } from '$lib/stores/settings.svelte'
   import { syncSpellcheckLanguagesIfActive, defaultSpellcheckLanguages } from '$lib/spellcheck/settings'
   import { applyTheme, DEFAULT_THEME_MODE, type ThemeMode } from '$lib/stores/theme.svelte'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
-  import { _ } from '$lib/i18n'
+  import { _, isSupportedLocale, locale, setLocale } from '$lib/i18n'
   import ConfirmDialog from '$lib/components/ui/confirm-dialog/ConfirmDialog.svelte'
   import GeneralTab from './GeneralTab.svelte'
   import ComposerTab from './ComposerTab.svelte'
@@ -87,7 +87,7 @@
     loading = true
     themeMode = getThemeMode()
     try {
-      const [policy, delayMs, density, titleBar, runBg, startHid, autoSt, lang, comp, mail, compFmt, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs] = await Promise.all([
+      const [policy, delayMs, density, titleBar, runBg, startHid, autoSt, comp, mail, compFmt, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs] = await Promise.all([
         GetReadReceiptResponsePolicy(),
         GetMarkAsReadDelay(),
         GetMessageListDensity(),
@@ -95,7 +95,6 @@
         GetRunBackground(),
         GetStartHidden(),
         GetAutostart(),
-        GetLanguage(),
         GetComposerMode(),
         GetMailtoMode(),
         GetComposerFormat(),
@@ -120,7 +119,7 @@
       runBackground = runBg
       startHidden = startHid
       autostart = autoSt
-      language = lang
+      language = $locale ?? 'en'
       composerMode = comp || 'inline'
       mailtoMode = mail || 'inline'
       composerFormat = compFmt || 'rich'
@@ -159,9 +158,6 @@
       await SetRunBackground(runBackground)
       await SetStartHidden(startHidden)
       await SetAutostart(autostart)
-      if (language) {
-        await SetLanguage(language)
-      }
       await SetComposerMode(composerMode)
       await SetMailtoMode(mailtoMode)
       await SetComposerFormat(composerFormat)
@@ -186,8 +182,9 @@
       updateRunBackgroundStore(runBackground)
       updateStartHiddenStore(startHidden)
       updateAutostartStore(autostart)
-      if (language) {
-        updateLanguageStore(language)
+      if (isSupportedLocale(language) && language !== $locale) {
+        await SetLanguage(language)
+        await setLocale(language)
       }
       updateComposerModeStore(composerMode as ComposerMode)
       updateMailtoModeStore(mailtoMode as ComposerMode)
@@ -258,7 +255,7 @@
       </div>
     {:else}
       <Tabs.Root bind:value={activeTab} class="w-full">
-        <Tabs.List class="grid w-full grid-cols-7">
+        <Tabs.List class="h-auto w-full flex-wrap justify-start gap-1">
           <Tabs.Trigger value="general" class="flex items-center gap-2">
             <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:settings-2" width="16" height="16" /></span>
             {$_('settings.general')}
@@ -309,7 +306,6 @@
               onRunBackgroundChange={(v) => { runBackground = v; if (!v) startHidden = false }}
               onStartHiddenChange={(v) => { startHidden = v; if (v) runBackground = true }}
               onAutostartChange={(v) => autostart = v}
-              onLanguageChange={(v) => language = v}
               bind:accentBarUnread
               bind:accentUnreadStyle
               bind:showMessageListCircles

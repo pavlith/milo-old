@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
   import { cn } from '$lib/utils'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   // @ts-ignore - wailsjs path
   import type { certificate } from '../../../../wailsjs/go/models'
 
@@ -39,7 +39,7 @@
   function formatDate(iso: string): string {
     if (!iso) return 'N/A'
     try {
-      return new Date(iso).toLocaleDateString(undefined, {
+      return new Date(iso).toLocaleDateString($locale ?? undefined, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',

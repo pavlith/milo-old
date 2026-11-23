@@ -5,7 +5,7 @@
   //
   // All four view kinds are wired as of 1F.
 
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
   import ResponsiveSidebarToggle from '$lib/components/kit/ResponsiveSidebarToggle.svelte'
@@ -35,7 +35,7 @@
     const opts: Intl.DateTimeFormatOptions = calendarView.viewKind === 'month'
       ? { month: 'long', year: 'numeric', timeZone: tz }
       : { month: 'short', day: 'numeric', year: 'numeric', timeZone: tz }
-    return new Intl.DateTimeFormat(undefined, opts).format(d)
+    return new Intl.DateTimeFormat($locale || undefined, opts).format(d)
   })
 
   let syncing = $state(false)

@@ -12,13 +12,12 @@
   import { contactSourcesStore } from '$lib/stores/contactSources.svelte'
   import { isAccountExpanded, setAccountExpanded, isUnifiedInboxExpanded, setFolderCollapsed, getUIState, getUIStateVersion, saveUIState } from '$lib/stores/uiState.svelte'
   import { setFocusedPane } from '$lib/stores/keyboard.svelte'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   // @ts-ignore - wailsjs path
   import { account, folder } from '../../../../wailsjs/go/models'
   // @ts-ignore - wailsjs path
   import { GetUnifiedInboxUnreadCount } from '../../../../wailsjs/go/app/App'
-  import { formatDistanceToNow } from 'date-fns'
-  import { getCurrentDateFnsLocale } from '$lib/stores/settings.svelte'
+  import { formatTimeSince } from '$lib/utils/date'
   import { EventsOn } from '../../../../wailsjs/runtime/runtime'
 
   // Folder item type for flat navigation list
@@ -232,7 +231,7 @@
     }
     if (!accountStore.isOnline) return { accountName: null, label: $_('sidebar.offline'), percentage: null }
     if (!accountStore.lastSyncTime) return { accountName: null, label: $_('sidebar.notSynced'), percentage: null }
-    return { accountName: null, label: $_('sidebar.synced', { values: { time: formatDistanceToNow(accountStore.lastSyncTime, { addSuffix: true, locale: getCurrentDateFnsLocale() }) } }), percentage: null }
+    return { accountName: null, label: $_('sidebar.synced', { values: { time: formatTimeSince(accountStore.lastSyncTime.getTime(), $locale) } }), percentage: null }
   })
 
   // Handle folder selection

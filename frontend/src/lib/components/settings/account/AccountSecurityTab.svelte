@@ -3,7 +3,7 @@
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
   import { addToast } from '$lib/stores/toast'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   // @ts-ignore - wailsjs path
   import { smime } from '../../../../../wailsjs/go/models'
   // @ts-ignore - wailsjs path
@@ -485,7 +485,7 @@
     if (!dateStr) return 'N/A'
     try {
       const d = new Date(dateStr)
-      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      return d.toLocaleDateString($locale ?? undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     } catch {
       return 'N/A'
     }

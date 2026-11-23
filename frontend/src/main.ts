@@ -1,55 +1,29 @@
 import './app.css'
 import { initI18n } from './lib/i18n'
+import { waitForRuntime } from './lib/waitForRuntime'
 import App from './App.svelte'
 import { mount } from 'svelte'
 import { setThemeMode } from '$lib/stores/settings.svelte'
 // @ts-ignore - wailsjs path
-import { GetThemeMode, IsReady } from '../wailsjs/go/app/App'
+import { GetLanguage, GetThemeMode, IsReady } from '../wailsjs/go/app/App'
 // @ts-ignore - wailsjs path
 import { EventsOn, WindowShow } from '../wailsjs/runtime/runtime'
 
-// Linear bootstrap. Each step waits for the previous to complete; no
-// concurrent retries woven between them. The inline splash markup in
-// index.html is visible from the moment the WebView paints, so the user
-// sees feedback for the entire bootstrap window (runtime inject → window
-// show → i18n load → backend ready → app mount).
+// The HTML splash stays visible until the backend and saved appearance are ready.
 async function bootstrap(): Promise<void> {
   await waitForRuntime()
   WindowShow()
-  await initI18n()
   await waitForBackendReady()
-  try {
-    setThemeMode(await GetThemeMode())
-  } catch (err) {
-    console.error('Failed to load theme mode:', err)
-  }
+  await Promise.all([
+    GetLanguage().catch(err => {
+      console.error('Failed to load language:', err)
+      return ''
+    }).then(initI18n),
+    GetThemeMode().then(setThemeMode).catch(err => {
+      console.error('Failed to load theme mode:', err)
+    }),
+  ])
   mount(App, { target: document.getElementById('app')! })
-}
-
-// waitForRuntime resolves when Wails has injected `window.runtime` into the
-// page. In dev mode (Vite-served bundle), injection happens AFTER the bundle
-// script begins executing, so a naive `window.runtime.X()` call at module
-// top throws. We rAF-poll for ~2 seconds; if the runtime never appears,
-// resolve anyway and let downstream calls fail loudly with their own errors
-// rather than wedging here forever.
-function waitForRuntime(): Promise<void> {
-  return new Promise<void>((resolve) => {
-    const startedAt = performance.now()
-    function check() {
-      const w = window as unknown as { runtime?: { WindowShow?: unknown } }
-      if (w.runtime?.WindowShow) {
-        resolve()
-        return
-      }
-      if (performance.now() - startedAt > 2000) {
-        console.warn('[boot] Wails runtime never injected after 2s; proceeding anyway.')
-        resolve()
-        return
-      }
-      requestAnimationFrame(check)
-    }
-    check()
-  })
 }
 
 // waitForBackendReady resolves when the Go-side Startup hook has reached the

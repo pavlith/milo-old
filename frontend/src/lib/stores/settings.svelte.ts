@@ -2,11 +2,7 @@
 // Provides reactive state for application settings
 
 // @ts-ignore - wailsjs path
-import { GetMessageListDensity, GetMessageListSortOrder, GetShowTitleBar, GetRunBackground, GetStartHidden, GetAutostart, GetLanguage, GetComposerMode, GetMailtoMode, GetComposerFormat, GetNativeTitleBar, GetAlwaysLoadImages, GetDarkMailContent, GetDarkComposerBody, GetAccentBarUnread, GetAccentUnreadStyle, GetShowMessageListCircles, GetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, GetShowViewerCircles, GetSpellcheckEnabled, GetSpellcheckLanguages, GetSpellcheckCustomWords } from '../../../wailsjs/go/app/App'
-import { setLocale as setI18nLocale, locale as i18nLocale } from '$lib/i18n'
-import { get } from 'svelte/store'
-import { loadDateFnsLocale, getDateFnsLocale } from '$lib/i18n/dateFnsLocale'
-import type { Locale } from 'date-fns'
+import { GetMessageListDensity, GetMessageListSortOrder, GetShowTitleBar, GetRunBackground, GetStartHidden, GetAutostart, GetComposerMode, GetMailtoMode, GetComposerFormat, GetNativeTitleBar, GetAlwaysLoadImages, GetDarkMailContent, GetDarkComposerBody, GetAccentBarUnread, GetAccentUnreadStyle, GetShowMessageListCircles, GetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, GetShowViewerCircles, GetSpellcheckEnabled, GetSpellcheckLanguages, GetSpellcheckCustomWords } from '../../../wailsjs/go/app/App'
 import { applyTheme, DEFAULT_THEME_MODE, normalizeThemeMode, type ThemeMode } from './theme.svelte'
 
 export type ComposerMode = 'inline' | 'detached'
@@ -24,7 +20,6 @@ let autostart = $state<boolean>(false)
 let spellcheckEnabled = $state<boolean>(true)
 let spellcheckLanguages = $state<string[]>([])
 let spellcheckCustomWords = $state<string[]>([])
-let language = $state<string>('')
 let composerMode = $state<ComposerMode>('inline')
 let mailtoMode = $state<ComposerMode>('inline')
 let composerFormat = $state<ComposerFormat>('rich')
@@ -80,10 +75,6 @@ export function getSpellcheckCustomWords(): string[] {
   return spellcheckCustomWords
 }
 
-export function getLanguage(): string {
-  return language
-}
-
 export function getComposerMode(): ComposerMode {
   return composerMode
 }
@@ -136,10 +127,6 @@ export function getShowViewerCircles(): boolean {
   return showViewerCircles
 }
 
-export function getCurrentDateFnsLocale(): Locale | undefined {
-  return getDateFnsLocale(get(i18nLocale) || language || 'en')
-}
-
 // Setter functions to update the state
 export function setMessageListDensity(density: MessageListDensity) {
   messageListDensity = density
@@ -180,14 +167,6 @@ export function setSpellcheckLanguages(v: string[]) {
 
 export function setSpellcheckCustomWords(v: string[]) {
   spellcheckCustomWords = v
-}
-
-export function setLanguage(lang: string) {
-  language = lang
-  if (lang) {
-    setI18nLocale(lang)
-    loadDateFnsLocale(lang)
-  }
 }
 
 export function setComposerMode(mode: ComposerMode) {
@@ -245,14 +224,13 @@ export function setShowViewerCircles(v: boolean) {
 // Load settings from backend (call on app startup)
 export async function loadSettings(): Promise<void> {
   try {
-    const [density, sortOrder, titleBar, runBg, startHid, autoSt, lang, compMode, mailMode, compFormat, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs, scWords] = await Promise.all([
+    const [density, sortOrder, titleBar, runBg, startHid, autoSt, compMode, mailMode, compFormat, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs, scWords] = await Promise.all([
       GetMessageListDensity(),
       GetMessageListSortOrder(),
       GetShowTitleBar(),
       GetRunBackground(),
       GetStartHidden(),
       GetAutostart(),
-      GetLanguage(),
       GetComposerMode(),
       GetMailtoMode(),
       GetComposerFormat(),
@@ -292,12 +270,6 @@ export async function loadSettings(): Promise<void> {
     spellcheckEnabled = scEnabled ?? true
     spellcheckLanguages = scLangs ?? []
     spellcheckCustomWords = scWords ?? []
-    // Apply saved language (if set, overrides system detection from initI18n)
-    if (lang) {
-      language = lang
-      setI18nLocale(lang)
-      await loadDateFnsLocale(lang)
-    }
   } catch (err) {
     console.error('Failed to load settings:', err)
   }

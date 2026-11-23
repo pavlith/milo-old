@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { _, locale } from 'svelte-i18n'
   // EventCard — calendar-domain event pill rendered inside MonthView cells
   // (and Week/Day timelines in 1F). Pure visual: receives an instance, a
   // color, and optional multi-day continuation flags. Click bubbles to the
@@ -35,7 +36,7 @@
   const timeLabel = $derived.by(() => {
     if (isAllDay) return ''
     const d = new Date(instance.instanceStartUnix * 1000)
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat($locale || undefined, {
       hour: '2-digit', minute: '2-digit', hour12: false,
       timeZone: calendarSettings.effectiveTimezone,
     }).format(d)
@@ -70,7 +71,7 @@
   {#if !isAllDay}
     <span class="shrink-0 font-mono text-[10px] text-muted-foreground">{timeLabel}</span>
   {/if}
-  <span class="flex-1 min-w-0 truncate">{instance.summary || '(no title)'}</span>
+  <span class="flex-1 min-w-0 truncate">{instance.summary || $_('calendar.detail.noTitle')}</span>
   {#if continuesRight}
     <span class="shrink-0 text-muted-foreground" aria-hidden="true">▶</span>
   {/if}

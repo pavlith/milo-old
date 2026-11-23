@@ -170,7 +170,7 @@
       "noSources": "No sources yet — add one to start syncing.",
       "calendarCount": "{count} calendars",
       "calendarCountOne": "1 calendar",
-      "lastSync": "Synced {time} ago",
+      "lastSync": "Synced {time}",
       "lastSyncNever": "Never synced",
       "syncNow": "Sync now",
       "forceResync": "Force resync",
@@ -364,6 +364,10 @@
       "caldav": "CalDAV",
       "google": "Google",
       "microsoft": "Microsoft"
+    },
+    "manifest": {
+      "name": "Calendar",
+      "description": "View and edit events from CalDAV, Google Calendar, and Microsoft 365."
     }
   }
 }

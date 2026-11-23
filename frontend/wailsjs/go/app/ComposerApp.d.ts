@@ -32,6 +32,8 @@ export function GetDraft():Promise<smtp.ComposeMessage>;
 
 export function GetIdentities(arg1:string):Promise<Array<account.Identity>>;
 
+export function GetLanguage():Promise<string>;
+
 export function GetNativeTitleBar():Promise<boolean>;
 
 export function GetOriginalMessage():Promise<message.Message>;

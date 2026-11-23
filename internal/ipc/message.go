@@ -29,6 +29,9 @@ const (
 	// TypeThemeChanged indicates the application theme changed
 	TypeThemeChanged = "theme_changed"
 
+	// TypeLanguageChanged indicates the application language changed.
+	TypeLanguageChanged = "language_changed"
+
 	// TypeShutdown indicates the main app is closing
 	TypeShutdown = "shutdown"
 )
@@ -76,6 +79,11 @@ type ComposerClosedPayload struct {
 // ThemeChangedPayload is the payload for TypeThemeChanged messages.
 type ThemeChangedPayload struct {
 	Theme string `json:"theme"` // "nord-dark" or "dracula"
+}
+
+// LanguageChangedPayload is the payload for TypeLanguageChanged messages.
+type LanguageChangedPayload struct {
+	Language string `json:"language"`
 }
 
 // ShutdownPayload is the payload for TypeShutdown messages.

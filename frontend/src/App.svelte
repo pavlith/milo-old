@@ -752,9 +752,10 @@
       showComposer = true
     } catch (err) {
       console.error(`Failed to prepare ${mode}:`, err)
+      const action = { reply: 'composer.reply', 'reply-all': 'composer.replyAll', forward: 'composer.forward' }[mode]
       addToast({
         type: 'error',
-        message: $_('toast.failedToPrepare', { values: { mode } }),
+        message: $_('toast.failedToPrepare', { values: { mode: $_(action) } }),
       })
       // Fallback: open blank composer
       composerAccountId = accountId

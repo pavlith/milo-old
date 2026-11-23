@@ -51,6 +51,7 @@ type ComposeMode struct {
 // ComposerApp is a lightweight app struct for detached composer windows.
 // It connects to the main window via IPC and shares the same database.
 type ComposerApp struct {
+	ready  chan struct{}
 	ctx    context.Context
 	config ComposerConfig
 
@@ -111,6 +112,7 @@ type ComposerApp struct {
 func NewComposerApp(config ComposerConfig) *ComposerApp {
 	return &ComposerApp{
 		config: config,
+		ready:  make(chan struct{}),
 	}
 }
 
@@ -237,6 +239,8 @@ func (c *ComposerApp) Startup(ctx context.Context) {
 		log.Error().Err(err).Msg("Failed to load initial data")
 	}
 
+	close(c.ready)
+
 	// Notify main window that we're ready
 	c.notifyReady()
 
@@ -312,6 +316,12 @@ func (c *ComposerApp) handleIPCMessage(msg ipc.Message) {
 		if err := msg.ParsePayload(&payload); err == nil {
 			// Emit event to frontend
 			wailsRuntime.EventsEmit(c.ctx, "theme:changed", payload.Theme)
+		}
+
+	case ipc.TypeLanguageChanged:
+		var payload ipc.LanguageChangedPayload
+		if err := msg.ParsePayload(&payload); err == nil {
+			wailsRuntime.EventsEmit(c.ctx, "language:changed", payload.Language)
 		}
 
 	case ipc.TypeShutdown:
@@ -514,6 +524,12 @@ func (c *ComposerApp) GetShowTitleBar() (bool, error) {
 // GetNativeTitleBar returns whether the native OS title bar is enabled.
 func (c *ComposerApp) GetNativeTitleBar() (bool, error) {
 	return c.settingsStore.GetNativeTitleBar()
+}
+
+// GetLanguage waits for local startup and returns the shared UI preference.
+func (c *ComposerApp) GetLanguage() (string, error) {
+	<-c.ready
+	return c.settingsStore.GetLanguage()
 }
 
 // GetThemeMode returns the current theme mode setting.

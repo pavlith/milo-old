@@ -16,7 +16,7 @@
   // @ts-ignore - wailsjs path
   import { folder } from '../../../../../wailsjs/go/models'
   import { Button } from '$lib/components/ui/button'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   import ConfirmDialog from '$lib/components/ui/confirm-dialog/ConfirmDialog.svelte'
 
   interface Props {
@@ -336,7 +336,7 @@
   function formatCertDate(iso: string): string {
     if (!iso) return 'N/A'
     try {
-      return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+      return new Date(iso).toLocaleDateString($locale ?? undefined, { year: 'numeric', month: 'short', day: 'numeric' })
     } catch {
       return iso
     }
@@ -396,7 +396,7 @@
             onValueChange={(v) => { imapSecurity = v; onImapSecurityChange(v) }}
           >
             <Select.Trigger class="h-10">
-              <Select.Value placeholder="Select">
+              <Select.Value placeholder={$_('common.select')}>
                 {getSecurityLabel(imapSecurity)}
               </Select.Value>
             </Select.Trigger>
@@ -419,7 +419,7 @@
             onValueChange={(v) => { imapAuthMechanism = v; onImapAuthMechanismChange(v) }}
           >
             <Select.Trigger class="h-10">
-              <Select.Value placeholder="Select">
+              <Select.Value placeholder={$_('common.select')}>
                 {getAuthMechanismLabel(imapAuthMechanism)}
               </Select.Value>
             </Select.Trigger>
@@ -542,7 +542,7 @@
             onValueChange={(v) => { smtpSecurity = v; onSmtpSecurityChange(v) }}
           >
             <Select.Trigger class="h-10">
-              <Select.Value placeholder="Select">
+              <Select.Value placeholder={$_('common.select')}>
                 {getSecurityLabel(smtpSecurity)}
               </Select.Value>
             </Select.Trigger>
@@ -606,7 +606,7 @@
                 onValueChange={(v) => { smtpAuthMechanism = v; onSmtpAuthMechanismChange(v) }}
               >
                 <Select.Trigger class="h-10">
-                  <Select.Value placeholder="Select">
+                  <Select.Value placeholder={$_('common.select')}>
                     {getAuthMechanismLabel(smtpAuthMechanism)}
                   </Select.Value>
                 </Select.Trigger>
@@ -641,7 +641,7 @@
         onValueChange={(v) => { syncInterval = v; onSyncIntervalChange(v) }}
       >
         <Select.Trigger>
-          <Select.Value placeholder="Select">
+          <Select.Value placeholder={$_('common.select')}>
             {getSyncIntervalLabel(syncInterval)}
           </Select.Value>
         </Select.Trigger>
@@ -663,7 +663,7 @@
         onValueChange={(v) => { readReceiptRequestPolicy = v; onReadReceiptPolicyChange(v) }}
       >
         <Select.Trigger>
-          <Select.Value placeholder="Select">
+          <Select.Value placeholder={$_('common.select')}>
             {getReadReceiptLabel(readReceiptRequestPolicy)}
           </Select.Value>
         </Select.Trigger>

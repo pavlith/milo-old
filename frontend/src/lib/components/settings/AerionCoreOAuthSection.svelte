@@ -12,6 +12,7 @@
   // (isExpanded state + chevron icon toggle) — no separate collapsible
   // component exists in the kit.
 
+  import { _ } from '$lib/i18n'
   import Icon from '@iconify/svelte'
   import OAuthCredsSlotEditor from '$lib/components/kit/OAuthCredsSlotEditor.svelte'
 
@@ -29,26 +30,23 @@
       icon={isExpanded ? 'mdi:chevron-down' : 'mdi:chevron-right'}
       class="w-4 h-4 text-muted-foreground"
     />
-    <span class="font-medium text-foreground">OAuth Credentials</span>
-    <span class="text-xs text-muted-foreground">(advanced)</span>
+    <span class="font-medium text-foreground">{$_('oauth.credentials.title')}</span>
+    <span class="text-xs text-muted-foreground">{$_('oauth.credentials.advanced')}</span>
   </button>
 
   {#if isExpanded}
     <div class="mt-3 space-y-3">
       <p class="text-sm text-muted-foreground">
-        Override the OAuth Client ID and Secret used for adding Google and Microsoft
-        email accounts. Most users should leave these on the shipped defaults.
-        Use your own credentials if your organization requires it, or to bypass
-        Aerion's quota / verification status.
+        {$_('oauth.credentials.description')}
       </p>
       <OAuthCredsSlotEditor
         configID="google-mail"
-        label="Google Mail"
+        label={$_('oauth.credentials.googleMail')}
         secretRequired={true}
       />
       <OAuthCredsSlotEditor
         configID="microsoft-mail"
-        label="Microsoft Mail"
+        label={$_('oauth.credentials.microsoftMail')}
         secretRequired={false}
       />
     </div>

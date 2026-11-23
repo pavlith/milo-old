@@ -6,9 +6,8 @@
   import { contactSourcesStore } from '$lib/stores/contactSources.svelte'
   import { addToast } from '$lib/stores/toast'
   import ContactSourceDialog from './ContactSourceDialog.svelte'
-  import { formatDistanceToNow } from 'date-fns'
-  import { _ } from '$lib/i18n'
-  import { getCurrentDateFnsLocale } from '$lib/stores/settings.svelte'
+  import { _, locale } from '$lib/i18n'
+  import { formatTimeSince } from '$lib/utils/date'
   // @ts-ignore - wailsjs path
   import type { carddav } from '../../../../wailsjs/go/models'
 
@@ -34,7 +33,7 @@
   function formatLastSync(source: carddav.Source): string {
     if (!source.last_synced_at) return $_('contactSource.neverSynced')
     try {
-      return $_('contactSource.syncedAgo', { values: { time: formatDistanceToNow(new Date(source.last_synced_at), { addSuffix: true, locale: getCurrentDateFnsLocale() }) } })
+      return $_('contactSource.syncedAgo', { values: { time: formatTimeSince(Date.parse(source.last_synced_at), $locale) } })
     } catch {
       return $_('contactSource.neverSynced')
     }

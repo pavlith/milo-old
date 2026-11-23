@@ -163,6 +163,10 @@
       "syncSucceeded": "Contacts synced",
       "syncAllSucceeded": "All contact sources synced",
       "syncNoSource": "Select a CardDAV source in the sidebar first."
+    },
+    "manifest": {
+      "name": "Contacts",
+      "description": "Browse and edit contacts from CardDAV, Google, and Microsoft accounts."
     }
   }
 }

@@ -195,7 +195,7 @@
           <Input
             id="name"
             type="text"
-            placeholder="John Smith"
+            placeholder={$_('account.displayNamePlaceholder')}
             bind:value={name}
             class={errors.name ? 'border-destructive' : ''}
           />

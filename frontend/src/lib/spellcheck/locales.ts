@@ -16,13 +16,17 @@ const APP_TO_DICT: Record<string, string> = {
 // Dictionaries bundled as static assets under /spellcheck/<key>.{aff,dic}.
 export const SPELLCHECK_DICTS = ['en', 'en-gb', 'cs', 'de', 'fr', 'it', 'nb', 'nl', 'tr'] as const
 
-// Display-name overrides for dictionaries that don't map 1:1 to an app
-// locale (the settings list otherwise names dicts via supportedLocales).
-// 'en' is the US SCOWL wordlist, so disambiguate it now that en-gb exists.
-export const DICT_NAMES: Record<string, string> = {
+// Native names of the bundled dictionaries.
+export const DICT_NAMES: Record<typeof SPELLCHECK_DICTS[number], string> = {
   en: 'English (US)',
   'en-gb': 'English (UK)',
+  cs: 'Čeština',
+  de: 'Deutsch',
+  fr: 'Français',
+  it: 'Italiano',
+  nb: 'Norsk Bokmål',
   nl: 'Nederlands',
+  tr: 'Türkçe',
 }
 
 export function appLocaleToDict(locale: string | null | undefined): string | null {

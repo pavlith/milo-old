@@ -364,6 +364,10 @@
       "caldav": "CalDAV",
       "google": "Google",
       "microsoft": "Microsoft"
+    },
+    "manifest": {
+      "name": "Календарь",
+      "description": "Просматривайте и редактируйте события из CalDAV, Google Календаря и Microsoft 365."
     }
   }
 }

@@ -7,7 +7,7 @@
   // grid, Day/Agenda complete at a day. The ‹ › pagers only move the
   // local browse cursor — the live anchor (and thus event fetches) is
   // untouched until something is actually picked.
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import { Popover } from 'bits-ui'
   import { cn } from '$lib/utils'
@@ -72,7 +72,7 @@
   })
 
   const daysHeader = $derived(
-    new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(cursor)
+    new Intl.DateTimeFormat($locale || undefined, { month: 'long', year: 'numeric' }).format(cursor)
   )
 
   // Week view selects by week: the whole row hovers/selects as one unit
@@ -85,7 +85,7 @@
 
   // ── Months level ────────────────────────────────────────────────────
   const monthNames = $derived.by(() => {
-    const fmt = new Intl.DateTimeFormat(undefined, { month: 'short' })
+    const fmt = new Intl.DateTimeFormat($locale || undefined, { month: 'short' })
     return Array.from({ length: 12 }, (_unused, m) => fmt.format(new Date(2000, m, 1)))
   })
 

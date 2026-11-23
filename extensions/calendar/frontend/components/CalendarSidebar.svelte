@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatTimeSince } from '$lib/utils/date'
   // CalendarSidebar — left sidebar listing sources + their calendars.
   // Issue #118 pattern: one section per source, per-calendar rows with
   // checkbox + color swatch + truncated name. Bottom strip (anchored via
@@ -10,7 +11,7 @@
   // overlay + title + body/footer slots; visual parity with contacts'
   // sidebar (and any future extension sidebar) is automatic.
 
-  import { _ } from 'svelte-i18n'
+  import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import SidebarFrame from '$lib/components/kit/SidebarFrame.svelte'
   import SidebarFooter from '$lib/components/kit/SidebarFooter.svelte'
@@ -59,11 +60,8 @@
       if (s.lastSyncedAt > latest) latest = s.lastSyncedAt
     }
     if (latest === 0) return $_('calendar.sidebar.lastSyncNever')
-    const elapsedSec = Math.floor(now / 1000) - latest
-    if (elapsedSec < 60) return $_('calendar.sidebar.lastSync', { values: { time: 'just now' } })
-    if (elapsedSec < 3600) return $_('calendar.sidebar.lastSync', { values: { time: `${Math.floor(elapsedSec / 60)}m ago` } })
-    if (elapsedSec < 86400) return $_('calendar.sidebar.lastSync', { values: { time: `${Math.floor(elapsedSec / 3600)}h ago` } })
-    return $_('calendar.sidebar.lastSync', { values: { time: `${Math.floor(elapsedSec / 86400)}d ago` } })
+    const time = formatTimeSince(latest * 1000, $locale)
+    return $_('calendar.sidebar.lastSync', { values: { time } })
   })
 
   // Phase-aware label when a sync is in flight. Started → "Syncing Murena…";

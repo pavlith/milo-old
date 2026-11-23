@@ -4,8 +4,7 @@
   import { Label } from '$lib/components/ui/label'
   import { Input } from '$lib/components/ui/input'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
-  import { _, setLocale } from '$lib/i18n'
-  import { supportedLocales } from '$lib/i18n'
+  import { _, supportedLocales } from '$lib/i18n'
   import type { ThemeMode } from '$lib/stores/theme.svelte'
 
   interface Props {
@@ -26,7 +25,6 @@
     onRunBackgroundChange: (value: boolean) => void
     onStartHiddenChange: (value: boolean) => void
     onAutostartChange: (value: boolean) => void
-    onLanguageChange: (value: string) => void
     accentBarUnread: boolean
     accentUnreadStyle: string
     showMessageListCircles: boolean
@@ -55,7 +53,6 @@
     onRunBackgroundChange,
     onStartHiddenChange,
     onAutostartChange,
-    onLanguageChange,
     accentBarUnread = $bindable(),
     accentUnreadStyle = $bindable(),
     showMessageListCircles = $bindable(),
@@ -159,14 +156,6 @@
     onAutostartChange?.(value)
   }
 
-  function handleLanguageChange(value: string) {
-    language = value
-    // Apply immediately for live preview
-    setLocale(value)
-    onLanguageChange?.(value)
-  }
-
-
 </script>
 
 <div class="space-y-6">
@@ -197,11 +186,11 @@
     </div>
 
     <div class="space-y-2">
-      <Label>{$_('settingsGeneral.language')}</Label>
-      <Select.Root value={language || 'en'} onValueChange={handleLanguageChange}>
-        <Select.Trigger>
+      <Label for="ui-language">{$_('settingsGeneral.language')}</Label>
+      <Select.Root bind:value={language}>
+        <Select.Trigger id="ui-language">
           <Select.Value>
-            {getLanguageLabel(language || 'en')}
+            {getLanguageLabel(language)}
           </Select.Value>
         </Select.Trigger>
         <Select.Content>

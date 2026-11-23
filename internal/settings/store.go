@@ -730,15 +730,28 @@ func (s *Store) RemoveSpellcheckCustomWord(word string) error {
 	return s.Set(KeySpellcheckCustomWords, string(data))
 }
 
-// GetLanguage returns the saved language preference (locale code)
-// Returns empty string if not set (frontend uses system detection)
+// GetLanguage returns the saved UI locale, or an empty string for system detection.
 func (s *Store) GetLanguage() (string, error) {
-	return s.Get(KeyLanguage)
+	language, err := s.Get(KeyLanguage)
+	if err != nil {
+		return "", err
+	}
+	if language == "" || isSupportedLanguage(language) {
+		return language, nil
+	}
+	return "en", nil
 }
 
-// SetLanguage sets the language preference (locale code, e.g. "en", "zh-TW", "zh-CN")
+// SetLanguage saves an explicit supported UI locale.
 func (s *Store) SetLanguage(language string) error {
+	if !isSupportedLanguage(language) {
+		return fmt.Errorf("invalid UI language: %q (must be en or ru)", language)
+	}
 	return s.Set(KeyLanguage, language)
+}
+
+func isSupportedLanguage(language string) bool {
+	return language == "en" || language == "ru"
 }
 
 // GetComposerMode returns the default compose mode ("inline" or "detached")

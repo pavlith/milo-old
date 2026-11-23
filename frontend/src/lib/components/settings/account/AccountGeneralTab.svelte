@@ -253,7 +253,7 @@
         onValueChange={(v) => { syncPeriodDays = v; onSyncPeriodChange(v) }}
       >
         <Select.Trigger>
-          <Select.Value placeholder="Select">
+          <Select.Value placeholder={$_('common.select')}>
             {getSyncPeriodLabel(syncPeriodDays)}
           </Select.Value>
         </Select.Trigger>

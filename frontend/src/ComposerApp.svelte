@@ -56,8 +56,11 @@
   function handleTitleChange(to: string, subject: string) {
     titleTo = to
     titleSubject = subject
-    WindowSetTitle(windowTitle())
   }
+
+  $effect(() => {
+    WindowSetTitle(windowTitle())
+  })
 
   onMount(async () => {
     // Subscribe first so an in-flight settings read cannot overwrite a newer IPC update.

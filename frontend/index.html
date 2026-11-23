@@ -40,10 +40,6 @@
         font-weight: 600;
         letter-spacing: -0.02em;
       }
-      #boot-splash .boot-subtitle {
-        font-size: 0.875rem;
-        opacity: 0.7;
-      }
       #boot-splash .boot-spinner {
         width: 28px;
         height: 28px;
@@ -65,10 +61,9 @@
       WebView shows the window — before the JS bundle parses, before i18n
       loads, before any Wails method round-trips.
     -->
-    <div id="boot-splash" role="status" aria-live="polite" aria-label="Aerion is starting">
+    <div id="boot-splash" role="status" aria-busy="true" aria-label="Aerion">
       <div class="boot-title">Aerion</div>
       <div class="boot-spinner" aria-hidden="true"></div>
-      <div class="boot-subtitle">Starting up…</div>
     </div>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>

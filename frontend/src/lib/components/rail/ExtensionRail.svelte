@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { _ } from '$lib/i18n'
   import RailButton from './RailButton.svelte'
   import { getRailTabs, isRailVisible } from '$lib/stores/extensionRegistry.svelte'
   import { getActiveExtension, setActiveExtension } from '$lib/stores/uiState.svelte'
@@ -18,18 +19,18 @@
 {#if visible}
   <nav
     class="flex flex-col items-stretch w-12 flex-shrink-0 bg-muted/30 border-r border-border pt-2"
-    aria-label="Active extension"
+    aria-label={$_('settings.activeExtension')}
   >
     <RailButton
       icon="mdi:email"
-      label="Mail"
+      label={$_('settings.mail')}
       active={active === 'mail'}
       onclick={() => select('mail')}
     />
     {#each tabs as tab (tab.extensionId)}
       <RailButton
         icon={tab.icon || 'mdi:puzzle'}
-        label={tab.label}
+        label={$_(`${tab.extensionId}.manifest.name`, { default: tab.label })}
         active={active === tab.extensionId}
         onclick={() => select(tab.extensionId)}
       />

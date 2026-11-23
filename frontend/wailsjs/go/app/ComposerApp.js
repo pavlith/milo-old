@@ -46,6 +46,10 @@ export function GetIdentities(arg1) {
   return window['go']['app']['ComposerApp']['GetIdentities'](arg1);
 }
 
+export function GetLanguage() {
+  return window['go']['app']['ComposerApp']['GetLanguage']();
+}
+
 export function GetNativeTitleBar() {
   return window['go']['app']['ComposerApp']['GetNativeTitleBar']();
 }

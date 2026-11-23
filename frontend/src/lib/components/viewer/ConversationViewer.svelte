@@ -15,7 +15,7 @@
   import { setFocusedPane, isInputElement, isComposerOpen } from '$lib/stores/keyboard.svelte'
   import { ConfirmDialog } from '$lib/components/ui/confirm-dialog'
   import MessageContextMenu from '$lib/components/common/MessageContextMenu.svelte'
-  import { _ } from '$lib/i18n'
+  import { _, locale } from '$lib/i18n'
   import { isDialogGuardActive } from '$lib/stores/dialogGuard'
   import { getShowViewerCircles, getDarkMailContent } from '$lib/stores/settings.svelte'
   import { getIsDarkActive } from '$lib/stores/theme.svelte'
@@ -691,7 +691,10 @@
 
   function formatDate(dateStr: any): string {
     const date = new Date(dateStr)
-    return `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    if ($locale === 'ru') {
+      return date.toLocaleString('ru', { dateStyle: 'short', timeStyle: 'short' })
+    }
+    return `${date.toLocaleDateString('en')} at ${date.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`
   }
 
   function getInitials(name: string): string {
@@ -988,10 +991,10 @@
 
   function buildPrintBlock(msg: messageModels.Message, bodyHtml: string): string {
     const header = `<table class="hdr">
-      <tr><td class="lbl">From</td><td>${escapeHtmlText(formatEmailForCopy(msg.fromName, msg.fromEmail))}</td></tr>
-      ${printRecipientsRow('To', msg.toList)}
-      ${printRecipientsRow('Cc', msg.ccList)}
-      <tr><td class="lbl">Date</td><td>${escapeHtmlText(formatDate(msg.date))}</td></tr>
+      <tr><td class="lbl">${$_('viewer.from')}</td><td>${escapeHtmlText(formatEmailForCopy(msg.fromName, msg.fromEmail))}</td></tr>
+      ${printRecipientsRow($_('composer.to'), msg.toList)}
+      ${printRecipientsRow($_('composer.cc'), msg.ccList)}
+      <tr><td class="lbl">${$_('viewer.date')}</td><td>${escapeHtmlText(formatDate(msg.date))}</td></tr>
     </table>`
     return `<section class="msg">${header}<div class="body">${bodyHtml}</div></section>`
   }

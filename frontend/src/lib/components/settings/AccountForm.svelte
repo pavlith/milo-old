@@ -1240,7 +1240,7 @@
                   <Label>{$_('account.security')}</Label>
                   <Select.Root bind:value={imapSecurity}>
                     <Select.Trigger class="h-10">
-                      <Select.Value placeholder="Select">
+                      <Select.Value placeholder={$_('common.select')}>
                         {getSecurityLabel(imapSecurity)}
                       </Select.Value>
                     </Select.Trigger>
@@ -1259,7 +1259,7 @@
                   <Label>{$_('account.authMechanism')}</Label>
                   <Select.Root bind:value={imapAuthMechanism}>
                     <Select.Trigger class="h-10">
-                      <Select.Value placeholder="Select">
+                      <Select.Value placeholder={$_('common.select')}>
                         {getAuthMechanismLabel(imapAuthMechanism)}
                       </Select.Value>
                     </Select.Trigger>
@@ -1364,7 +1364,7 @@
                   <Label>{$_('account.security')}</Label>
                   <Select.Root bind:value={smtpSecurity}>
                     <Select.Trigger class="h-10">
-                      <Select.Value placeholder="Select">
+                      <Select.Value placeholder={$_('common.select')}>
                         {getSecurityLabel(smtpSecurity)}
                       </Select.Value>
                     </Select.Trigger>
@@ -1421,7 +1421,7 @@
                       <Label>{$_('account.authMechanism')}</Label>
                       <Select.Root bind:value={smtpAuthMechanism}>
                         <Select.Trigger class="h-10">
-                          <Select.Value placeholder="Select">
+                          <Select.Value placeholder={$_('common.select')}>
                             {getAuthMechanismLabel(smtpAuthMechanism)}
                           </Select.Value>
                         </Select.Trigger>
@@ -1444,7 +1444,7 @@
             <Label>{$_('account.syncPeriod')}</Label>
             <Select.Root bind:value={syncPeriodDays}>
               <Select.Trigger>
-                <Select.Value placeholder="Select">
+                <Select.Value placeholder={$_('common.select')}>
                   {getSyncPeriodLabel(syncPeriodDays)}
                 </Select.Value>
               </Select.Trigger>
@@ -1464,7 +1464,7 @@
             <Label>{$_('account.checkNewMail')}</Label>
             <Select.Root bind:value={syncInterval}>
               <Select.Trigger>
-                <Select.Value placeholder="Select">
+                <Select.Value placeholder={$_('common.select')}>
                   {getSyncIntervalLabel(syncInterval)}
                 </Select.Value>
               </Select.Trigger>
@@ -1484,7 +1484,7 @@
             <Label>{$_('account.requestReadReceipts')}</Label>
             <Select.Root bind:value={readReceiptRequestPolicy}>
               <Select.Trigger>
-                <Select.Value placeholder="Select">
+                <Select.Value placeholder={$_('common.select')}>
                   {getReadReceiptLabel(readReceiptRequestPolicy)}
                 </Select.Value>
               </Select.Trigger>

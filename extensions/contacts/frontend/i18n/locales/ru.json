@@ -163,6 +163,10 @@
       "syncSucceeded": "Контакты синхронизированы",
       "syncAllSucceeded": "Все источники контактов синхронизированы",
       "syncNoSource": "Сначала выберите источник CardDAV на боковой панели."
+    },
+    "manifest": {
+      "name": "Контакты",
+      "description": "Просматривайте и редактируйте контакты из аккаунтов CardDAV, Google и Microsoft."
     }
   }
 }
