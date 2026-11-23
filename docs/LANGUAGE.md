@@ -31,9 +31,9 @@ Before starting any translation work, **file a [Translation issue](https://githu
 
 ## Branch Target
 
-- **Fork from and submit PRs to the latest release branch** (e.g., `v0.2.1-dev`), never `main`.
+- **Start from and submit PRs to `dev`**, never `main`.
 - The `main` branch tracks the current production release and is not the target for new contributions.
-- Check the repository for the latest release branch name before starting, then fork from that branch to ensure your PR has the correct base.
+- This repository uses only `main` and `dev`; do not create versioned release or translation branches. See [Repository Branches](../CONTRIBUTING.md#repository-branches) for the shared workflow.
 
 ## Scope of a Translation PR
 

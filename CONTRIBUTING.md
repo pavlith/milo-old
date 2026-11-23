@@ -8,6 +8,17 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ## How to Contribute
 
+### Repository Branches
+
+This repository uses only two branches:
+
+- `dev`: all development, fixes, documentation and translations. Work directly here; do not create task, feature or versioned release branches.
+- `main`: stable, reviewed code. Promote tested changes through a `dev` → `main` pull request when a release is approved; use a merge that preserves ancestry rather than squash/rebase so the long-lived branches retain shared history. Releases use version tags on `main`, not extra branches.
+
+Start work with `git switch dev` (use `git switch --track origin/dev` on a fresh clone). Submit contribution PRs to `dev`. This policy applies to this repository; external repositories such as Flathub keep their own submission workflow.
+
+Before promoting `dev`, merge any newer `origin/main` commits into `dev`, including automated release-manifest updates, resolve conflicts and validate the result. Do not force-push either branch. Commits, pushes, promotion to `main` and release publication require task authorization; see [release steps](docs/RELEASE.md).
+
 ### Reporting Bugs
 
 1. Check if the bug has already been reported in [Issues](https://github.com/hkdb/aerion/issues)
@@ -22,7 +33,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 ### Translation Pull Requests
 
-`v0.1.39` is a milestone release. As basic features are complete and all seem to be relatively stable, starting with the `v0.2.0-dev` branch, Aerion is ready for translation contributions.
+Aerion accepts translation contributions targeting `dev`.
 
 Please read the [Translation Contribution Guide](docs/LANGUAGE.md) thoroughly prior to submitting any pull requests.
 
@@ -145,8 +156,12 @@ Prefixes:
 # Go tests
 go test ./...
 
-# Frontend tests (if available)
-cd frontend && npm test
+# Frontend checks (no test script is currently defined)
+cd frontend
+npm run check
+npm run lint
+npm run build
+npm run knip
 ```
 
 ### Writing Tests
@@ -160,8 +175,8 @@ cd frontend && npm test
 
 ### Prerequisites
 
-- **Go** 1.21 or later
-- **Node.js** 18 or later
+- **Go** as required by `go.mod` (currently 1.25.0)
+- **Node.js** 24 (matches CI)
 - **Wails** v2 CLI
 - **Git**
 

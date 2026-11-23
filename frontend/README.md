@@ -1,5 +1,7 @@
 # Svelte + TS + Vite
 
+Aerion uses plain Svelte 5 + Vite inside Wails v2. Follow [AGENTS.md](AGENTS.md) and the root [branch workflow](../CONTRIBUTING.md#repository-branches). The template notes below are background material; they do not authorize adopting SvelteKit.
+
 This template should help get you started developing with Svelte and TypeScript in Vite.
 
 ## Recommended IDE Setup

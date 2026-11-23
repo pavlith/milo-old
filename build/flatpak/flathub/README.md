@@ -1,5 +1,7 @@
 # Flathub Submission
 
+The submission branches below belong to the separate Flathub repository. Aerion itself uses only `main` and `dev`; see [Repository Branches](../../../CONTRIBUTING.md#repository-branches).
+
 This directory contains the assets for submitting Aerion to Flathub using **pre-built binaries** (extra-data approach) after each Github release.
 
 ## Why Pre-Built Binaries?

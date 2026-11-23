@@ -6,7 +6,7 @@ Paths verified against the working tree on 2026-11-23; all paths below are repos
 
 | Area | Paths | Notes |
 | --- | --- | --- |
-| Project conventions | `README.md`, `CONTRIBUTING.md`, `go.mod` | Go module/toolchain requirements come from `go.mod`; some README prerequisites are older. |
+| Project conventions | `README.md`, `CONTRIBUTING.md`, `go.mod` | Only `main` (stable) and `dev` (development); workflow in CONTRIBUTING. Go toolchain requirements come from `go.mod`. |
 | Native application | `main.go`, `app/`, `wails.json`, `Makefile` | Wails v2 backend bindings and build commands; main embeds frontend output. |
 | Main window | `frontend/index.html`, `frontend/src/main.ts`, `frontend/src/App.svelte` | Bootstrap, runtime readiness and application shell. |
 | Detached composer | `frontend/composer.html`, `frontend/src/composerMain.ts`, `frontend/src/ComposerApp.svelte` | Separate Vite input and Go binding; verify alongside main window. |
@@ -35,7 +35,7 @@ Paths verified against the working tree on 2026-11-23; all paths below are repos
 - Frontend, from `frontend/`: `npm ci`, then `npm run check`, `npm run lint`, `npm run build`, `npm run knip`. Build hooks copy spellcheck dictionaries; no frontend test script is currently defined.
 - Go, from root: targeted `go test` / `go vet` for changed packages; full suite `go test ./...` (`make test`). Full-module compilation needs generated output `frontend/dist` (absent at preparation time) because of `go:embed`; CI builds frontend first. Linux needs GTK/WebKit development libraries.
 - Wails, from root: `make dev`, `make build`; Makefile uses `webkit2_41`. Read `docs/BUILD.md` and `Makefile` for native build prerequisites. Do not print expanded credential-bearing build flags.
-- CI reference: `.github/workflows/ci.yml` (Node 24, Go from module, native libraries and frontend-before-Go build order).
+- CI reference: `.github/workflows/ci.yml` (pushes to `main`/`dev` and pull requests; Node 24, Go 1.25, native libraries and frontend-before-Go build order).
 - Dependency packaging: `build/flatpak/flathub/gen-node-sources.py`; Vite comments describe updating Flatpak npm sources and aliases when adding extension dependencies.
 - Behavior references: `docs/KEYBOARD_SHORTCUTS.md`, `docs/LANGUAGE.md`, `docs/EXTENSIONS.md`, `docs/EXT_RULES.md`.
 

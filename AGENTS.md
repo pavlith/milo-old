@@ -7,4 +7,4 @@
 - Go: use `gofmt`; run relevant `go test` and `go vet` for substantive changes. Frontend rules are in `frontend/AGENTS.md`; apply them also when editing extension frontend code outside that directory.
 - Use existing scripts and lockfile. For documentation-only changes, verify paths and `git diff --check`; skip builds/tests. Report actual checks and untested scenarios.
 - Update progress with completed work, decisions, validation and the next concrete action; link requirements instead of duplicating them.
-- Check `git status` before editing/staging. Use `dev` if available; otherwise use a task branch rather than committing on `main`. Commit only requested work when authorized; do not push without permission.
+- Check `git status` before editing/staging. Use only `main` (stable) and `dev` (all development); do not create task/release branches. Track `origin/dev` if available; create `dev` from `main` only if absent locally and remotely. Promote to `main` only when requested; see `CONTRIBUTING.md`. Commit/push only when authorized.
