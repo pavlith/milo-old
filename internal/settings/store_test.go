@@ -140,44 +140,136 @@ func TestSetGetMessageListDensity(t *testing.T) {
 	}
 }
 
-func TestSetGetThemeMode(t *testing.T) {
+func TestGetThemeMode(t *testing.T) {
 	tests := []struct {
 		name    string
-		mode    string
-		wantErr bool
+		stored  string
+		missing bool
+		want    string
 	}{
-		{name: "system", mode: "system"},
-		{name: "light", mode: "light"},
-		{name: "light-blue", mode: "light-blue"},
-		{name: "light-orange", mode: "light-orange"},
-		{name: "light-balanced", mode: "light-balanced"},
-		{name: "dark", mode: "dark"},
-		{name: "dark-gray", mode: "dark-gray"},
-		{name: "dark-balanced", mode: "dark-balanced"},
-		{name: "invalid", mode: "invalid", wantErr: true},
+		{name: "fresh installation", missing: true, want: "nord-dark"},
+		{name: "Nord selection", stored: "nord-dark", want: "nord-dark"},
+		{name: "Dracula selection", stored: "dracula", want: "dracula"},
+		{name: "legacy light", stored: "light", want: "nord-dark"},
+		{name: "legacy dark", stored: "dark", want: "nord-dark"},
+		{name: "legacy system", stored: "system", want: "nord-dark"},
+		{name: "Nord Light", stored: "nord-light", want: "nord-dark"},
+		{name: "unknown value", stored: "future-theme", want: "nord-dark"},
+		{name: "empty value", stored: "", want: "nord-dark"},
+		{name: "corrupted value", stored: "dracula\x00\xff", want: "nord-dark"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			store := NewStore(openTestDB(t))
-
-			err := store.SetThemeMode(tt.mode)
-			if tt.wantErr {
-				if err == nil {
-					t.Fatal("expected error, got nil")
+			if !tt.missing {
+				if err := store.Set(KeyThemeMode, tt.stored); err != nil {
+					t.Fatal(err)
 				}
-				return
-			}
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
 			}
 
-			got, err := store.GetThemeMode()
-			if err != nil {
-				t.Fatalf("unexpected error on get: %v", err)
+			// The second read yields the same value after any normalization.
+			for range 2 {
+				got, err := store.GetThemeMode()
+				if err != nil || got != tt.want {
+					t.Fatalf("GetThemeMode() = %q, %v; want %q", got, err, tt.want)
+				}
 			}
-			if got != tt.mode {
-				t.Errorf("got %q, want %q", got, tt.mode)
+
+			wantStored := tt.want
+			if tt.missing {
+				wantStored = ""
+			}
+			if got, err := store.Get(KeyThemeMode); err != nil || got != wantStored {
+				t.Errorf("stored theme = %q, %v; want %q", got, err, wantStored)
+			}
+		})
+	}
+}
+
+func TestSetThemeMode(t *testing.T) {
+	tests := []struct {
+		mode    string
+		wantErr bool
+	}{
+		{mode: "nord-dark"},
+		{mode: "dracula"},
+		{mode: "nord-light", wantErr: true},
+		{mode: "light", wantErr: true},
+		{mode: "dark", wantErr: true},
+		{mode: "system", wantErr: true},
+		{mode: "unknown", wantErr: true},
+		{mode: "", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		name := tt.mode
+		if name == "" {
+			name = "empty"
+		}
+		t.Run(name, func(t *testing.T) {
+			store := NewStore(openTestDB(t))
+			if err := store.SetThemeMode("dracula"); err != nil {
+				t.Fatal(err)
+			}
+			err := store.SetThemeMode(tt.mode)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("SetThemeMode(%q) error = %v, want error: %v", tt.mode, err, tt.wantErr)
+			}
+			want := tt.mode
+			if tt.wantErr {
+				want = "dracula"
+			}
+			if got, err := store.Get(KeyThemeMode); err != nil || got != want {
+				t.Errorf("stored theme = %q, %v; want %q", got, err, want)
+			}
+		})
+	}
+}
+
+func TestThemeModeAfterReopen(t *testing.T) {
+	tests := []struct {
+		name string
+		save func(*Store) error
+		want string
+	}{
+		{name: "Nord", save: func(s *Store) error { return s.SetThemeMode("nord-dark") }, want: "nord-dark"},
+		{name: "Dracula", save: func(s *Store) error { return s.SetThemeMode("dracula") }, want: "dracula"},
+		{name: "normalized legacy", save: func(s *Store) error { return s.Set(KeyThemeMode, "system") }, want: "nord-dark"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "settings.db")
+			func() {
+				db, err := database.Open(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer db.Close()
+				if err := db.Migrate(); err != nil {
+					t.Fatal(err)
+				}
+				store := NewStore(db)
+				if err := tt.save(store); err != nil {
+					t.Fatal(err)
+				}
+				if got, err := store.GetThemeMode(); err != nil || got != tt.want {
+					t.Fatalf("GetThemeMode() before reopen = %q, %v; want %q", got, err, tt.want)
+				}
+			}()
+
+			db, err := database.Open(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer db.Close()
+			store := NewStore(db)
+			if got, err := store.Get(KeyThemeMode); err != nil || got != tt.want {
+				t.Errorf("stored theme after reopen = %q, %v; want %q", got, err, tt.want)
+			}
+			if got, err := store.GetThemeMode(); err != nil || got != tt.want {
+				t.Errorf("GetThemeMode() after reopen = %q, %v; want %q", got, err, tt.want)
 			}
 		})
 	}
