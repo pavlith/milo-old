@@ -2,8 +2,9 @@ import './app.css'
 import { initI18n } from './lib/i18n'
 import App from './App.svelte'
 import { mount } from 'svelte'
+import { setThemeMode } from '$lib/stores/settings.svelte'
 // @ts-ignore - wailsjs path
-import { IsReady } from '../wailsjs/go/app/App'
+import { GetThemeMode, IsReady } from '../wailsjs/go/app/App'
 // @ts-ignore - wailsjs path
 import { EventsOn, WindowShow } from '../wailsjs/runtime/runtime'
 
@@ -17,6 +18,11 @@ async function bootstrap(): Promise<void> {
   WindowShow()
   await initI18n()
   await waitForBackendReady()
+  try {
+    setThemeMode(await GetThemeMode())
+  } catch (err) {
+    console.error('Failed to load theme mode:', err)
+  }
   mount(App, { target: document.getElementById('app')! })
 }
 

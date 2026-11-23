@@ -8,7 +8,8 @@
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
   import { _ } from '$lib/i18n'
   import { toasts } from '$lib/stores/toast'
-  import { getAlwaysLoadImages, getThemeMode } from '$lib/stores/settings.svelte'
+  import { getAlwaysLoadImages } from '$lib/stores/settings.svelte'
+  import { getActiveTheme } from '$lib/stores/theme.svelte'
 
   interface Props {
     messageId: string
@@ -49,12 +50,11 @@
   // Derived state
   let hasRemoteImages = $derived(checkForRemoteImages(bodyHtml))
 
-  // Outer iframe element bg: matches the dark-mail surface color (derived from
-  // active theme) when darken=true, otherwise white. Reactive to theme changes
-  // via getThemeMode() so the iframe outer color updates when user switches.
+  // Only dark rendering follows the application palette.
   let iframeOuterBg = $derived.by(() => {
-    void getThemeMode()
-    return darken ? getChromeBgHsl() : 'white'
+    if (!darken) return 'white'
+    void getActiveTheme()
+    return getChromeBgHsl()
   })
 
   // Loading placeholder SVG
@@ -641,8 +641,8 @@ ${processedHtml}
   $effect(() => {
     const html = bodyHtml
     void imagesBlocked // dependency only
-    void getThemeMode() // rebuild when theme changes so dark-mail invert re-derives
     const applyDarken = darken
+    if (applyDarken) void getActiveTheme()
 
     if (iframeElement && html) {
       const content = buildIframeContent(html, applyDarken)

@@ -6,12 +6,13 @@
   import Switch from '$lib/components/ui/switch/Switch.svelte'
   import { _, setLocale } from '$lib/i18n'
   import { supportedLocales } from '$lib/i18n'
-  import { getIsDarkActive } from '$lib/stores/theme.svelte'
+  import type { ThemeMode } from '$lib/stores/theme.svelte'
 
   interface Props {
     markAsReadDelaySeconds: number
     messageListDensity: string
-    themeMode: string
+    themeMode: ThemeMode
+    themeDisabled: boolean
     nativeTitleBar: boolean
     showTitleBar: boolean
     runBackground: boolean
@@ -20,7 +21,7 @@
     language: string
     onDelayChange: (value: number) => void
     onDensityChange: (value: string) => void
-    onThemeChange: (value: string) => void
+    onThemeChange: (value: ThemeMode) => void
     onTitleBarChange: (nativeTitleBar: boolean, showTitleBar: boolean) => void
     onRunBackgroundChange: (value: boolean) => void
     onStartHiddenChange: (value: boolean) => void
@@ -39,7 +40,8 @@
   let {
     markAsReadDelaySeconds = $bindable(),
     messageListDensity = $bindable(),
-    themeMode = $bindable(),
+    themeMode,
+    themeDisabled,
     nativeTitleBar = $bindable(),
     showTitleBar = $bindable(),
     runBackground = $bindable(),
@@ -83,45 +85,13 @@
     nativeTitleBar ? 'native' : showTitleBar ? 'aerion' : 'disable'
   )
 
-  // Theme mode options
-  const themeModeOptions = $derived([
-    { value: 'system', label: $_('settingsGeneral.themeSystem') },
-    { value: 'light', label: $_('settingsGeneral.themeLight') },
-    { value: 'light-blue', label: $_('settingsGeneral.themeLightBlue') },
-    { value: 'light-orange', label: $_('settingsGeneral.themeLightOrange') },
-    { value: 'light-balanced', label: $_('settingsGeneral.themeLightBalanced') },
-    { value: 'adwaita-light', label: 'Adwaita (Light)' },
-    { value: 'breeze-light', label: 'Breeze (Light)' },
-    { value: 'catppuccin-latte', label: 'Catppuccin Latte' },
-    { value: 'github-light', label: 'GitHub (Light)' },
-    { value: 'nord-light', label: 'Nord (Light)' },
-    { value: 'pop-light', label: 'Pop! (Light)' },
-    { value: 'vs-code-light', label: 'VS Code (Light)' },
-    { value: 'yaru-light', label: 'Yaru (Light)' },
-    { value: 'dark', label: $_('settingsGeneral.themeDark') },
-    { value: 'dark-gray', label: $_('settingsGeneral.themeDarkGray') },
-    { value: 'dark-balanced', label: $_('settingsGeneral.themeDarkBalanced') },
-    { value: 'adwaita-dark', label: 'Adwaita (Dark)' },
-    { value: 'breeze-dark', label: 'Breeze (Dark)' },
-    { value: 'catppuccin-frappe', label: 'Catppuccin Frappé' },
-    { value: 'catppuccin-macchiato', label: 'Catppuccin Macchiato' },
-    { value: 'catppuccin-mocha', label: 'Catppuccin Mocha' },
+  const themeModeOptions = [
+    { value: 'nord-dark', label: 'Nord' },
     { value: 'dracula', label: 'Dracula' },
-    { value: 'github-dark', label: 'GitHub (Dark)' },
-    { value: 'github-soft-dark', label: 'GitHub (Soft Dark)' },
-    { value: 'nord-dark', label: 'Nord (Dark)' },
-    { value: 'pop-dark', label: 'Pop! (Dark)' },
-    { value: 'tokyo-night', label: 'Tokyo Night' },
-    { value: 'vs-code-dark', label: 'VS Code (Dark)' },
-    { value: 'yaru-dark', label: 'Yaru (Dark)' },
-  ])
+  ] satisfies { value: ThemeMode; label: string }[]
 
   function getDensityLabel(value: string): string {
     return densityOptions.find(opt => opt.value === value)?.label || value
-  }
-
-  function getThemeModeLabel(value: string): string {
-    return themeModeOptions.find(opt => opt.value === value)?.label || value
   }
 
   // Language picker
@@ -135,8 +105,7 @@
   }
 
   function handleThemeChange(value: string) {
-    themeMode = value
-    onThemeChange?.(value)
+    if (value === 'nord-dark' || value === 'dracula') onThemeChange(value)
   }
 
   function handleTitleBarChange(value: string) {
@@ -244,11 +213,11 @@
     </div>
 
     <div class="space-y-2">
-      <Label>{$_('settingsGeneral.theme')}</Label>
-      <Select.Root value={themeMode} onValueChange={handleThemeChange}>
-        <Select.Trigger>
+      <Label for="appearance-theme">{$_('settingsGeneral.theme')}</Label>
+      <Select.Root value={themeMode} onValueChange={handleThemeChange} disabled={themeDisabled}>
+        <Select.Trigger id="appearance-theme">
           <Select.Value placeholder={$_('settingsGeneral.selectTheme')}>
-            {getThemeModeLabel(themeMode)}
+            {themeModeOptions.find(opt => opt.value === themeMode)?.label}
           </Select.Value>
         </Select.Trigger>
         <Select.Content>
@@ -257,44 +226,38 @@
           {/each}
         </Select.Content>
       </Select.Root>
-      <p class="text-xs text-muted-foreground">
-        {$_('settingsGeneral.themeHelp')}
-      </p>
     </div>
 
-    <!-- Dark mail content — only relevant when a dark theme is active -->
-    {#if getIsDarkActive()}
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <div>
-            <Label for="dark-mail-content">{$_('settingsGeneral.darkMailContent')}</Label>
-            <p class="text-xs text-muted-foreground">
-              {$_('settingsGeneral.darkMailContentHelp')}
-            </p>
-          </div>
-          <Switch
-            id="dark-mail-content"
-            bind:checked={darkMailContent}
-          />
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <Label for="dark-mail-content">{$_('settingsGeneral.darkMailContent')}</Label>
+          <p class="text-xs text-muted-foreground">
+            {$_('settingsGeneral.darkMailContentHelp')}
+          </p>
         </div>
+        <Switch
+          id="dark-mail-content"
+          bind:checked={darkMailContent}
+        />
       </div>
+    </div>
 
-      <!-- Dark composer body — keep the composer message body white by default in dark mode -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <div>
-            <Label for="dark-composer-body">{$_('settingsGeneral.darkComposerBody')}</Label>
-            <p class="text-xs text-muted-foreground">
-              {$_('settingsGeneral.darkComposerBodyHelp')}
-            </p>
-          </div>
-          <Switch
-            id="dark-composer-body"
-            bind:checked={darkComposerBody}
-          />
+    <!-- Dark composer body — keep the composer message body white by default in dark mode -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <Label for="dark-composer-body">{$_('settingsGeneral.darkComposerBody')}</Label>
+          <p class="text-xs text-muted-foreground">
+            {$_('settingsGeneral.darkComposerBodyHelp')}
+          </p>
         </div>
+        <Switch
+          id="dark-composer-body"
+          bind:checked={darkComposerBody}
+        />
       </div>
-    {/if}
+    </div>
 
     <!-- Always show checkbox next to message — reserve the fixed checkbox
          column instead of the hover/swipe slide-reveal -->

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { untrack } from 'svelte'
   import Icon from '@iconify/svelte'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Tabs from '$lib/components/ui/tabs'
   import { Button } from '$lib/components/ui/button'
   // @ts-ignore - wailsjs path
-  import { GetReadReceiptResponsePolicy, SetReadReceiptResponsePolicy, GetMarkAsReadDelay, SetMarkAsReadDelay, GetMessageListDensity, SetMessageListDensity, GetThemeMode, SetThemeMode, GetShowTitleBar, SetShowTitleBar, GetRunBackground, SetRunBackground, GetStartHidden, SetStartHidden, GetAutostart, SetAutostart, GetLanguage, SetLanguage, GetComposerMode, SetComposerMode, GetMailtoMode, SetMailtoMode, GetComposerFormat, SetComposerFormat, GetNativeTitleBar, SetNativeTitleBar, GetAlwaysLoadImages, SetAlwaysLoadImages, GetDarkMailContent, SetDarkMailContent, GetDarkComposerBody, SetDarkComposerBody, GetAccentBarUnread, SetAccentBarUnread, GetAccentUnreadStyle, SetAccentUnreadStyle, GetShowMessageListCircles, SetShowMessageListCircles, GetShowMessageListProfilePics, SetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, SetAlwaysShowMessageCheckbox, GetShowViewerCircles, SetShowViewerCircles, GetSpellcheckEnabled, SetSpellcheckEnabled, GetSpellcheckLanguages, SetSpellcheckLanguages, QuitApp } from '../../../../wailsjs/go/app/App.js'
+  import { GetReadReceiptResponsePolicy, SetReadReceiptResponsePolicy, GetMarkAsReadDelay, SetMarkAsReadDelay, GetMessageListDensity, SetMessageListDensity, SetThemeMode, GetShowTitleBar, SetShowTitleBar, GetRunBackground, SetRunBackground, GetStartHidden, SetStartHidden, GetAutostart, SetAutostart, GetLanguage, SetLanguage, GetComposerMode, SetComposerMode, GetMailtoMode, SetMailtoMode, GetComposerFormat, SetComposerFormat, GetNativeTitleBar, SetNativeTitleBar, GetAlwaysLoadImages, SetAlwaysLoadImages, GetDarkMailContent, SetDarkMailContent, GetDarkComposerBody, SetDarkComposerBody, GetAccentBarUnread, SetAccentBarUnread, GetAccentUnreadStyle, SetAccentUnreadStyle, GetShowMessageListCircles, SetShowMessageListCircles, GetShowMessageListProfilePics, SetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, SetAlwaysShowMessageCheckbox, GetShowViewerCircles, SetShowViewerCircles, GetSpellcheckEnabled, SetSpellcheckEnabled, GetSpellcheckLanguages, SetSpellcheckLanguages, QuitApp } from '../../../../wailsjs/go/app/App.js'
   import { addToast } from '$lib/stores/toast'
-  import { setMessageListDensity as updateDensityStore, setThemeMode as updateThemeStore, setShowTitleBar as updateShowTitleBarStore, setRunBackground as updateRunBackgroundStore, setStartHidden as updateStartHiddenStore, setAutostart as updateAutostartStore, setLanguage as updateLanguageStore, setComposerMode as updateComposerModeStore, setMailtoMode as updateMailtoModeStore, setComposerFormat as updateComposerFormatStore, setNativeTitleBar as updateNativeTitleBarStore, setAlwaysLoadImages as updateAlwaysLoadImagesStore, setDarkMailContent as updateDarkMailContentStore, setDarkComposerBody as updateDarkComposerBodyStore, setAccentBarUnread as updateAccentBarUnreadStore, setAccentUnreadStyle as updateAccentUnreadStyleStore, setShowMessageListCircles as updateShowMessageListCirclesStore, setShowMessageListProfilePics as updateShowMessageListProfilePicsStore, setAlwaysShowMessageCheckbox as updateAlwaysShowMessageCheckboxStore, setShowViewerCircles as updateShowViewerCirclesStore, setSpellcheckEnabled as updateSpellcheckEnabledStore, setSpellcheckLanguages as updateSpellcheckLanguagesStore, type MessageListDensity, type ThemeMode, type ComposerMode, type ComposerFormat } from '$lib/stores/settings.svelte'
+  import { getThemeMode, setMessageListDensity as updateDensityStore, setThemeMode as updateThemeStore, setShowTitleBar as updateShowTitleBarStore, setRunBackground as updateRunBackgroundStore, setStartHidden as updateStartHiddenStore, setAutostart as updateAutostartStore, setLanguage as updateLanguageStore, setComposerMode as updateComposerModeStore, setMailtoMode as updateMailtoModeStore, setComposerFormat as updateComposerFormatStore, setNativeTitleBar as updateNativeTitleBarStore, setAlwaysLoadImages as updateAlwaysLoadImagesStore, setDarkMailContent as updateDarkMailContentStore, setDarkComposerBody as updateDarkComposerBodyStore, setAccentBarUnread as updateAccentBarUnreadStore, setAccentUnreadStyle as updateAccentUnreadStyleStore, setShowMessageListCircles as updateShowMessageListCirclesStore, setShowMessageListProfilePics as updateShowMessageListProfilePicsStore, setAlwaysShowMessageCheckbox as updateAlwaysShowMessageCheckboxStore, setShowViewerCircles as updateShowViewerCirclesStore, setSpellcheckEnabled as updateSpellcheckEnabledStore, setSpellcheckLanguages as updateSpellcheckLanguagesStore, type MessageListDensity, type ComposerMode, type ComposerFormat } from '$lib/stores/settings.svelte'
   import { syncSpellcheckLanguagesIfActive, defaultSpellcheckLanguages } from '$lib/spellcheck/settings'
-  import { applyThemeFromMode } from '$lib/stores/theme.svelte'
+  import { applyTheme, DEFAULT_THEME_MODE, type ThemeMode } from '$lib/stores/theme.svelte'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { _ } from '$lib/i18n'
   import ConfirmDialog from '$lib/components/ui/confirm-dialog/ConfirmDialog.svelte'
@@ -37,7 +37,7 @@
   let readReceiptResponsePolicy = $state<string>('ask')
   let markAsReadDelaySeconds = $state<number>(1) // Display in seconds, store in ms
   let messageListDensity = $state<string>('standard')
-  let themeMode = $state<string>('system')
+  let themeMode = $state<ThemeMode>(DEFAULT_THEME_MODE)
   let showTitleBar = $state<boolean>(true)
   let runBackground = $state<boolean>(false)
   let startHidden = $state<boolean>(false)
@@ -59,33 +59,18 @@
   let alwaysShowMessageCheckbox = $state<boolean>(false)
   let showViewerCircles = $state<boolean>(true)
   let originalNativeTitleBar = false
-  // Snapshot of the saved theme at dialog open time. Used to revert live preview
-  // if the dialog closes without Save (Cancel / ESC / click-outside).
-  let originalThemeMode = ''
-  let hasSaved = $state(false)
   let showRestartDialog = $state(false)
   let loading = $state(true)
   let saving = $state(false)
   let activeTab = $state('general')
 
-  // Live theme preview: apply the picker's current value to the document
-  // immediately so the user sees what each theme looks like before saving.
-  // The revert path is in handleOpenChange when the dialog closes unsaved.
-  $effect(() => {
-    if (loading || !themeMode) return
-    applyThemeFromMode(themeMode as ThemeMode)
-  })
+  function previewTheme(mode: ThemeMode) {
+    themeMode = mode
+    applyTheme(mode)
+  }
 
-  // Load settings on mount
-  onMount(async () => {
-    await loadSettings()
-  })
-
-  // Also load when dialog opens
   $effect(() => {
-    if (open) {
-      loadSettings()
-    }
+    if (open) untrack(loadSettings)
   })
 
   // Activate the dialog guard while open: suppresses background refreshes
@@ -100,13 +85,12 @@
 
   async function loadSettings() {
     loading = true
-    hasSaved = false
+    themeMode = getThemeMode()
     try {
-      const [policy, delayMs, density, theme, titleBar, runBg, startHid, autoSt, lang, comp, mail, compFmt, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs] = await Promise.all([
+      const [policy, delayMs, density, titleBar, runBg, startHid, autoSt, lang, comp, mail, compFmt, nativeTB, alwaysImages, darkMail, darkComposer, accentBar, accentStyle, listCircles, listProfilePics, alwaysCheckbox, viewerCircles, scEnabled, scLangs] = await Promise.all([
         GetReadReceiptResponsePolicy(),
         GetMarkAsReadDelay(),
         GetMessageListDensity(),
-        GetThemeMode(),
         GetShowTitleBar(),
         GetRunBackground(),
         GetStartHidden(),
@@ -132,8 +116,6 @@
       // Convert ms to seconds for display
       markAsReadDelaySeconds = delayMs < 0 ? -1 : delayMs / 1000
       messageListDensity = density
-      themeMode = theme
-      originalThemeMode = theme
       showTitleBar = titleBar
       runBackground = runBg
       startHidden = startHid
@@ -173,7 +155,6 @@
       await SetReadReceiptResponsePolicy(readReceiptResponsePolicy)
       await SetMarkAsReadDelay(delayMs)
       await SetMessageListDensity(messageListDensity)
-      await SetThemeMode(themeMode)
       await SetShowTitleBar(showTitleBar)
       await SetRunBackground(runBackground)
       await SetStartHidden(startHidden)
@@ -196,9 +177,11 @@
       await SetShowMessageListProfilePics(showMessageListProfilePics)
       await SetAlwaysShowMessageCheckbox(alwaysShowMessageCheckbox)
       await SetShowViewerCircles(showViewerCircles)
+      const selectedTheme = themeMode
+      await SetThemeMode(selectedTheme)
+      updateThemeStore(selectedTheme)
       // Update the reactive stores so UI updates immediately
       updateDensityStore(messageListDensity as MessageListDensity)
-      updateThemeStore(themeMode as ThemeMode)
       updateShowTitleBarStore(showTitleBar)
       updateRunBackgroundStore(runBackground)
       updateStartHiddenStore(startHidden)
@@ -226,8 +209,6 @@
         type: 'success',
         message: $_('toast.settingsSaved'),
       })
-      hasSaved = true
-      originalThemeMode = themeMode
       // Show restart dialog if native title bar setting changed
       if (nativeTitleBar !== originalNativeTitleBar) {
         originalNativeTitleBar = nativeTitleBar
@@ -247,14 +228,8 @@
     }
   }
 
-  function revertLivePreview() {
-    if (!hasSaved && originalThemeMode && themeMode !== originalThemeMode) {
-      applyThemeFromMode(originalThemeMode as ThemeMode)
-    }
-  }
-
   function handleCancel() {
-    revertLivePreview()
+    applyTheme(getThemeMode())
     open = false
     onClose?.()
   }
@@ -262,7 +237,7 @@
   function handleOpenChange(isOpen: boolean) {
     open = isOpen
     if (!isOpen) {
-      revertLivePreview()
+      applyTheme(getThemeMode())
       onClose?.()
     }
   }
@@ -319,7 +294,8 @@
             <GeneralTab
               bind:markAsReadDelaySeconds
               bind:messageListDensity
-              bind:themeMode
+              {themeMode}
+              themeDisabled={saving}
               bind:nativeTitleBar
               bind:showTitleBar
               bind:runBackground
@@ -328,7 +304,7 @@
               bind:language
               onDelayChange={(v) => markAsReadDelaySeconds = v}
               onDensityChange={(v) => messageListDensity = v}
-              onThemeChange={(v) => themeMode = v}
+              onThemeChange={previewTheme}
               onTitleBarChange={(ntb, stb) => { nativeTitleBar = ntb; showTitleBar = stb }}
               onRunBackgroundChange={(v) => { runBackground = v; if (!v) startHidden = false }}
               onStartHiddenChange={(v) => { startHidden = v; if (v) runBackground = true }}

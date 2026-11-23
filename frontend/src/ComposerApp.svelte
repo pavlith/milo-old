@@ -11,9 +11,9 @@
   import { _ } from '$lib/i18n'
   import { createComposerWindowApi } from '$lib/composerApi'
   import { getShowTitleBar, getNativeTitleBar, setShowTitleBar, setNativeTitleBar, setDarkComposerBody } from '$lib/stores/settings.svelte'
-  import { initTheme, handleThemeChanged, type ThemeMode } from '$lib/stores/theme.svelte'
+  import { applyTheme } from '$lib/stores/theme.svelte'
   // @ts-ignore - wailsjs imports
-  import { GetComposeMode, PrepareReply, GetDraft, CloseWindow, GetThemeMode, GetSystemTheme, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, RefreshWindowConstraints, NotifyStartupComplete } from '../wailsjs/go/app/ComposerApp.js'
+  import { GetComposeMode, PrepareReply, GetDraft, CloseWindow, GetThemeMode, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, RefreshWindowConstraints, NotifyStartupComplete } from '../wailsjs/go/app/ComposerApp.js'
   // @ts-ignore - wailsjs imports
   import { smtp, app } from '../wailsjs/go/models'
   // @ts-ignore - wailsjs runtime
@@ -60,6 +60,13 @@
   }
 
   onMount(async () => {
+    // Subscribe first so an in-flight settings read cannot overwrite a newer IPC update.
+    let receivedThemeChange = false
+    EventsOn('theme:changed', (mode: string) => {
+      receivedThemeChange = true
+      applyTheme(mode)
+    })
+
     // Load title bar settings so the composer respects the user's preference
     try {
       const [stb, ntb, dcb] = await Promise.all([GetShowTitleBar(), GetNativeTitleBar(), GetDarkComposerBody()])
@@ -70,13 +77,11 @@
       console.error('Failed to load title bar settings:', err)
     }
 
-    // Load saved theme mode from backend and apply (probes XDG portal)
     try {
-      const savedThemeMode = await GetThemeMode() as ThemeMode
-      await initTheme(savedThemeMode, GetSystemTheme)
+      const mode = await GetThemeMode()
+      if (!receivedThemeChange) applyTheme(mode)
     } catch (err) {
       console.error('Failed to load theme mode:', err)
-      await initTheme('system', GetSystemTheme)
     }
 
     // Show window after theme is applied (prevents white flash on startup)
@@ -88,11 +93,6 @@
 
     // Remove GTK max size constraints that Wails v2 sets at startup
     RefreshWindowConstraints()
-
-    // Listen for theme changes from main window via IPC
-    EventsOn('theme:changed', (newTheme: string) => {
-      handleThemeChanged(newTheme)
-    })
 
     // Listen for shutdown request from main window
     EventsOn('app:shutdown', (_reason: string) => {

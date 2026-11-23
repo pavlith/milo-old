@@ -12,6 +12,8 @@ import (
 	goSync "sync"
 	"time"
 
+	extcalendarbe "github.com/hkdb/aerion/extensions/calendar/backend"
+	extcontactsbe "github.com/hkdb/aerion/extensions/contacts/backend"
 	"github.com/hkdb/aerion/internal/account"
 	"github.com/hkdb/aerion/internal/appstate"
 	"github.com/hkdb/aerion/internal/carddav"
@@ -21,8 +23,6 @@ import (
 	"github.com/hkdb/aerion/internal/credentials"
 	"github.com/hkdb/aerion/internal/database"
 	"github.com/hkdb/aerion/internal/draft"
-	extcalendarbe "github.com/hkdb/aerion/extensions/calendar/backend"
-	extcontactsbe "github.com/hkdb/aerion/extensions/contacts/backend"
 	extauth "github.com/hkdb/aerion/internal/extensions/auth"
 	extcompose "github.com/hkdb/aerion/internal/extensions/compose"
 	extmail "github.com/hkdb/aerion/internal/extensions/mail"
@@ -35,9 +35,9 @@ import (
 	"github.com/hkdb/aerion/internal/message"
 	"github.com/hkdb/aerion/internal/notification"
 	"github.com/hkdb/aerion/internal/oauth2"
+	"github.com/hkdb/aerion/internal/pgp"
 	"github.com/hkdb/aerion/internal/platform"
 	"github.com/hkdb/aerion/internal/settings"
-	"github.com/hkdb/aerion/internal/pgp"
 	"github.com/hkdb/aerion/internal/smime"
 	"github.com/hkdb/aerion/internal/sync"
 	"github.com/hkdb/aerion/internal/undo"
@@ -238,14 +238,14 @@ type App struct {
 	// into App via its Bridge struct (declared at the top of this struct
 	// definition); the *Extension field below is the lightweight lifecycle
 	// handle the host's knownExtensions Register loop iterates.
-	authBroker       *extauth.Broker      // coreapi.Auth impl for extensions
-	mailAPI          *extmail.API         // coreapi.Mail impl wrapping core stores
-	composerAPI      *extcompose.API      // coreapi.Composer impl wrapping OpenComposerWindow
-	uiRegistry       *extui.Registry      // coreapi.UI impl: rail tabs, account-setup hooks, ...
-	contactsExt      *extcontactsbe.Extension // Contacts lifecycle handle (manifest + Register only)
-	calendarExt      *extcalendarbe.Extension // Calendar lifecycle handle (manifest + Register only)
-	knownExtensions  []coreapi.Extension      // all first-party extensions, iterated by ListExtensions
-	extensionUnregs  []coreapi.Unregister     // teardown funcs returned from each Extension.Register
+	authBroker      *extauth.Broker          // coreapi.Auth impl for extensions
+	mailAPI         *extmail.API             // coreapi.Mail impl wrapping core stores
+	composerAPI     *extcompose.API          // coreapi.Composer impl wrapping OpenComposerWindow
+	uiRegistry      *extui.Registry          // coreapi.UI impl: rail tabs, account-setup hooks, ...
+	contactsExt     *extcontactsbe.Extension // Contacts lifecycle handle (manifest + Register only)
+	calendarExt     *extcalendarbe.Extension // Calendar lifecycle handle (manifest + Register only)
+	knownExtensions []coreapi.Extension      // all first-party extensions, iterated by ListExtensions
+	extensionUnregs []coreapi.Unregister     // teardown funcs returned from each Extension.Register
 
 	// coreapi.EventBus implementation, lazily constructed on first
 	// Core.Events() call (via eventBusInitOnce). Extensions consume via
@@ -324,16 +324,13 @@ type App struct {
 
 	// Draft IMAP sync goroutine tracking — cancel in-flight syncDraftToIMAP
 	draftSyncContexts map[string]context.CancelFunc // keyed by draft ID
-	draftSyncDone     map[string]chan struct{}       // closed when goroutine exits
+	draftSyncDone     map[string]chan struct{}      // closed when goroutine exits
 
 	// Sleep/wake detection for auto-sync on wake
 	sleepWakeMonitor platform.SleepWakeMonitor
 
 	// Network connectivity monitoring (event-driven, zero polling)
 	networkMonitor platform.NetworkMonitor
-
-	// System theme detection (XDG Settings Portal on Linux)
-	themeMonitor platform.ThemeMonitor
 
 	// Desktop notifications with click handling
 	notifier notification.Notifier
@@ -786,7 +783,7 @@ func (a *App) Startup(ctx context.Context) {
 	// stay visible forever.
 	//
 	// Placement: BEFORE the D-Bus desktop-integration inits below
-	// (initNotifications, initSleepWakeMonitor, initThemeMonitor). Those
+	// (initNotifications, initSleepWakeMonitor). Those
 	// calls can block for many seconds on systems where xdg-desktop-portal
 	// isn't running — they're best-effort system integration, NOT prerequisites
 	// for the frontend. At this point the frontend has everything it needs:
@@ -805,9 +802,6 @@ func (a *App) Startup(ctx context.Context) {
 
 	// Initialize sleep/wake monitor for auto-sync on wake
 	a.initSleepWakeMonitor(ctx)
-
-	// Initialize system theme monitor (XDG Settings Portal on Linux)
-	a.initThemeMonitor(ctx)
 
 	// Set up FTS progress callback to emit events to frontend
 	a.ftsIndexer.SetProgressCallback(func(folderID string, indexed, total int) {
@@ -1044,12 +1038,6 @@ func (a *App) Shutdown(ctx context.Context) {
 	if a.networkMonitor != nil {
 		_ = a.networkMonitor.Stop()
 		log.Info().Msg("Network monitor stopped")
-	}
-
-	// Stop theme monitor
-	if a.themeMonitor != nil {
-		_ = a.themeMonitor.Stop()
-		log.Info().Msg("Theme monitor stopped")
 	}
 
 	// Stop notification listener

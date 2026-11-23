@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark" data-theme="nord-dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
     <title>Aerion</title>
     <style>
-      /* Prevent FOUC - match theme background colors */
-      html, body {
-        background-color: #ffffff; /* Light mode: hsl(0 0% 100%) */
-      }
-      @media (prefers-color-scheme: dark) {
-        html, body {
-          background-color: #030712; /* Dark mode: hsl(224 71.4% 4.1%) */
-        }
+      /* Nord background while the shared palette CSS loads. */
+      html {
+        background-color: hsl(var(--background, 220 16% 22%));
       }
 
       /* Boot splash. Visible from the moment the window first paints, until
@@ -30,16 +26,10 @@
         align-items: center;
         justify-content: center;
         gap: 1rem;
-        background-color: #ffffff;
-        color: #111827;
+        background-color: hsl(var(--background, 220 16% 22%));
+        color: hsl(var(--foreground, 219 28% 95%));
         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         transition: opacity 200ms ease-out;
-      }
-      @media (prefers-color-scheme: dark) {
-        #boot-splash {
-          background-color: #030712;
-          color: #e5e7eb;
-        }
       }
       #boot-splash[hidden] {
         opacity: 0;

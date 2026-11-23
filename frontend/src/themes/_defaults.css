@@ -3,6 +3,8 @@
    to fit their visual identity. */
 @layer base {
   :root {
+    --radius: 0.5rem;
+
     --avatar-fg: 0 0% 100%;
     --avatar-1:  0 84% 60%;    /* red */
     --avatar-2:  25 95% 53%;   /* orange */
