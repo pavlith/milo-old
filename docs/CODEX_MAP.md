@@ -21,7 +21,7 @@ Paths verified against the working tree on 2026-11-24; all paths below are repos
 | Tailwind 4 wiring | `frontend/vite.config.ts`, `frontend/src/app.css` | Vite plugin and shared CSS configuration for both windows. Explicit scan paths, HSL token mappings, custom dark variant, animations and editor styles. |
 | Theme CSS | `frontend/src/themes.css` | Nord and Dracula palettes; shared radius, avatar defaults and utilities. |
 | Theme/settings flow | `internal/settings/store.go`, `internal/settings/store_test.go`, `frontend/src/lib/stores/settings.svelte.ts`, `frontend/src/lib/stores/theme.svelte.ts`, `frontend/src/lib/components/settings/{SettingsDialog,GeneralTab}.svelte` | Nord is the default. Both window entry points apply the shared palettes. The detached composer receives saved changes via a Wails event. |
-| Existing UI foundation | `frontend/src/lib/components/ui/`, `frontend/src/lib/utils.ts` | Bits UI wrappers, custom switch/toasts, `cn`; `frontend/components.json` does **not** exist yet. |
+| shadcn-svelte foundation | `frontend/components.json`, `frontend/src/lib/components/ui/`, `frontend/src/lib/utils.ts` | Official Vite registry config, Bits UI 2 wrappers, Tailwind Variants and `cn`. Generate candidates in a temporary copy before adapting shared components. |
 | Dialog regression guards | `frontend/src/lib/components/ui/dialog/dialog-content.svelte`, `frontend/src/lib/components/ui/alert-dialog/alert-dialog-content.svelte`, `frontend/src/lib/stores/dialogGuard.ts` | Scroll-lock/pointer-events fix for chained dialogs; background reload guard. |
 | Shared extension UI | `frontend/src/lib/components/kit/`, `frontend/src/lib/stores/extensionRegistry.svelte.ts` | Shared panes/editors and extension integration; inspect consumers before removal. |
 | Sidebar and message list | `frontend/src/lib/components/sidebar/`, `frontend/src/lib/components/list/MessageList.svelte`, `frontend/src/lib/components/list/ConversationRow.svelte` | Layout and TanStack virtualization. |
@@ -29,7 +29,7 @@ Paths verified against the working tree on 2026-11-24; all paths below are repos
 | Composer/signatures | `frontend/src/lib/components/composer/`, `frontend/src/lib/components/settings/account/SignatureEditor.svelte`, `frontend/src/lib/spellcheck/` | TipTap, light editor body, spellcheck and attachment behavior; styles also in app CSS. |
 | Notifications/input | `frontend/src/lib/stores/toast.ts`, `frontend/src/lib/components/ui/toast/`, `frontend/src/lib/stores/keyboard.svelte.ts`, `frontend/src/lib/keyboard/shortcuts.ts`, `frontend/src/lib/i18n/` | Preserve APIs, shortcuts and translations. |
 | UI locales | `frontend/src/lib/i18n/`, `extensions/{calendar,contacts}/frontend/i18n/`, `frontend/scripts/validate-locales.mjs` | English and Russian catalogs, extension registration and CI validation. Both entry points resolve the saved locale before mount. |
-| Extensions outside frontend | `extensions/calendar/frontend/`, `extensions/contacts/frontend/` | Included by Vite/TS/Tailwind; `extensions/calendar/frontend/components/MiniCalendar.svelte` imports Bits UI Popover directly. |
+| Extensions outside frontend | `extensions/calendar/frontend/`, `extensions/contacts/frontend/` | Included by Vite, TypeScript and Tailwind. MiniCalendar uses shared Popover and the Contacts form uses shared Textarea. |
 
 ## Commands and supporting documentation
 

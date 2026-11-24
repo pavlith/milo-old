@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-24. The Linux Wails 3 migration is complete. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-24. Stage 4 is complete on the Linux Wails 3 baseline. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -12,7 +12,7 @@ Updated 2026-11-24. The Linux Wails 3 migration is complete. UI migration requir
 | Stage 3: Themes | Complete | Validated the two palettes, settings migration, both native Linux windows and detached composer IPC. |
 | Pre-v1 cleanup and localization | Complete | Removed system-theme compatibility and unused archives. Mail, Contacts and Calendar ship English and Russian. |
 | Wails 3 on Linux | Complete | Clean-copy builds and development startup, Go and frontend checks, and the Linux multi-window smoke test passed. See [WAILS3_MIGRATION.md](WAILS3_MIGRATION.md). |
-| Stage 4: shadcn-svelte | Not started | Follow §§5–6; existing wrappers untouched. |
+| Stage 4: shadcn-svelte | Complete | Official registry configured, shared components standardized, and Linux builds and WebKitGTK smoke checks passed. |
 | Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
 | Stage 7: Validation | Not started | Follow §§10–12; preparation checks are not migration acceptance. |
@@ -73,6 +73,15 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Frontend check and lint passed. Production build passed with the baseline Vite warnings. Knip reported the baseline findings with two fewer unused exports and no new findings. Native Linux Wails build, `make generate`, full Go tests and vet with `webkit2_41`, settings/IPC race tests and desktop file validation passed. AppStream reports the same historical release-note warning and notices as the base revision.
 - The Linux WebKitGTK smoke test used isolated data under Xvfb. It covered both windows and themes, Russian system detection, switching with a composer open, saved-language restart, unsupported preference fallback, Russian date formatting, Contacts and Calendar, OAuth labels, the draft dialog, tooltips and editor content retention. Windows/macOS WebViews and live mail, calendar or OAuth servers were outside this run.
 
+## Stage 4 shadcn-svelte
+
+- Validated `frontend/components.json` against the official schema and generated candidates with shadcn-svelte CLI 1.8.1 in a temporary copy. The config resolves to the existing `$lib` paths, `app.css`, and `cn()`. The CLI's neutral base color is registry metadata. Nord and Dracula retain their HSL channels, fonts and radii. [Vite setup](https://shadcn-svelte.com/docs/installation/vite), [configuration](https://shadcn-svelte.com/docs/components-json), [Tailwind 4](https://shadcn-svelte.com/docs/migration/tailwind-v4).
+- npm locks Bits UI 2.22.0, Tailwind Variants 3.3.1 and `tw-animate-css` 1.4.0. Tailwind Variants shares button styles across normal and alert actions. Floating controls use reduced-motion-aware entrance animations. Existing Iconify glyphs cover component icons.
+- Standardized Button, Input, Label, Select, Dialog, Alert Dialog, Dropdown Menu, Context Menu, Tabs and Switch. Added Popover for MiniCalendar and Checkbox, Textarea and Separator for forms. Shared wrappers now serve startup and certificate dialogs, account and list dropdowns, and draft-confirmation buttons. Tooltip, Card, Badge, Skeleton and Scroll Area can be added as Stage 5 consumers adopt them.
+- Dialogs keep `preventScroll={false}`, portalled overlays, focus controls and the existing reload guard. The current toast store and container retain stacked expansion, action callbacks and per-toast expiry. The email viewer retains its iframe and cross-frame interactions.
+- Clean `npm ci`, `npm run check` (0 errors and 0 warnings), lint, production build, `make build`, `go test ./...` and `go vet ./...` passed. The Linux build used the pinned Wails CLI and a temporary GTK4/WebKitGTK sysroot. Both HTML entries built and generated bindings matched the baseline. Vite retains its chunk-size and dynamic-import warnings. Knip exits 1 with exactly the baseline findings. Its targeted exceptions cover the CSS-only animation package and Popover exports consumed by the Calendar extension outside the npm root.
+- Linux Wails under Xvfb verified Terms → OAuth warning → What's New, Settings and nested confirmation focus, menu navigation and Escape, selection persistence, both themes and locales, toast expiry, Calendar and Contacts, virtualized mail and iframe isolation, the inline composer and two detached TipTap windows. A separate WebKitGTK fixture verified nested menu navigation, long Select scrolling, checkbox binding, and control contrast, focus and disabled styling in both themes. The smoke run used isolated local data and covered Linux only.
+
 ## Next action
 
-Stage 4 — shadcn-svelte integration on the Wails 3 baseline. Follow §§5–6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).
+Stage 5 — Application UI migration using shadcn-svelte. Follow §8 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).
