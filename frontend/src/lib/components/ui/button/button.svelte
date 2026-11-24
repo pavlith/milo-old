@@ -38,6 +38,7 @@
     ref = $bindable(null),
     variant,
     size,
+    type = 'button',
     class: className,
     children,
     ...restProps
@@ -46,6 +47,7 @@
 
 <button
   bind:this={ref}
+  {type}
   data-slot="button"
   class={cn(buttonVariants({ variant, size }), className)}
   {...restProps}
