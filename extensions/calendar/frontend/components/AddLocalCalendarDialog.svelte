@@ -17,8 +17,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import AddCalendarDefaultsControl from './AddCalendarDefaultsControl.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_AddLocalSource, Calendar_AddLocalCalendar } from '$wailsjs/go/app/App.js'
+  import { Calendar_AddLocalSource, Calendar_AddLocalCalendar } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     open: boolean

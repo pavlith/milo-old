@@ -5,7 +5,7 @@
 import { get } from 'svelte/store'
 import { locale } from 'svelte-i18n'
 import { getSpellcheckEnabled, getSpellcheckLanguages, getSpellcheckCustomWords, setSpellcheckCustomWords } from '$lib/stores/settings.svelte'
-import { AddSpellcheckCustomWord, RemoveSpellcheckCustomWord } from '$wailsjs/go/app/App.js'
+import { AddSpellcheckCustomWord, RemoveSpellcheckCustomWord } from '$bindings/github.com/hkdb/aerion/app/app'
 import { appLocaleToDict } from './locales'
 import { spellcheck } from './client'
 

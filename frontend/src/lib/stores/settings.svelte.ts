@@ -1,8 +1,7 @@
 // Runes-based settings store
 // Provides reactive state for application settings
 
-// @ts-ignore - wailsjs path
-import { GetMessageListDensity, GetMessageListSortOrder, GetShowTitleBar, GetRunBackground, GetStartHidden, GetAutostart, GetComposerMode, GetMailtoMode, GetComposerFormat, GetNativeTitleBar, GetAlwaysLoadImages, GetDarkMailContent, GetDarkComposerBody, GetAccentBarUnread, GetAccentUnreadStyle, GetShowMessageListCircles, GetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, GetShowViewerCircles, GetSpellcheckEnabled, GetSpellcheckLanguages, GetSpellcheckCustomWords } from '../../../wailsjs/go/app/App'
+import { GetMessageListDensity, GetMessageListSortOrder, GetShowTitleBar, GetRunBackground, GetStartHidden, GetAutostart, GetComposerMode, GetMailtoMode, GetComposerFormat, GetNativeTitleBar, GetAlwaysLoadImages, GetDarkMailContent, GetDarkComposerBody, GetAccentBarUnread, GetAccentUnreadStyle, GetShowMessageListCircles, GetShowMessageListProfilePics, GetAlwaysShowMessageCheckbox, GetShowViewerCircles, GetSpellcheckEnabled, GetSpellcheckLanguages, GetSpellcheckCustomWords } from '$bindings/github.com/hkdb/aerion/app/app'
 import { applyTheme, DEFAULT_THEME_MODE, normalizeThemeMode, type ThemeMode } from './theme.svelte'
 
 export type ComposerMode = 'inline' | 'detached'

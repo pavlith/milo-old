@@ -10,7 +10,7 @@
     MarkAllFolderMessagesAsUnread,
     MarkWholeFolder,
     GetMarkAllCoverage,
-  } from '../../../../wailsjs/go/app/App'
+  } from '$bindings/github.com/hkdb/aerion/app/app'
   import { toasts } from '$lib/stores/toast'
   import type { Snippet } from 'svelte'
   import { _ } from '$lib/i18n'

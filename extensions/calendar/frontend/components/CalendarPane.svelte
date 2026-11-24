@@ -31,8 +31,7 @@
   import { consumePendingDeepLink } from '$lib/stores/extensionDeepLink.svelte'
   import { KEY } from '$extensions/calendar/frontend/keyboard/shortcuts'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { EventsOn } from '$wailsjs/runtime/runtime.js'
+  import { EventsOn } from '$lib/desktop'
 
   // Wails listeners captured for cleanup — this pane is conditionally
   // rendered per rail switch, so uncaptured EventsOn would stack a duplicate

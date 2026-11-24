@@ -1,8 +1,7 @@
 /**
  * Signature management utilities for the email composer
  */
-// @ts-ignore - Wails generated imports
-import { account } from '../../../../wailsjs/go/models'
+import { account } from '$lib/models'
 
 // Re-export the Identity type for use in other files
 export type Identity = account.Identity

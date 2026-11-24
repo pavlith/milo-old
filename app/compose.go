@@ -16,17 +16,17 @@ import (
 	"github.com/hkdb/aerion/internal/contact"
 	"github.com/hkdb/aerion/internal/credentials"
 	"github.com/hkdb/aerion/internal/draft"
-	"github.com/hkdb/aerion/internal/folder"
 	"github.com/hkdb/aerion/internal/email"
+	"github.com/hkdb/aerion/internal/folder"
 	"github.com/hkdb/aerion/internal/imap"
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/message"
-	"github.com/rs/zerolog"
 	"github.com/hkdb/aerion/internal/oauth2"
 	"github.com/hkdb/aerion/internal/pgp"
 	"github.com/hkdb/aerion/internal/smime"
 	"github.com/hkdb/aerion/internal/smtp"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/rs/zerolog"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // ComposerAttachment represents an attachment in the compose window
@@ -83,7 +83,7 @@ func (ops *composeOps) getValidOAuthToken(ctx context.Context, accountID string)
 			Msg("OAuth token refresh failed")
 
 		// Emit event for frontend to prompt re-authorization
-		wailsRuntime.EventsEmit(ctx, "oauth:reauth-required", map[string]interface{}{
+		emit("oauth:reauth-required", map[string]interface{}{
 			"accountId": accountID,
 			"provider":  tokens.Provider,
 			"error":     err.Error(),
@@ -514,7 +514,7 @@ func readFileAsAttachment(filePath string) (*ComposerAttachment, error) {
 func pickAttachmentFiles(ctx context.Context) ([]ComposerAttachment, error) {
 	log := logging.WithComponent("compose")
 
-	files, err := wailsRuntime.OpenMultipleFilesDialog(ctx, wailsRuntime.OpenDialogOptions{
+	files, err := openFiles(ctx, application.OpenFileDialogOptions{
 		Title: "Select Attachments",
 	})
 	if err != nil {
@@ -589,7 +589,7 @@ func (a *App) handleExternalMailto(rawURL string) {
 
 	// Inline mode: show window and emit event for frontend
 	a.ShowWindow()
-	wailsRuntime.EventsEmit(a.ctx, "mailto:external", mailtoData)
+	emit("mailto:external", mailtoData)
 }
 
 // syncSentFolder syncs the Sent folder for an account after sending a message
@@ -621,13 +621,13 @@ func (a *App) syncSentFolder(accountID string) error {
 	}
 
 	// Emit synced event
-	wailsRuntime.EventsEmit(a.ctx, "folder:synced", map[string]interface{}{
+	emit("folder:synced", map[string]interface{}{
 		"accountId": accountID,
 		"folderId":  sentFolder.ID,
 	})
 
 	// Notify conversation viewer that sent folder synced (for cross-folder thread refresh)
-	wailsRuntime.EventsEmit(a.ctx, "sent:synced", map[string]interface{}{
+	emit("sent:synced", map[string]interface{}{
 		"accountId": accountID,
 	})
 
@@ -976,8 +976,8 @@ func (a *App) TestSMTPConnection(host string, port int, security, username, pass
 }
 
 // PickAttachmentFiles opens a file picker dialog and returns the selected files as attachments
-func (a *App) PickAttachmentFiles() ([]ComposerAttachment, error) {
-	return pickAttachmentFiles(a.ctx)
+func (a *App) PickAttachmentFiles(ctx context.Context) ([]ComposerAttachment, error) {
+	return pickAttachmentFiles(ctx)
 }
 
 // ReadFileAsAttachment reads a file and creates a ComposerAttachment
@@ -1120,7 +1120,7 @@ func quoteText(s string) string {
 func providerAutoSavesSentMail(host string) bool {
 	host = strings.ToLower(host)
 	autoSaveProviders := []string{
-		"imap.gmail.com",       // Gmail
+		"imap.gmail.com",        // Gmail
 		"outlook.office365.com", // Microsoft 365
 		"imap-mail.outlook.com", // Outlook.com
 	}
@@ -1277,4 +1277,3 @@ func detectContentType(filename string) string {
 		return "application/octet-stream"
 	}
 }
-

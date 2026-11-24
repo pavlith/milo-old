@@ -3,12 +3,13 @@
 package platform
 
 /*
-#cgo pkg-config: gdk-3.0 glib-2.0
+#cgo pkg-config: gtk4
 #include <gdk/gdk.h>
 #include <glib.h>
 
 static gboolean notify_startup_complete_cb(gpointer data) {
-	gdk_notify_startup_complete();
+	GdkDisplay *display = gdk_display_get_default();
+	if (display != NULL) gdk_display_notify_startup_complete(display, NULL);
 	return G_SOURCE_REMOVE;
 }
 

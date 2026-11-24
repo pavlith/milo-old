@@ -27,11 +27,9 @@
   import { Label } from '$lib/components/ui/label'
   import { addToast } from '$lib/stores/toast'
   import { refreshExtensionRegistry } from '$lib/stores/extensionRegistry.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { SetExtensionEnabled, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$wailsjs/go/app/App'
+  import { SetExtensionEnabled, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$bindings/github.com/hkdb/aerion/app/app'
   import GrantCalendarAccessButton from '../components/GrantCalendarAccessButton.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { v1, backend } from '$wailsjs/go/models'
+  import type { v1, backend } from '$lib/models'
 
   interface Props {
     hook: v1.AccountSetupHookRequest

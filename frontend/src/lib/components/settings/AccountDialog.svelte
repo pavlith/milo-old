@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present, enumValue } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Tabs from '$lib/components/ui/tabs'
@@ -12,17 +13,14 @@
   import AccountCalendarHookPanelGoogle from '$extensions/calendar/frontend/hooks/AccountCalendarHookPanelGoogle.svelte'
   import AccountCalendarHookPanelMicrosoft from '$extensions/calendar/frontend/hooks/AccountCalendarHookPanelMicrosoft.svelte'
   import { loadAccountSetupHooks } from '$lib/stores/extensionRegistry.svelte'
-  // @ts-ignore - wailsjs path
-  import type { v1 } from '../../../../wailsjs/go/models'
+  import type { v1 } from '$lib/models'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { oauthStore } from '$lib/stores/oauth.svelte'
   import { addToast } from '$lib/stores/toast'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { _ } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { account, app } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetIdentities, GetAllAccountIdentities } from '../../../../wailsjs/go/app/App'
+  import { account, app } from '$lib/models'
+  import { GetIdentities, GetAllAccountIdentities } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     /** Whether the dialog is open */
@@ -171,7 +169,7 @@
 
   async function loadDisplayName(accountId: string) {
     try {
-      const identities = await GetIdentities(accountId)
+      const identities = present(await GetIdentities(accountId))
       const defaultIdentity = identities?.find((id: any) => id.isDefault) || identities?.[0]
       if (defaultIdentity) {
         displayName = defaultIdentity.name || ''
@@ -225,17 +223,17 @@
         password: password, // Empty = keep current
         imapHost,
         imapPort,
-        imapSecurity,
-        imapAuthMechanism,
+        imapSecurity: enumValue(imapSecurity, Object.values(account.SecurityType)),
+        imapAuthMechanism: enumValue(imapAuthMechanism, Object.values(account.AuthMechanism)),
         smtpHost,
         smtpPort,
-        smtpSecurity,
+        smtpSecurity: enumValue(smtpSecurity, Object.values(account.SecurityType)),
         noOutgoingServer,
         smtpUsername,
         smtpPassword, // Empty = keep current (when SMTPUsername unchanged) or skip (when toggle is on)
-        smtpAuthMechanism,
+        smtpAuthMechanism: enumValue(smtpAuthMechanism, Object.values(account.AuthMechanism)),
         replyForwardIdentityId: replyForwardIdentityID,
-        authType,
+        authType: enumValue(authType, Object.values(account.AuthType)),
         syncPeriodDays: Number(syncPeriodDays),
         syncInterval: Number(syncInterval),
         syncAllFolders,

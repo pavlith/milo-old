@@ -1,9 +1,9 @@
+import { present } from '$lib/bindingValues'
 // Frontend cache for the image allowlist.
 // Eliminates per-message async Wails calls to IsImageAllowed(),
 // which can saturate the WebKit bridge on rapid IDLE syncs.
 
-// @ts-ignore - wailsjs path
-import { GetImageAllowlist } from '../../../wailsjs/go/app/App'
+import { GetImageAllowlist } from '$bindings/github.com/hkdb/aerion/app/app'
 
 interface AllowlistEntry {
   type: string
@@ -18,7 +18,7 @@ let loaded = false
 
 export async function loadImageAllowlist() {
   try {
-    const list = await GetImageAllowlist()
+    const list = present(await GetImageAllowlist())
     entries = list || []
     loaded = true
   } catch (err) {

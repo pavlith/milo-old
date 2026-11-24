@@ -11,7 +11,6 @@ import (
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/message"
 	"github.com/hkdb/aerion/internal/undo"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // withIMAPRetry wraps an IMAP operation with stale-connection retry.
@@ -230,7 +229,7 @@ func (a *App) setReadStatus(messageIDs []string, isRead bool) error {
 	}
 
 	// Emit event for UI update with flag state
-	wailsRuntime.EventsEmit(a.ctx, "messages:readChanged", map[string]interface{}{
+	emit("messages:readChanged", map[string]interface{}{
 		"messageIds": messageIDs,
 		"isRead":     isRead,
 	})
@@ -313,7 +312,7 @@ func (a *App) setStarredStatus(messageIDs []string, isStarred bool) error {
 		return fmt.Errorf("failed to update local flags: %w", err)
 	}
 
-	wailsRuntime.EventsEmit(a.ctx, "messages:starredChanged", map[string]interface{}{
+	emit("messages:starredChanged", map[string]interface{}{
 		"messageIds": messageIDs,
 		"isStarred":  isStarred,
 	})
@@ -451,7 +450,7 @@ func (a *App) MoveToFolder(messageIDs []string, destFolderID string) error {
 		return fmt.Errorf("failed to move messages locally: %w", err)
 	}
 
-	wailsRuntime.EventsEmit(a.ctx, "messages:moved", map[string]interface{}{
+	emit("messages:moved", map[string]interface{}{
 		"messageIds":   messageIDs,
 		"destFolderId": destFolderID,
 	})
@@ -995,7 +994,7 @@ func (a *App) gmailRemoveLabel(messages []*message.Message) error {
 		return fmt.Errorf("failed to delete messages locally: %w", err)
 	}
 
-	wailsRuntime.EventsEmit(a.ctx, "messages:deleted", ids)
+	emit("messages:deleted", ids)
 
 	// Update folder counts (deltas — see folder_counts.go)
 	go func() {
@@ -1176,7 +1175,7 @@ func (a *App) DeletePermanently(messageIDs []string) error {
 		return fmt.Errorf("failed to delete messages locally: %w", err)
 	}
 
-	wailsRuntime.EventsEmit(a.ctx, "messages:deleted", messageIDs)
+	emit("messages:deleted", messageIDs)
 
 	// Update folder counts (deltas — see folder_counts.go)
 	go func() {

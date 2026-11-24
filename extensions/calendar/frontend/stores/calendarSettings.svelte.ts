@@ -19,8 +19,7 @@
 
 import { logger } from '$extensions/calendar/frontend/lib/logger'
 import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
-// @ts-ignore - wailsjs bindings
-import { Calendar_SetDisplayTimezone } from '$wailsjs/go/app/App.js'
+import { Calendar_SetDisplayTimezone } from '$bindings/github.com/hkdb/aerion/app/app'
 
 const STORAGE_KEY_TZ        = 'aerion:calendar:displayTimezone'
 const STORAGE_KEY_GLOBAL    = 'aerion:calendar:globalDefaultCalendarId'

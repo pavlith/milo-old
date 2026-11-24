@@ -68,32 +68,3 @@ func TestKeyringPath(t *testing.T) {
 		t.Errorf("KeyringPath() = %q, want suffix 'keys'", keyringPath)
 	}
 }
-
-func TestIsFlatpak(t *testing.T) {
-	tests := []struct {
-		name      string
-		flatpakID string
-		want      bool
-	}{
-		{
-			name:      "not flatpak by default",
-			flatpakID: "",
-			want:      false,
-		},
-		{
-			name:      "flatpak when FLATPAK_ID is set",
-			flatpakID: "com.example.App",
-			want:      true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("FLATPAK_ID", tt.flatpakID)
-			got := IsFlatpak()
-			if got != tt.want {
-				t.Errorf("IsFlatpak() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}

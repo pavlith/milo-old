@@ -2,7 +2,6 @@
 // search query, and selected-row id are intentionally session-local — none of
 // these need to survive across app launches.
 
-// @ts-ignore - wailsjs bindings
 import {
   Contacts_ListContactsForBrowse as ListContactsForBrowse,
   Contacts_GetContactDetail as GetContactDetail,
@@ -10,9 +9,8 @@ import {
   Contacts_DeleteLocalContact as DeleteLocalContact,
   Contacts_CreateContact as CreateContact,
   Contacts_ListAddressbooks as ListAddressbooks,
-} from '$wailsjs/go/app/App'
-// @ts-ignore - wailsjs bindings
-import type { v1 } from '$wailsjs/go/models'
+} from '$bindings/github.com/hkdb/aerion/app/app'
+import type { v1 } from '$lib/models'
 // Responsive (mobile) integration — match mail's pattern of firing
 // showViewer/hideSidebar from the consumer's select actions. Layout-store
 // calls are self-gating: showViewer is a no-op when not responsive,

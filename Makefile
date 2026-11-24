@@ -8,9 +8,8 @@
 # OAuth credentials are loaded from .env or .env.local files
 # See .env.example for required variables
 
-.PHONY: all build build-linux dev dev-race generate clean test lint help \
-        install uninstall install-linux uninstall-linux \
-        install-darwin uninstall-darwin build-windows-installer flatpak flatpak-dev
+.PHONY: all build build-linux build-dev dev generate clean test lint lint-go lint-frontend fmt help \
+        install uninstall install-linux uninstall-linux frontend-deps frontend-update frontend-build
 
 # Load environment variables from .env files.
 # .env.local overrides .env. All OAuth credentials live in the root .env —
@@ -48,148 +47,64 @@ LDFLAGS := -X '$(MODULE)/internal/oauth2.GoogleClientID=$(GOOGLE_CLIENT_ID)' \
            -X '$(MODULE)/internal/oauth2.GoogleTestingClientID=$(GOOGLE_TESTING_CLIENT_ID)' \
            -X '$(MODULE)/internal/oauth2.GoogleTestingClientSecret=$(GOOGLE_TESTING_CLIENT_SECRET)'
 
-# Wails build tags
-BUILD_TAGS := webkit2_41
-
-# NOTE: AppImage build target has been removed due to webkit bundling incompatibility.
-# Use Flatpak packaging instead for cross-distro distribution.
-
-# Installation directories (can be overridden)
+WAILS3_VERSION := v3.2.0-nightly.20261123
+WAILS3 ?= go run github.com/wailsapp/wails/v3/cmd/wails3@$(WAILS3_VERSION)
 PREFIX ?= /usr/local
 DESTDIR ?=
 
-# Platform detection
-UNAME_S := $(shell uname -s)
-
-# Default target
 all: build
 
-## Build Targets
+build: frontend-build
+	@mkdir -p build/bin
+	@go build -tags production -ldflags "$(LDFLAGS)" -o build/bin/aerion .
 
-# Build production binary
-build:
-	@echo "Building Aerion..."
-	@if [ -z "$(GOOGLE_CLIENT_ID)" ] && [ -z "$(MICROSOFT_CLIENT_ID)" ]; then \
-		echo "Warning: No OAuth credentials configured. Gmail/Outlook OAuth will not work."; \
-		echo "See .env.example for required variables."; \
-	fi
-	wails build -ldflags "$(LDFLAGS)" -tags $(BUILD_TAGS)
-ifeq ($(UNAME_S),Darwin)
-	@echo "Ad-hoc signing Aerion.app (required for macOS notifications)..."
-	codesign --force --deep --sign - build/bin/Aerion.app
-endif
+build-linux: build
 
-# Build for Linux specifically
-build-linux:
-	@echo "Building Aerion for Linux..."
-	wails build -ldflags "$(LDFLAGS)" -tags $(BUILD_TAGS),linux,production
+dev: frontend-deps
+	$(WAILS3) dev -config build/config.yml -port 5173
 
-# Build Flatpak (recommended for Linux distribution)
-flatpak:
-	@echo "Building Flatpak..."
-	./build/flatpak/build-local.sh
+build-dev: generate
+	@mkdir -p build/bin frontend/dist
+	@touch frontend/dist/.keep
+	@go build -tags dev -ldflags "$(LDFLAGS)" -o build/bin/aerion-dev .
 
-# Build Flatpak from local source (for development/testing)
-flatpak-dev:
-	@echo "Building Flatpak from local source..."
-	./build/flatpak/build-flatpak.sh
-
-# Run in development mode with hot reload
-dev:
-	@echo "Starting Aerion in development mode..."
-	wails dev -ldflags "$(LDFLAGS)" -tags $(BUILD_TAGS)
-
-# Run in development mode with Go's race detector enabled. Builds significantly
-# slower and adds ~5-10x runtime overhead, but instruments every memory access
-# and prints exactly which line + goroutines collide on any unsynchronized
-# shared-memory access. Use this when chasing a suspected data race —
-# reproduce the crash and the detector report points right at it.
-dev-race:
-	@echo "Starting Aerion in development mode with -race..."
-	wails dev -ldflags "$(LDFLAGS)" -tags $(BUILD_TAGS) -race
-
-# Generate Wails TypeScript bindings
 generate:
-	@echo "Generating Wails bindings..."
-	wails generate module
+	$(WAILS3) generate bindings -ts -names -d frontend/bindings
 
-## Code Quality
+frontend-build: frontend-deps generate
+	cd frontend && npm run build
 
-# Run Go tests
-test:
-	@echo "Running tests..."
-	go test ./...
-
-# Run all linters (Go + frontend)
-lint: lint-go lint-frontend
-
-# Run Go linter (requires golangci-lint)
-lint-go:
-	@echo "Running Go linter..."
-	golangci-lint run
-
-# Run frontend linter (ESLint)
-lint-frontend:
-	@echo "Running frontend linter..."
-	cd frontend && npm run lint
-
-# Format Go code
-fmt:
-	@echo "Formatting Go code..."
-	go fmt ./...
-
-## Maintenance
-
-# Clean build artifacts
-clean:
-	@echo "Cleaning build artifacts..."
-	rm -rf build/bin
-	rm -rf frontend/dist
-	rm -rf AppDir
-	rm -f aerion
-
-# Clean downloaded tools (deprecated - AppImage removed)
-tools-clean:
-	@echo "Note: AppImage support has been removed. Use Flatpak for cross-distro distribution."
-	@echo "Use 'make clean' to clean build artifacts."
-
-# Install frontend dependencies
 frontend-deps:
-	@echo "Installing frontend dependencies..."
+	@if [ ! -d frontend/node_modules ]; then cd frontend && npm ci; fi
+
+frontend-update:
 	cd frontend && npm install
 
-# Update frontend dependencies
-frontend-update:
-	@echo "Updating frontend dependencies..."
-	cd frontend && npm update
+test: frontend-build
+	go test ./...
 
-## Installation (Cross-Platform)
+lint: lint-go lint-frontend
 
-# Auto-detect platform and install
-install:
-ifeq ($(UNAME_S),Linux)
-	$(MAKE) install-linux
-else ifeq ($(UNAME_S),Darwin)
-	$(MAKE) install-darwin
-else
-	@echo "For Windows, use 'make build-windows-installer' and run the generated installer."
-	@echo "Or manually copy build/bin/aerion.exe to your preferred location."
-endif
+lint-go:
+	go vet ./...
 
-# Auto-detect platform and uninstall
-uninstall:
-ifeq ($(UNAME_S),Linux)
-	$(MAKE) uninstall-linux
-else ifeq ($(UNAME_S),Darwin)
-	$(MAKE) uninstall-darwin
-else
-	@echo "For Windows, use Add/Remove Programs in Windows Settings."
-endif
+lint-frontend:
+	cd frontend && npm run lint
+
+fmt:
+	gofmt -w $$(git ls-files '*.go')
+
+clean:
+	rm -rf build/bin frontend/dist
+
+install: install-linux
+
+uninstall: uninstall-linux
 
 ## Linux Installation
 
 # hicolor icon sizes shipped on Linux (#395). Keep in sync with
-# build/linux/install.sh ICON_SIZES and .github/workflows/release.yml.
+# build/linux/install.sh ICON_SIZES for native installations.
 ICON_SIZES ?= 32 48 64 128 256
 
 # Install Aerion on Linux
@@ -225,79 +140,10 @@ uninstall-linux:
 	-gtk-update-icon-cache -f -t "$(DESTDIR)$(PREFIX)/share/icons/hicolor" 2>/dev/null || true
 	@echo "Uninstallation complete!"
 
-## macOS Installation
-
-# Install Aerion on macOS
-install-darwin: build
-	@echo "Installing Aerion.app to /Applications..."
-	@if [ -d "/Applications/Aerion.app" ]; then \
-		echo "Removing existing installation..."; \
-		rm -rf "/Applications/Aerion.app"; \
-	fi
-	cp -R "build/bin/Aerion.app" "/Applications/"
-	@echo "Re-signing installed copy..."
-	codesign --force --deep --sign - "/Applications/Aerion.app"
-	@echo ""
-	@echo "Installation complete!"
-	@echo "Aerion is now available in /Applications."
-
-# Uninstall Aerion from macOS
-uninstall-darwin:
-	@echo "Uninstalling Aerion from /Applications..."
-	rm -rf "/Applications/Aerion.app"
-	@echo "Uninstallation complete!"
-
-## Windows Installation
-
-# Build Windows installer (requires NSIS)
-build-windows-installer:
-	@echo "Building Windows installer..."
-	wails build -ldflags "$(LDFLAGS)" -tags $(BUILD_TAGS) -nsis
-	@echo ""
-	@echo "Installer created at build/bin/aerion-amd64-installer.exe"
-
-## Help
-
-# Show available targets
 help:
-	@echo "Aerion Email Client - Build System"
-	@echo ""
-	@echo "Build Targets:"
-	@echo "  make build        - Build production binary"
-	@echo "  make build-linux  - Build for Linux with production tags"
-	@echo "  make flatpak      - Build Flatpak package (recommended for Linux)"
-	@echo "  make flatpak-dev  - Build Flatpak from local source (for testing)"
-	@echo "  make dev          - Run in development mode with hot reload"
-	@echo "  make generate     - Generate Wails TypeScript bindings"
-	@echo ""
-	@echo "Installation (auto-detects platform):"
-	@echo "  make install      - Install Aerion (Linux/macOS)"
-	@echo "  make uninstall    - Uninstall Aerion (Linux/macOS)"
-	@echo ""
-	@echo "Platform-Specific Installation:"
-	@echo "  make install-linux      - Install on Linux to $(PREFIX)"
-	@echo "  make uninstall-linux    - Uninstall from Linux"
-	@echo "  make install-darwin     - Install on macOS to /Applications"
-	@echo "  make uninstall-darwin   - Uninstall from macOS"
-	@echo "  make build-windows-installer - Build NSIS installer for Windows"
-	@echo ""
-	@echo "Code Quality:"
-	@echo "  make test          - Run Go tests"
-	@echo "  make lint          - Run all linters (Go + frontend)"
-	@echo "  make lint-go       - Run Go linter only (requires golangci-lint)"
-	@echo "  make lint-frontend - Run frontend linter only (ESLint)"
-	@echo "  make fmt           - Format Go code"
-	@echo ""
-	@echo "Maintenance:"
-	@echo "  make clean        - Clean build artifacts"
-	@echo "  make frontend-deps   - Install frontend dependencies"
-	@echo "  make frontend-update - Update frontend dependencies"
-	@echo ""
-	@echo "Environment Variables:"
-	@echo "  PREFIX             - Installation prefix (default: /usr/local)"
-	@echo "  DESTDIR            - Staging directory for packaging"
-	@echo "  GOOGLE_CLIENT_ID     - Google OAuth Client ID"
-	@echo "  GOOGLE_CLIENT_SECRET - Google OAuth Client Secret (optional)"
-	@echo "  MICROSOFT_CLIENT_ID  - Microsoft OAuth Client ID"
-	@echo ""
-	@echo "See .env.example for details on obtaining OAuth credentials."
+	@echo "make dev        Start Linux development with Vite and Wails"
+	@echo "make build      Build the native executable at build/bin/aerion"
+	@echo "make test       Build frontend assets and run Go tests"
+	@echo "make generate   Regenerate the Wails TypeScript bindings"
+	@echo "make install    Install the Linux executable, desktop entry and icons"
+	@echo "make uninstall  Remove the Linux installation"

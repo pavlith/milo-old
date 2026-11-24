@@ -9,10 +9,8 @@
 // thread and dropping IPC events. Plain functions are the established pattern
 // elsewhere in the codebase (see getActiveExtension in uiState.svelte.ts).
 
-// @ts-ignore - wailsjs bindings
-import { ListEnabledExtensions, ListExtensionRailTabs, ListAccountSetupHooksForProvider } from '../../../wailsjs/go/app/App'
-// @ts-ignore - wailsjs bindings
-import type { v1 } from '../../../wailsjs/go/models'
+import { ListEnabledExtensions, ListExtensionRailTabs, ListAccountSetupHooksForProvider } from '$bindings/github.com/hkdb/aerion/app/app'
+import type { v1 } from '$lib/models'
 
 let enabledExtensions = $state<string[]>([])
 let railTabs = $state<v1.RailTabRequest[]>([])

@@ -48,7 +48,6 @@ var (
 	GoogleTestingClientSecret string
 )
 
-
 func init() {
 	if GoogleClientID != "" {
 		return
@@ -58,9 +57,7 @@ func init() {
 
 func loadFromShim() {
 	// Search for the shim binary in known locations
-	paths := []string{
-		"/app/lib/aerion/aerion-creds", // Flatpak
-	}
+	paths := []string{}
 
 	// Also check next to the main binary
 	if exe, err := os.Executable(); err == nil {

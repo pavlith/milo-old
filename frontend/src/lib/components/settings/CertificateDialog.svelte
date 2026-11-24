@@ -4,8 +4,7 @@
   import Icon from '@iconify/svelte'
   import { cn } from '$lib/utils'
   import { _, locale } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import type { certificate } from '../../../../wailsjs/go/models'
+  import type { certificate } from '$lib/models'
 
   interface Props {
     open: boolean

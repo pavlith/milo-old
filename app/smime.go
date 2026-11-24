@@ -1,20 +1,21 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/smime"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // PickSMIMECertificateFile opens a file picker for .p12/.pfx files and returns the path
-func (a *App) PickSMIMECertificateFile() (string, error) {
-	path, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+func (a *App) PickSMIMECertificateFile(ctx context.Context) (string, error) {
+	path, err := openFile(ctx, application.OpenFileDialogOptions{
 		Title: "Select S/MIME Certificate",
-		Filters: []wailsRuntime.FileFilter{
+		Filters: []application.FileFilter{
 			{
 				DisplayName: "PKCS#12 Files (*.p12, *.pfx)",
 				Pattern:     "*.p12;*.pfx",
@@ -234,10 +235,10 @@ func (a *App) CheckRecipientCerts(emails []string) (map[string]bool, error) {
 }
 
 // PickRecipientCertFile opens a file picker for certificate files (.pem, .cer, .crt, .der)
-func (a *App) PickRecipientCertFile() (string, error) {
-	path, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+func (a *App) PickRecipientCertFile(ctx context.Context) (string, error) {
+	path, err := openFile(ctx, application.OpenFileDialogOptions{
 		Title: "Select Recipient Certificate",
-		Filters: []wailsRuntime.FileFilter{
+		Filters: []application.FileFilter{
 			{
 				DisplayName: "Certificate Files (*.pem, *.cer, *.crt, *.der)",
 				Pattern:     "*.pem;*.cer;*.crt;*.der",

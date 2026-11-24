@@ -3,8 +3,7 @@
   import * as AlertDialog from '$lib/components/ui/alert-dialog'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { _ } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { account } from '../../../../wailsjs/go/models'
+  import { account } from '$lib/models'
 
   interface Props {
     /** Whether the dialog is open */

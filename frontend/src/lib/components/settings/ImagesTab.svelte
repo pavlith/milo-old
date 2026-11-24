@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
@@ -8,13 +9,11 @@
   import { addToast } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
   import { refreshImageAllowlist } from '$lib/stores/imageAllowlist.svelte'
-  // @ts-ignore - wailsjs path
-  import { settings } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
+  import { settings } from '$lib/models'
   import {
     GetImageAllowlist,
     RemoveImageAllowlist,
-  } from '../../../../wailsjs/go/app/App'
+  } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     alwaysLoadImages: boolean
@@ -48,7 +47,7 @@
 
   async function loadData() {
     try {
-      entries = await GetImageAllowlist() ?? []
+      entries = present(await GetImageAllowlist()) ?? []
     } catch (err) {
       console.error('Failed to load image allowlist:', err)
     } finally {

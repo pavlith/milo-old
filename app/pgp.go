@@ -1,20 +1,21 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/pgp"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // PickPGPKeyFile opens a file picker for PGP key files (.asc, .gpg, .key, .pub)
-func (a *App) PickPGPKeyFile() (string, error) {
-	path, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+func (a *App) PickPGPKeyFile(ctx context.Context) (string, error) {
+	path, err := openFile(ctx, application.OpenFileDialogOptions{
 		Title: "Select PGP Key File",
-		Filters: []wailsRuntime.FileFilter{
+		Filters: []application.FileFilter{
 			{
 				DisplayName: "PGP Key Files (*.asc, *.gpg, *.key, *.pub)",
 				Pattern:     "*.asc;*.gpg;*.key;*.pub",
@@ -201,10 +202,10 @@ func (a *App) CheckRecipientPGPKeys(emails []string) (map[string]bool, error) {
 }
 
 // PickRecipientPGPKeyFile opens a file picker for PGP public key files
-func (a *App) PickRecipientPGPKeyFile() (string, error) {
-	path, err := wailsRuntime.OpenFileDialog(a.ctx, wailsRuntime.OpenDialogOptions{
+func (a *App) PickRecipientPGPKeyFile(ctx context.Context) (string, error) {
+	path, err := openFile(ctx, application.OpenFileDialogOptions{
 		Title: "Select Recipient PGP Public Key",
-		Filters: []wailsRuntime.FileFilter{
+		Filters: []application.FileFilter{
 			{
 				DisplayName: "PGP Key Files (*.asc, *.gpg, *.key, *.pub)",
 				Pattern:     "*.asc;*.gpg;*.key;*.pub",

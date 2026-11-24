@@ -43,10 +43,8 @@
   import * as Select from '$lib/components/ui/select'
   import { _ } from '$lib/i18n'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { GetOAuthCredsChoices, SetOAuthCreds, SetOAuthCredsChoice, ClearOAuthCreds } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { app } from '$wailsjs/go/models'
+  import { GetOAuthCredsChoices, SetOAuthCreds, SetOAuthCredsChoice, ClearOAuthCreds } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { app } from '$lib/models'
 
   interface Props {
     configID: string

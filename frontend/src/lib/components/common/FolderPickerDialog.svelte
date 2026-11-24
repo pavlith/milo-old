@@ -1,12 +1,11 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Select from '$lib/components/ui/select'
   import { Button } from '$lib/components/ui/button'
-  // @ts-ignore - wailsjs path
-  import { folder, account } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetFolders } from '../../../../wailsjs/go/app/App'
+  import { folder, account } from '$lib/models'
+  import { GetFolders } from '$bindings/github.com/hkdb/aerion/app/app'
   import { _ } from '$lib/i18n'
 
   interface Props {
@@ -54,9 +53,9 @@
     const myVersion = ++loadVersion
     foldersLoading = true
     GetFolders(accountId)
-      .then((result: folder.Folder[]) => {
+      .then(result => {
         if (myVersion !== loadVersion) return
-        folders = result || []
+        folders = present(result)
       })
       .catch((err: unknown) => {
         if (myVersion !== loadVersion) return

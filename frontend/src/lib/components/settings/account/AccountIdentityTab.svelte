@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present, required } from '$lib/bindingValues'
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
@@ -7,10 +8,8 @@
   import { addToast } from '$lib/stores/toast'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { _ } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { account } from '../../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetIdentities, CreateIdentity, UpdateIdentity, DeleteIdentity, SetDefaultIdentity, AddMicrosoftSharedMailbox, GetMicrosoftSharedMailboxes, RemoveAccount } from '../../../../../wailsjs/go/app/App'
+  import { account } from '$lib/models'
+  import { GetIdentities, CreateIdentity, UpdateIdentity, DeleteIdentity, SetDefaultIdentity, AddMicrosoftSharedMailbox, GetMicrosoftSharedMailboxes, RemoveAccount } from '$bindings/github.com/hkdb/aerion/app/app'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
   import * as Dialog from '$lib/components/ui/dialog'
@@ -57,7 +56,7 @@
   async function loadSharedMailboxes() {
     sharedMailboxLoading = true
     try {
-      sharedMailboxes = (await GetMicrosoftSharedMailboxes(accountId)) || []
+      sharedMailboxes = present(await GetMicrosoftSharedMailboxes(accountId))
     } catch (err) {
       console.error('Failed to load shared mailboxes:', err)
     } finally {
@@ -77,7 +76,7 @@
       await loadSharedMailboxes()
       // Refresh sidebar and trigger initial sync
       await accountStore.load()
-      accountStore.syncAccount(newAccount.id)
+      accountStore.syncAccount(required(newAccount, 'shared mailbox').id)
     } catch (err) {
       console.error('Failed to add shared mailbox:', err)
       addToast({ type: 'error', message: $_('identity.failedToAddSharedMailbox') + ': ' + (err as Error).message })
@@ -100,7 +99,7 @@
   async function loadIdentities() {
     loading = true
     try {
-      identities = await GetIdentities(accountId)
+      identities = present(await GetIdentities(accountId))
     } catch (err) {
       console.error('Failed to load identities:', err)
       addToast({

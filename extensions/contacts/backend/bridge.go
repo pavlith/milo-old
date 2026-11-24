@@ -180,7 +180,7 @@ func (b *ContactsBridge) emitConflict(err error) bool {
 // Every method below uses the `Contacts_` prefix so it can't collide with
 // any other extension's bridge methods after embedding into App. The
 // frontend imports these as e.g. `Contacts_UpdateContact` from
-// $wailsjs/go/app/App.
+// $bindings/github.com/hkdb/aerion/app/app.
 // ============================================================================
 
 // Contacts_ListContactsForBrowse returns contacts filtered by sourceID:

@@ -1,5 +1,3 @@
-//go:build !bindings
-
 package main
 
 import (
@@ -11,13 +9,8 @@ import (
 
 // runPreflight performs pre-Wails startup checks (paths, DB open, migrations,
 // credential store). On failure it surfaces a native error dialog and exits
-// before wails.Run is called — otherwise the user would see a half-rendered
-// app window briefly flash before the dialog appears.
-//
-// Compiled out under the `bindings` build tag so it does NOT run during
-// Wails' binding-generation pass (`wails generate module` builds the binary
-// with `-tags bindings` and executes it once to emit TS bindings; that pass
-// must not touch the user's real DB).
+// before creating the Wails application. Wails v3 generates bindings by
+// inspecting Go packages without executing the application.
 func runPreflight(application *app.App) {
 	err := application.Preflight()
 	if err == nil {

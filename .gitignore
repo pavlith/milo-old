@@ -13,11 +13,8 @@ build/linux/AppDir
 .claude
 .crush
 
-# Flatpak build artifacts
-.flatpak-builder/
 build-dir/
 repo/
-build/flatpak/flathub/io.github.hkdb.Aerion.yml.backup
 
 # Frontend
 frontend/node_modules/
@@ -54,7 +51,7 @@ npm-debug.log*
 .env.*.local
 
 # Generated bindings
-# frontend/wailsjs/
+!/frontend/bindings/github.com/hkdb/aerion/
 
 # Cache
 .cache/

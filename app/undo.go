@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/hkdb/aerion/internal/imap"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // ============================================================================
@@ -25,7 +24,7 @@ func (a *App) Undo() (string, error) {
 	}
 
 	// Emit event to refresh UI
-	wailsRuntime.EventsEmit(a.ctx, "undo:completed", cmd.Description())
+	emit("undo:completed", cmd.Description())
 
 	return cmd.Description(), nil
 }
@@ -70,13 +69,13 @@ func (a *App) UpdateLocalFlags(messageIDs []string, isRead, isStarred *bool) err
 	// covers a hypothetical future undo that combines both without
 	// changing this call site.
 	if isRead != nil {
-		wailsRuntime.EventsEmit(a.ctx, "messages:readChanged", map[string]interface{}{
+		emit("messages:readChanged", map[string]interface{}{
 			"messageIds": messageIDs,
 			"isRead":     *isRead,
 		})
 	}
 	if isStarred != nil {
-		wailsRuntime.EventsEmit(a.ctx, "messages:starredChanged", map[string]interface{}{
+		emit("messages:starredChanged", map[string]interface{}{
 			"messageIds": messageIDs,
 			"isStarred":  *isStarred,
 		})
@@ -109,7 +108,7 @@ func (a *App) MoveLocalMessages(messageIDs []string, folderID string) error {
 	}
 
 	// Emit messages:moved event
-	wailsRuntime.EventsEmit(a.ctx, "messages:moved", map[string]interface{}{
+	emit("messages:moved", map[string]interface{}{
 		"messageIds":   messageIDs,
 		"destFolderId": folderID,
 	})
@@ -133,7 +132,7 @@ func (a *App) MoveLocalMessages(messageIDs []string, folderID string) error {
 func (a *App) DeleteLocalMessages(messageIDs []string) error {
 	err := a.messageStore.DeleteBatch(messageIDs)
 	if err == nil {
-		wailsRuntime.EventsEmit(a.ctx, "messages:deleted", messageIDs)
+		emit("messages:deleted", messageIDs)
 	}
 	return err
 }

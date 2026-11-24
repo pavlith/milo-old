@@ -6,99 +6,38 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-22.04
+  linux:
+    name: Linux (GTK4)
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
-          go-version: '1.25'
-          cache: true
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+          go-version-file: go.mod
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Linux dependencies
+      - name: Install GTK and WebKit
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      # main.go has `//go:embed all:frontend/dist`, so the frontend build
-      # output must exist before any Go package in the module can typecheck —
-      # including for golangci-lint which runs typecheck as part of linting.
-      - name: Build frontend (required for go:embed)
-        run: cd frontend && npm ci && npm run build
-
-      - name: Run Go linter
-        # golangci-lint v2 is required: the v1 line ended at v1.64.8, which
-        # is built with Go 1.24 and refuses to lint a module targeting
-        # go 1.25.0 (forced by our golang.org/x/* deps). action@v8 installs
-        # the v2 series; pinned for reproducible CI.
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.12.2
-
-      - name: Run frontend linter
-        run: cd frontend && npm run lint
-
-  check:
-    name: Type check
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
       - name: Install frontend dependencies
-        run: cd frontend && npm ci
-
-      - name: Run svelte-check
-        run: cd frontend && npm run check
-
-  test:
-    name: Test
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: '1.25'
-          cache: true
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install Linux dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: Build the Linux application
+        run: make build
+      - name: Check generated bindings
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-
-      # main.go has `//go:embed all:frontend/dist`, so the frontend build
-      # output must exist before any package in the module can compile —
-      # including for `go test ./...`.
-      - name: Build frontend (required for go:embed)
-        run: cd frontend && npm ci && npm run build
-
-      - name: Run Go tests
-        run: make test
+          git diff --exit-code -- frontend/bindings
+          untracked=$(git ls-files --others --exclude-standard -- frontend/bindings)
+          if [ -n "$untracked" ]; then
+            printf 'Untracked bindings:\n%s\n' "$untracked"
+            exit 1
+          fi
+      - name: Check and lint frontend
+        run: npm run check && npm run lint
+        working-directory: frontend
+      - name: Test and vet Go
+        run: go test ./... && go vet ./...

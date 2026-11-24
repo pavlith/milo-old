@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs path
-  import { GetAppInfo } from '../../../../wailsjs/go/app/App.js'
-  import { BrowserOpenURL } from '../../../../wailsjs/runtime/runtime'
+  import { GetAppInfo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { BrowserOpenURL } from '$lib/desktop'
   import logo from '../../../assets/images/logo-universal.png'
   import { _ } from '$lib/i18n'
 

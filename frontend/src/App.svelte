@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   // Load offline icon data before anything else
   import './lib/iconify-offline'
 
@@ -20,7 +21,6 @@
   import CalendarPane from '$extensions/calendar/frontend/components/CalendarPane.svelte'
   import { refreshExtensionRegistry, getRailTabs } from '$lib/stores/extensionRegistry.svelte'
   import { KEY } from '$lib/keyboard/shortcuts'
-  import * as AlertDialog from '$lib/components/ui/alert-dialog'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { addToast } from '$lib/stores/toast'
   import { loadSettings, getShowTitleBar, getNativeTitleBar, getComposerMode, getMailtoMode } from '$lib/stores/settings.svelte'
@@ -41,12 +41,9 @@
   import { isDialogGuardActive } from '$lib/stores/dialogGuard'
   import { dispatchExtensionShortcut } from '$lib/stores/extensionShortcuts.svelte'
   import { initLayout, getLayoutMode, getResponsiveView, showViewer, hideViewer, showSidebar, hideSidebar, isResponsive } from '$lib/stores/layout.svelte'
-  // @ts-ignore - wailsjs path
-  import { PrepareReply, GetPendingMailto, GetDraft, MarkAsRead, MarkAsUnread, Star, Unstar, Archive, MarkAsSpam, MarkAsNotSpam, Undo, GetTermsAccepted, SetTermsAccepted, RefreshWindowConstraints, AcceptCertificate, GetStartHiddenActive, CloseWindow, QuitApp, OpenComposerWindow, NotifyStartupComplete, GetOAuthBuildStatus, GetOAuthWarningDisabled, SetOAuthWarningDisabled, GetLastSeenVersion, SetLastSeenVersion, GetAppInfo } from '../wailsjs/go/app/App.js'
-  // @ts-ignore - wailsjs path
-  import { smtp, folder, certificate } from '../wailsjs/go/models'
-  // @ts-ignore - wailsjs runtime
-  import { WindowShow, WindowHide, EventsOn } from '../wailsjs/runtime/runtime'
+  import { PrepareReply, GetPendingMailto, GetDraft, MarkAsRead, MarkAsUnread, Star, Unstar, Archive, MarkAsSpam, MarkAsNotSpam, Undo, GetTermsAccepted, SetTermsAccepted, AcceptCertificate, GetStartHiddenActive, CloseWindow, QuitApp, OpenComposerWindow, NotifyStartupComplete, GetOAuthBuildStatus, GetOAuthWarningDisabled, SetOAuthWarningDisabled, GetLastSeenVersion, SetLastSeenVersion, GetAppInfo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { smtp, folder, certificate } from '$lib/models'
+  import { WindowShow, WindowHide, EventsOn } from '$lib/desktop'
   import { _ } from '$lib/i18n'
   import { logger } from '$lib/logger' // TEMP: keypress-gate audit — remove in the fix commit
 
@@ -158,9 +155,7 @@
   let pendingCertificate = $state<certificate.CertificateInfo | null>(null)
   let pendingCertAccountId = $state<string | null>(null)
 
-  // Flatpak filesystem permission dialog state
-  let showFlatpakFsDialog = $state(false)
-  let flatpakFsDialogContext = $state<'open' | 'saveAll'>('open')
+
 
   // Handle window close button (title bar X) — hides if background mode, quits if not
   function handleClose() {
@@ -271,8 +266,8 @@
         if (tree.folder?.id === folderId) {
           return { name: tree.folder.name, type: tree.folder.type, path: tree.folder.path }
         }
-        if (tree.children) {
-          const found = searchTree(tree.children)
+        if (present(tree.children)) {
+          const found = searchTree(present(tree.children))
           if (found) return found
         }
       }
@@ -354,15 +349,6 @@
       }
     })
 
-    // Listen for Flatpak filesystem permission dialog event. Optional payload
-    // picks the wording: 'saveAll' (bulk attachment save, #384) vs the
-    // original toast-open case (no payload).
-    EventsOn('flatpak:filesystem-dialog', (context?: string) => {
-      flatpakFsDialogContext = context === 'saveAll' ? 'saveAll' : 'open'
-      showFlatpakFsDialog = true
-    })
-
-    // Listen for external mailto from second instance (routed through backend)
     EventsOn('mailto:external', (data: MailtoData) => {
       handleMailtoData(data)
     })
@@ -497,9 +483,6 @@
     // so KDE/Plasma sees the placeholder → real window handoff cleanly (#154).
     // Fired unconditionally so the indicator clears even when starting hidden.
     NotifyStartupComplete()
-
-    // Remove GTK max size constraints that Wails v2 sets at startup
-    RefreshWindowConstraints()
 
     // Initialize responsive layout breakpoint listeners
     initLayout()
@@ -1764,21 +1747,3 @@
   onAcceptPermanently={handleBgCertAcceptPermanently}
   onDecline={handleBgCertDecline}
 />
-
-<!-- Flatpak Filesystem Permission Dialog -->
-<AlertDialog.Root bind:open={showFlatpakFsDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{$_('attachment.flatpakOpenTitle')}</AlertDialog.Title>
-      <AlertDialog.Description>
-        <p class="mb-3">{flatpakFsDialogContext === 'saveAll' ? $_('attachment.flatpakSaveAllDescription') : $_('attachment.flatpakOpenDescription')}</p>
-        <pre class="mb-3 rounded bg-muted p-2 text-sm overflow-x-auto"><code>flatpak override --user --filesystem=home io.github.hkdb.Aerion</code></pre>
-        <p class="mb-3 text-sm text-destructive">{$_('attachment.flatpakOpenSecurityWarning')}</p>
-        <p class="text-sm text-muted-foreground">{flatpakFsDialogContext === 'saveAll' ? $_('attachment.flatpakSaveAllAlternative') : $_('attachment.flatpakOpenAlternative')}</p>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => showFlatpakFsDialog = false}>{$_('common.ok')}</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>

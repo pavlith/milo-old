@@ -23,8 +23,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import { calendarView } from '$extensions/calendar/frontend/stores/calendarView.svelte'
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   type EventRow = {
     id: string                 // instance.id

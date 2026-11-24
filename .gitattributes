@@ -1,0 +1,2 @@
+# Wails emits trailing spaces and a blank final line in generated bindings.
+frontend/bindings/** whitespace=-blank-at-eol,-blank-at-eof

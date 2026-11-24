@@ -5,10 +5,8 @@
   import { addToast } from '$lib/stores/toast'
   import { refreshExtensionRegistry, openExtensionSettings } from '$lib/stores/extensionRegistry.svelte'
   import { _ } from '$lib/i18n'
-  // @ts-ignore - wailsjs bindings
-  import { ListExtensions, SetExtensionEnabled } from '../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { app } from '../../../../wailsjs/go/models'
+  import { ListExtensions, SetExtensionEnabled } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { app } from '$lib/models'
 
   let extensions = $state<app.ExtensionInfo[]>([])
   let loading = $state(true)

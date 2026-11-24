@@ -1,5 +1,5 @@
+import { present } from '$lib/bindingValues'
 // Contact Sources Store - manages CardDAV/Google/Microsoft contact sources and their sync status
-// @ts-ignore - wailsjs path
 import {
   GetContactSources,
   GetContactSourceErrors,
@@ -12,9 +12,8 @@ import {
   StartContactsOnlyOAuthFlow,
   CompleteContactSourceOAuthSetup,
   CancelContactSourceOAuthFlow,
-} from '../../../wailsjs/go/app/App.js'
-// @ts-ignore - wailsjs path
-import type { carddav, app } from '../../../wailsjs/go/models'
+} from '$bindings/github.com/hkdb/aerion/app/app'
+import type { carddav, app } from '$lib/models'
 
 // Re-export LinkedAccountInfo type for components
 export type LinkedAccountInfo = app.LinkedAccountInfo
@@ -31,8 +30,8 @@ function createContactSourcesStore() {
         GetContactSources(),
         GetContactSourceErrors(),
       ])
-      sources = sourcesResult || []
-      errors = errorsResult || []
+      sources = present(sourcesResult)
+      errors = present(errorsResult)
     } catch (err) {
       console.error('Failed to load contact sources:', err)
     } finally {

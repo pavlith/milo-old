@@ -26,13 +26,11 @@
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { fromZonedTime, toZonedTime } from 'date-fns-tz'
   import { untrack } from 'svelte'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_CreateEvent, Calendar_UpdateEvent } from '$wailsjs/go/app/App.js'
+  import { Calendar_CreateEvent, Calendar_UpdateEvent } from '$bindings/github.com/hkdb/aerion/app/app'
   import AttendeesSection from './AttendeesSection.svelte'
   import SendInvitationsDialog from './SendInvitationsDialog.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { backend } from '$wailsjs/go/models'
+  import { backend } from '$lib/models'
 
   type ComposerMode = 'create' | 'edit'
 

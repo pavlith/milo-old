@@ -3,7 +3,6 @@ package app
 import (
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/message"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // Folder count maintenance for local actions (read flips, moves, deletes).
@@ -57,5 +56,5 @@ func (a *App) emitFolderCounts(counts map[string]int) {
 	if len(counts) == 0 {
 		return
 	}
-	wailsRuntime.EventsEmit(a.ctx, "folders:countsChanged", counts)
+	emit("folders:countsChanged", counts)
 }

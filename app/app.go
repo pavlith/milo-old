@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	goSync "sync"
+	"sync/atomic"
 	"time"
 
 	extcalendarbe "github.com/hkdb/aerion/extensions/calendar/backend"
@@ -29,7 +30,6 @@ import (
 	extui "github.com/hkdb/aerion/internal/extensions/ui"
 	"github.com/hkdb/aerion/internal/folder"
 	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/ipc"
 	"github.com/hkdb/aerion/internal/kit/davutil"
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/message"
@@ -41,7 +41,7 @@ import (
 	"github.com/hkdb/aerion/internal/smime"
 	"github.com/hkdb/aerion/internal/sync"
 	"github.com/hkdb/aerion/internal/undo"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // MailtoData holds parsed mailto: URL data
@@ -192,11 +192,8 @@ type App struct {
 
 	ctx context.Context
 
-	// ready is the backend-up signal the frontend polls before mounting the
-	// main app. False until Startup completes. The boot splash in
-	// index.html stays visible while ready is false; flipping it true is
-	// what lets main.ts proceed to mount(App). See IsReady().
-	ready bool
+	ready       atomic.Bool
+	readySignal chan struct{}
 
 	// Paths
 	paths *platform.Paths
@@ -278,9 +275,11 @@ type App struct {
 	// Undo system
 	undoStack *undo.Stack
 
-	// IPC for multi-window support (composer windows)
-	ipcServer   ipc.Server
-	ipcTokenMgr *ipc.TokenManager
+	mainWindow         *application.WebviewWindow
+	composers          map[uint]*composerWindow
+	composersMu        goSync.Mutex
+	quitAfterComposers bool
+	shuttingDown       atomic.Bool
 
 	// OAuth2 manager
 	oauth2Manager *oauth2.Manager
@@ -338,14 +337,14 @@ type App struct {
 	// UseDirectDBus forces direct D-Bus notifications instead of portal (Linux only)
 	useDirectDBus bool
 
-	// Single-instance lock (set by main before wails.Run)
+	// Single-instance lock (set by main before the Wails application)
 	SingleInstanceLock platform.SingleInstanceLock
 
 	// Autostart manager
 	autostartMgr platform.AutostartManager
 
 	// Window hidden state (background mode)
-	windowHidden bool
+	windowHidden atomic.Bool
 
 	// Paths the user chose in a save dialog this session; the post-save
 	// toast's Open file / Open folder actions may open them (#474).
@@ -356,6 +355,7 @@ type App struct {
 // NewApp creates a new App application struct
 func NewApp(useDirectDBus bool) *App {
 	return &App{
+		readySignal:   make(chan struct{}),
 		useDirectDBus: useDirectDBus,
 	}
 }
@@ -413,12 +413,12 @@ func StartupDialogInfoFor(err error) StartupDialogInfo {
 // already initialised by main.go (from --log-level / --log-file) by the
 // time this runs. Returns an error on any failure; main.go is responsible for
 // surfacing the failure to the user (via StartupDialogInfoFor + a native
-// dialog) and exiting before wails.Run is called.
+// dialog) and exiting before the Wails application is called.
 //
 // Splitting these steps out of Startup is intentional: Wails calls Startup
 // AFTER it has already created the OS window, so a failure inside Startup
 // would briefly flash a half-rendered app window before the error dialog
-// appears. Preflight runs in main.go before wails.Run so the user only
+// appears. Preflight runs in main.go before the Wails application so the user only
 // ever sees the error dialog.
 func (a *App) Preflight() error {
 	log := logging.WithComponent("app")
@@ -497,31 +497,18 @@ func (a *App) Preflight() error {
 	return nil
 }
 
-// shuttingDown tracks if shutdown has been initiated to prevent multiple triggers
-var shuttingDown bool
-
-// Startup is called when the app starts
-func (a *App) Startup(ctx context.Context) {
+// ServiceStartup initializes the shared mail service while the splash is visible.
+func (a *App) ServiceStartup(ctx context.Context, _ application.ServiceOptions) error {
 	a.ctx = ctx
-
-	// Quit cleanly on SIGTERM/SIGINT/SIGHUP even in background mode (#460).
 	a.watchTerminationSignals()
+	go a.startup(ctx)
+	return nil
+}
 
-	// Set single-instance onShow callback immediately — must happen before any
-	// potentially-blocking D-Bus calls (theme monitor, sleep/wake, network)
-	// that could delay the rest of Startup.
-	if a.SingleInstanceLock != nil {
-		a.SingleInstanceLock.SetOnShow(func(data string) {
-			if strings.HasPrefix(data, "mailto:") {
-				a.handleExternalMailto(data)
-				return
-			}
-			a.ShowWindow()
-		})
-	}
+func (a *App) startup(ctx context.Context) {
 
 	// Logging, paths, db open, migrations, and credential store are all
-	// initialized in Preflight (called from main.go before wails.Run). By
+	// initialized in Preflight (called from main.go before the Wails application). By
 	// the time Startup runs, a.paths, a.db, and a.credStore are non-nil.
 	log := logging.WithComponent("app")
 	db := a.db
@@ -536,11 +523,6 @@ func (a *App) Startup(ctx context.Context) {
 	a.settingsStore = settings.NewStore(db)
 	a.appStateStore = appstate.NewStore(db.DB)
 	a.imageAllowlistStore = settings.NewImageAllowlistStore(db)
-
-	// Restore the persisted window position (size/maximized are applied via
-	// wails.Run options in main.go; position can only be set post-creation).
-	// The window is still hidden at this point, so no visible jump.
-	a.restoreWindowPosition()
 
 	// Scale database connection pool based on number of accounts
 	a.updateDBConnectionPool()
@@ -615,7 +597,7 @@ func (a *App) Startup(ctx context.Context) {
 
 	// Set up sync progress callback to emit events to frontend
 	a.syncEngine.SetProgressCallback(func(progress sync.SyncProgress) {
-		wailsRuntime.EventsEmit(ctx, "sync:progress", map[string]interface{}{
+		emit("sync:progress", map[string]interface{}{
 			"accountId": progress.AccountID,
 			"folderId":  progress.FolderID,
 			"fetched":   progress.Fetched,
@@ -628,7 +610,7 @@ func (a *App) Startup(ctx context.Context) {
 	// message-synced (those emit their own counts from SyncFolder); without
 	// this a scheduled pass never refreshes their sidebar badges.
 	a.syncEngine.SetFolderCountsCallback(func(_ string, counts map[string]int) {
-		wailsRuntime.EventsEmit(ctx, "folders:countsChanged", counts)
+		emit("folders:countsChanged", counts)
 	})
 
 	// Start connection pool cleanup routine
@@ -751,13 +733,18 @@ func (a *App) Startup(ctx context.Context) {
 	// Initialize Google Contacts client for OAuth account contact search
 	a.googleContactsClient = contact.NewGoogleContactsClient()
 
-	// Initialize IPC for multi-window support
-	a.initIPC(ctx)
-
 	// Initialize network connectivity monitor (event-driven, zero polling).
 	// Must be initialized before background sync so scheduler and IDLE
 	// can use it to skip operations when offline.
 	a.initNetworkMonitor(ctx)
+
+	// Initialize sync context tracking for cancel-and-restart
+	a.syncContexts = make(map[string]context.CancelFunc)
+	a.syncLastRequest = make(map[string]time.Time)
+	a.ownFlagChangeAt = make(map[string]time.Time)
+	a.ownExpungeAt = make(map[string]time.Time)
+	a.draftSyncContexts = make(map[string]context.CancelFunc)
+	a.draftSyncDone = make(map[string]chan struct{})
 
 	// Initialize and start background email sync (polling + IDLE)
 	a.initBackgroundSync(ctx)
@@ -768,34 +755,17 @@ func (a *App) Startup(ctx context.Context) {
 	// Initialize FTS indexer for full-text search
 	a.ftsIndexer = message.NewFTSIndexer(db.DB)
 
-	// Initialize sync context tracking for cancel-and-restart
-	a.syncContexts = make(map[string]context.CancelFunc)
-	a.syncLastRequest = make(map[string]time.Time)
-	a.ownFlagChangeAt = make(map[string]time.Time)
-	a.ownExpungeAt = make(map[string]time.Time)
-	a.draftSyncContexts = make(map[string]context.CancelFunc)
-	a.draftSyncDone = make(map[string]chan struct{})
-
-	// IMPORTANT: backend-ready signal. The frontend's main.ts waits for the
-	// "app:ready" event (with IsReady() as a one-shot fallback) and will NOT
-	// mount the main app until that event fires. If you remove, reorder, or
-	// skip these two lines, the UI will never load — the boot splash will
-	// stay visible forever.
-	//
-	// Placement: BEFORE the D-Bus desktop-integration inits below
-	// (initNotifications, initSleepWakeMonitor). Those
-	// calls can block for many seconds on systems where xdg-desktop-portal
-	// isn't running — they're best-effort system integration, NOT prerequisites
-	// for the frontend. At this point the frontend has everything it needs:
-	// stores constructed, migrations applied, extensions registered, network
-	// monitor up, IPC server running, background sync started.
-	//
-	// We do NOT poll IsReady from the frontend — Wails' IPC bridge saturates
-	// under high call rates on Linux/webkit2gtk and Flatpak. So: event for
-	// the normal case, IsReady for the "event fired before listener
-	// registered" race.
-	a.ready = true
-	wailsRuntime.EventsEmit(a.ctx, "app:ready")
+	a.ready.Store(true)
+	close(a.readySignal)
+	if a.SingleInstanceLock != nil {
+		a.SingleInstanceLock.SetOnShow(func(data string) {
+			if strings.HasPrefix(data, "mailto:") {
+				a.handleExternalMailto(data)
+				return
+			}
+			a.ShowWindow()
+		})
+	}
 
 	// Initialize desktop notifications with click handling
 	a.initNotifications(ctx)
@@ -809,7 +779,7 @@ func (a *App) Startup(ctx context.Context) {
 		if total > 0 {
 			percentage = (indexed * 100) / total
 		}
-		wailsRuntime.EventsEmit(ctx, "fts:progress", map[string]interface{}{
+		emit("fts:progress", map[string]interface{}{
 			"folderId":   folderID,
 			"indexed":    indexed,
 			"total":      total,
@@ -818,7 +788,7 @@ func (a *App) Startup(ctx context.Context) {
 	})
 
 	a.ftsIndexer.SetCompleteCallback(func(folderID string) {
-		wailsRuntime.EventsEmit(ctx, "fts:complete", map[string]interface{}{
+		emit("fts:complete", map[string]interface{}{
 			"folderId": folderID,
 		})
 	})
@@ -828,14 +798,14 @@ func (a *App) Startup(ctx context.Context) {
 		defer recoverPanic("app", "FTS indexing")
 		time.Sleep(5 * time.Second)
 		log.Info().Msg("Starting background FTS indexing")
-		wailsRuntime.EventsEmit(ctx, "fts:indexing", map[string]interface{}{
+		emit("fts:indexing", map[string]interface{}{
 			"status": "started",
 		})
 		if err := a.ftsIndexer.IndexAllFolders(ctx); err != nil {
 			log.Error().Err(err).Msg("Background FTS indexing failed")
 		} else {
 			log.Info().Msg("Background FTS indexing completed")
-			wailsRuntime.EventsEmit(ctx, "fts:indexing", map[string]interface{}{
+			emit("fts:indexing", map[string]interface{}{
 				"status": "completed",
 			})
 		}
@@ -847,127 +817,74 @@ func (a *App) Startup(ctx context.Context) {
 	log.Info().Msg("Aerion started successfully")
 }
 
-// IsReady reports whether Startup has fully completed. The frontend calls
-// this ONCE at boot as a safety net for the "Go emitted app:ready before
-// the frontend listener registered" race. Always safe to call: reads a
-// bool field, no nil dereference possible, fires regardless of which
-// stores are or aren't initialized.
-//
-// IMPORTANT: do NOT call this in a polling loop — it saturates the Wails
-// IPC bridge. The frontend should use EventsOn('app:ready', ...) for the
-// normal path; IsReady() is a one-shot check only.
-func (a *App) IsReady() bool {
-	return a.ready
+// WaitForReady resolves when the mail stores and background services are initialized.
+func (a *App) WaitForReady(ctx context.Context) error {
+	select {
+	case <-a.readySignal:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
-// BeforeClose is called when the window is about to close (e.g., OS close signal)
-func (a *App) BeforeClose(ctx context.Context) bool {
-	if shuttingDown {
-		return false
-	}
-
-	// Capture geometry while the window is still live so the next launch
-	// restores the last size/position
-	a.saveWindowGeometry()
-
-	// Background mode: hide window instead of quitting
-	runBg, _ := a.settingsStore.GetRunBackground()
-	if runBg {
-		log := logging.WithComponent("app")
-		log.Info().Msg("Window close requested, hiding to background")
-		wailsRuntime.WindowHide(a.ctx)
-		a.windowHidden = true
-		return true
-	}
-
-	// Normal shutdown flow
-	log := logging.WithComponent("app")
-	log.Info().Msg("Window close requested, showing shutdown overlay")
-
-	shuttingDown = true
-
-	// Emit event to show shutdown overlay
-	wailsRuntime.EventsEmit(a.ctx, "app:shutting-down")
-
-	// Schedule actual quit after UI has time to render
-	go func() {
-		defer recoverPanic("app", "shutdown")
-		time.Sleep(150 * time.Millisecond)
-		wailsRuntime.Quit(a.ctx)
-	}()
-
-	// Prevent immediate close
-	return true
-}
-
-// NotifyStartupComplete signals the desktop environment that startup is done.
-// Called from the frontend after WindowShow() so KDE/Plasma sees the placeholder
-// → real window handoff cleanly (avoiding the taskbar-icon flash from #154).
+// NotifyStartupComplete clears the desktop startup indicator.
 func (a *App) NotifyStartupComplete() {
 	platform.NotifyStartupComplete()
 }
 
-// ShowWindow brings the window to the foreground from hidden/minimized state.
-// Used by single-instance activation, notification clicks, etc.
+// ShowWindow brings the mail window forward after desktop activation.
 func (a *App) ShowWindow() {
-	log := logging.WithComponent("app")
-	log.Info().Msg("Showing window")
-
-	wailsRuntime.WindowUnminimise(a.ctx)
-	wailsRuntime.WindowShow(a.ctx)
-	a.windowHidden = false
-
-	// Emit event so frontend can also attempt to focus
-	wailsRuntime.EventsEmit(a.ctx, "window:show")
+	a.mainWindow.Show()
+	if a.mainWindow.IsMinimised() {
+		a.mainWindow.UnMinimise()
+	}
+	a.mainWindow.Focus()
+	a.windowHidden.Store(false)
+	emit("window:show")
 }
 
-// CloseWindow handles the window close button click.
-// If background mode is enabled, hides the window instead of quitting.
-// Called by the frontend title bar close button.
+// CloseWindow closes or hides the main mail window according to its settings.
 func (a *App) CloseWindow() {
-	a.saveWindowGeometry()
+	if !a.ready.Load() || a.shuttingDown.Load() {
+		return
+	}
 	runBg, _ := a.settingsStore.GetRunBackground()
 	if runBg {
-		log := logging.WithComponent("app")
-		log.Info().Msg("Window close requested, hiding to background")
-		wailsRuntime.WindowHide(a.ctx)
-		a.windowHidden = true
+		a.saveWindowGeometry()
+		a.mainWindow.Hide()
+		a.windowHidden.Store(true)
 		return
 	}
-
-	// Normal shutdown flow
-	if shuttingDown {
-		return
-	}
-	shuttingDown = true
-
-	log := logging.WithComponent("app")
-	log.Info().Msg("Window close requested, shutting down")
-	wailsRuntime.EventsEmit(a.ctx, "app:shutting-down")
-	go func() {
-		defer recoverPanic("app", "shutdown")
-		time.Sleep(150 * time.Millisecond)
-		wailsRuntime.Quit(a.ctx)
-	}()
+	a.QuitApp()
 }
 
-// QuitApp forces a real quit, bypassing background mode.
-// Used by frontend or future tray menu to actually exit.
+// QuitApp asks open composers to confirm closing before shutting down.
 func (a *App) QuitApp() {
-	if shuttingDown {
+	a.composersMu.Lock()
+	windows := make([]*application.WebviewWindow, 0, len(a.composers))
+	for _, composer := range a.composers {
+		windows = append(windows, composer.window)
+	}
+	a.quitAfterComposers = len(windows) != 0
+	a.composersMu.Unlock()
+	if len(windows) == 0 {
+		a.quit()
 		return
 	}
-	shuttingDown = true
-	a.saveWindowGeometry()
+	for _, window := range windows {
+		window.Close()
+	}
+}
 
-	log := logging.WithComponent("app")
-	log.Info().Msg("Quit requested")
-	wailsRuntime.EventsEmit(a.ctx, "app:shutting-down")
-	go func() {
-		defer recoverPanic("app", "shutdown")
-		time.Sleep(150 * time.Millisecond)
-		wailsRuntime.Quit(a.ctx)
-	}()
+func (a *App) quit() {
+	if !a.shuttingDown.CompareAndSwap(false, true) {
+		return
+	}
+	if !a.windowHidden.Load() {
+		a.saveWindowGeometry()
+	}
+	emit("app:shutting-down")
+	application.Get().Quit()
 }
 
 // GetStartHiddenActive returns true if the window should remain hidden on startup.
@@ -981,40 +898,14 @@ func (a *App) GetStartHiddenActive() bool {
 	return runBg
 }
 
-// InitiateShutdown triggers the application quit (called from frontend)
+// InitiateShutdown requests an orderly shutdown from the frontend.
 func (a *App) InitiateShutdown() {
-	if shuttingDown {
-		return
-	}
-	shuttingDown = true
-	a.saveWindowGeometry()
-
-	log := logging.WithComponent("app")
-	log.Info().Msg("Initiating shutdown")
-	wailsRuntime.Quit(a.ctx)
+	a.QuitApp()
 }
 
-// Shutdown is called when the app is closing
-func (a *App) Shutdown(ctx context.Context) {
+// ServiceShutdown releases shared resources after all windows have closed.
+func (a *App) ServiceShutdown() error {
 	log := logging.WithComponent("app")
-
-	// Broadcast shutdown to all composer windows
-	if a.ipcServer != nil {
-		clients := a.ipcServer.Clients()
-		if len(clients) > 0 {
-			log.Info().Int("count", len(clients)).Msg("Notifying composer windows of shutdown")
-			msg, _ := ipc.NewMessage(ipc.TypeShutdown, ipc.ShutdownPayload{
-				Reason: "main window closing",
-			})
-			if err := a.ipcServer.Broadcast(msg); err != nil {
-				log.Debug().Err(err).Msg("Failed to broadcast shutdown to composer windows")
-			}
-			// Give composers a moment to save drafts
-			time.Sleep(500 * time.Millisecond)
-		}
-		_ = a.ipcServer.Stop()
-		log.Info().Msg("IPC server stopped")
-	}
 
 	// Stop email sync scheduler
 	if a.syncScheduler != nil {
@@ -1064,6 +955,7 @@ func (a *App) Shutdown(ctx context.Context) {
 	}
 
 	log.Info().Msg("Aerion shutdown complete")
+	return nil
 }
 
 // updateDBConnectionPool scales the database connection pool based on account count.
@@ -1088,11 +980,6 @@ func (a *App) getIMAPCredentials(accountID string) (*imap.ClientConfig, error) {
 // If refresh fails, emits an event for the frontend to prompt re-authorization.
 func (a *App) getValidOAuthToken(accountID string) (*credentials.OAuthTokens, error) {
 	return a.composeOps.getValidOAuthToken(a.ctx, accountID)
-}
-
-// GetContext returns the app context
-func (a *App) GetContext() context.Context {
-	return a.ctx
 }
 
 // getValidContactSourceOAuthToken returns a valid OAuth token for a standalone contact source
@@ -1168,9 +1055,7 @@ func (a *App) OpenURL(url string) error {
 		return fmt.Errorf("URL protocol not allowed for security reasons")
 	}
 
-	// On Linux, try the OpenURI portal first — works in Flatpak (where xdg-open
-	// can't reach host browsers) and triggers the host's URL-handler
-	// notification on Wayland DEs. Fall through to xdg-open on portal error.
+	// On Linux, try the OpenURI portal first to integrate with Wayland desktops. Fall through to xdg-open on portal error.
 	if runtime.GOOS == "linux" {
 		perr := platform.PortalOpenURI(url)
 		if perr == nil {
@@ -1187,9 +1072,6 @@ func (a *App) OpenURL(url string) error {
 		// Use xdg-open on Linux
 		// exec.Command properly escapes the URL argument, preventing shell injection
 		cmd = exec.Command("xdg-open", url)
-	case "darwin":
-		// Use open on macOS
-		cmd = exec.Command("open", url)
 	case "windows":
 		// Use ShellExecute, not `cmd /c start`: cmd treats `&` as a command
 		// separator and truncates URLs with multiple query params (issue #261).

@@ -8,8 +8,7 @@
 <script lang="ts">
   import { getContext } from 'svelte'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - Wails generated imports
-  import { smtp, contact } from '../../../../wailsjs/go/models'
+  import { smtp, contact } from '$lib/models'
   import { type ComposerApi, COMPOSER_API_KEY, createMainWindowApi } from '$lib/composerApi'
 
   interface Props {

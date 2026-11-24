@@ -1,3 +1,4 @@
+import { present, required } from '$lib/bindingValues'
 import {
   GetAccounts,
   GetFolderTree,
@@ -11,10 +12,18 @@ import {
   CompleteOAuthAccountSetup,
   CompleteCustomOAuthAccountSetup,
   ReorderAccounts,
-} from '../../../wailsjs/go/app/App'
-import { account, app, folder } from '../../../wailsjs/go/models'
-// @ts-ignore - wailsjs runtime
-import { EventsOn } from '../../../wailsjs/runtime/runtime'
+} from '$bindings/github.com/hkdb/aerion/app/app'
+import { account, app, folder } from '$lib/models'
+import { EventsOn } from '$lib/desktop'
+
+// Svelte tracks changes to the unread counts on plain folder objects.
+function reactiveFolderTree(tree: folder.FolderTree): folder.FolderTree {
+  return {
+    ...tree,
+    folder: tree.folder ? { ...tree.folder } : null,
+    children: present(tree.children).map(reactiveFolderTree),
+  }
+}
 
 export interface AccountWithFolders {
   account: account.Account
@@ -225,8 +234,8 @@ class AccountStore {
   private findFolderNode(trees: folder.FolderTree[], folderId: string): folder.Folder | null {
     for (const tree of trees) {
       if (tree.folder && tree.folder.id === folderId) return tree.folder
-      if (tree.children) {
-        const found = this.findFolderNode(tree.children, folderId)
+      if (present(tree.children)) {
+        const found = this.findFolderNode(present(tree.children), folderId)
         if (found) return found
       }
     }
@@ -241,7 +250,7 @@ class AccountStore {
       if (tree.folder && folderIds.includes(tree.folder.id)) {
         return true
       }
-      if (tree.children && this.findFolderInTree(tree.children, folderIds)) {
+      if (tree.children && this.findFolderInTree(present(tree.children), folderIds)) {
         return true
       }
     }
@@ -256,8 +265,8 @@ class AccountStore {
       if (tree.folder && counts[tree.folder.id] !== undefined) {
         tree.folder.unreadCount = counts[tree.folder.id]
       }
-      if (tree.children) {
-        this.updateFolderCountsInTree(tree.children, counts)
+      if (present(tree.children)) {
+        this.updateFolderCountsInTree(present(tree.children), counts)
       }
     }
   }
@@ -272,7 +281,7 @@ class AccountStore {
     this.error = null
 
     try {
-      const accountList = await GetAccounts()
+      const accountList = present(await GetAccounts())
 
       // Initialize accounts with empty folders
       this.accounts = (accountList || []).map((acc) => ({
@@ -307,8 +316,8 @@ class AccountStore {
     acc.error = null
 
     try {
-      const folderTree = await GetFolderTree(accountId)
-      acc.folders = folderTree || []
+      const folderTree = present(await GetFolderTree(accountId))
+      acc.folders = folderTree.map(reactiveFolderTree)
     } catch (err) {
       acc.error = err instanceof Error ? err.message : String(err)
       console.error(`Failed to load folders for account ${accountId}:`, err)
@@ -429,7 +438,7 @@ class AccountStore {
    * Add a new account (password authentication)
    */
   async addAccount(config: account.AccountConfig): Promise<account.Account> {
-    const newAccount = await AddAccount(config)
+    const newAccount = required(await AddAccount(config), 'AddAccount result')
 
     // Add to local state
     this.accounts.push({
@@ -457,7 +466,7 @@ class AccountStore {
   async addOAuthAccount(provider: string, email: string, accountName: string, displayName: string, color: string): Promise<account.Account> {
     // CompleteOAuthAccountSetup creates the account with correct IMAP/SMTP settings
     // and saves the OAuth tokens from pendingOAuthTokens
-    const newAccount = await CompleteOAuthAccountSetup(provider, email, accountName, displayName, color)
+    const newAccount = required(await CompleteOAuthAccountSetup(provider, email, accountName, displayName, color), 'CompleteOAuthAccountSetup result')
 
     // Add to local state
     this.accounts.push({
@@ -485,7 +494,7 @@ class AccountStore {
    * tokens and the per-account provider config from the completed flow.
    */
   async addCustomOAuthAccount(config: account.AccountConfig): Promise<account.Account> {
-    const newAccount = await CompleteCustomOAuthAccountSetup(config)
+    const newAccount = required(await CompleteCustomOAuthAccountSetup(config), 'CompleteCustomOAuthAccountSetup result')
 
     this.accounts.push({
       account: newAccount,
@@ -511,7 +520,7 @@ class AccountStore {
     id: string,
     config: account.AccountConfig
   ): Promise<account.Account> {
-    const updatedAccount = await UpdateAccount(id, config)
+    const updatedAccount = required(await UpdateAccount(id, config), 'UpdateAccount result')
 
     // Update local state
     const index = this.accounts.findIndex((a) => a.account.id === id)

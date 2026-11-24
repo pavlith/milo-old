@@ -14,8 +14,7 @@
   import { Button } from '$lib/components/ui/button'
   import * as Select from '$lib/components/ui/select'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     attendees: backend.AttendeeInput[]

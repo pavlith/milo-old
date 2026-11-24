@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Clipboard } from '$lib/desktop'
+  import { present, definedEntries, enumValue, required } from '$lib/bindingValues'
   import { untrack } from 'svelte'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
@@ -24,10 +26,8 @@
   } from '$lib/config/providers'
   import { oauthStore } from '$lib/stores/oauth.svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs path
-  import { account, certificate, app } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetIdentities, AcceptCertificate, GetAllAccountIdentities, DiscoverOAuthProvider } from '../../../../wailsjs/go/app/App'
+  import { account, certificate, app } from '$lib/models'
+  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetIdentities, AcceptCertificate, GetAllAccountIdentities, DiscoverOAuthProvider } from '$bindings/github.com/hkdb/aerion/app/app'
   import CertificateDialog from './CertificateDialog.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { _ } from '$lib/i18n'
@@ -108,7 +108,7 @@
     customOAuthDiscovering = true
     customOAuthDiscoverError = ''
     try {
-      const doc = await DiscoverOAuthProvider(issuer)
+      const doc = required(await DiscoverOAuthProvider(issuer), 'DiscoverOAuthProvider result')
       customOAuthAuthURL = doc.authorizationEndpoint
       customOAuthTokenURL = doc.tokenEndpoint
       customOAuthUserinfoURL = doc.userinfoEndpoint
@@ -232,23 +232,16 @@
 
     loadingFolders = true
     try {
-      availableFolders = await GetAccountFoldersForMapping(editAccount.id)
-      autoDetectedFolders = await GetAutoDetectedFolders(editAccount.id)
+      availableFolders = present(await GetAccountFoldersForMapping(editAccount.id))
+      autoDetectedFolders = definedEntries(await GetAutoDetectedFolders(editAccount.id))
 
       // Pre-select: use saved value if exists, otherwise auto-detected
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       sentFolderPath = editAccount.sentFolderPath || autoDetectedFolders.sent || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       draftsFolderPath = editAccount.draftsFolderPath || autoDetectedFolders.drafts || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       trashFolderPath = editAccount.trashFolderPath || autoDetectedFolders.trash || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       spamFolderPath = editAccount.spamFolderPath || autoDetectedFolders.spam || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       archiveFolderPath = editAccount.archiveFolderPath || autoDetectedFolders.archive || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       allMailFolderPath = editAccount.allMailFolderPath || autoDetectedFolders.all || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       starredFolderPath = editAccount.starredFolderPath || autoDetectedFolders.starred || ''
     } catch (err) {
       console.error('Failed to load folders for mapping:', err)
@@ -283,19 +276,12 @@
       color = editAccount.color || ''
 
       // Initialize folder mappings (will be populated when section is expanded)
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       sentFolderPath = editAccount.sentFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       draftsFolderPath = editAccount.draftsFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       trashFolderPath = editAccount.trashFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       spamFolderPath = editAccount.spamFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       archiveFolderPath = editAccount.archiveFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       allMailFolderPath = editAccount.allMailFolderPath || ''
-      // @ts-ignore - wailsjs binding will have these fields after regeneration
       starredFolderPath = editAccount.starredFolderPath || ''
 
       // Try to detect provider
@@ -310,7 +296,7 @@
   // Load display name from the account's default identity
   async function loadDisplayName(accountId: string) {
     try {
-      const identities = await GetIdentities(accountId)
+      const identities = present(await GetIdentities(accountId))
       const defaultIdentity = identities?.find((id: any) => id.isDefault) || identities?.[0]
       if (defaultIdentity) {
         displayName = defaultIdentity.name || ''
@@ -434,7 +420,7 @@
   async function handleCopyOAuthLink() {
     if (!oauthStore.authURL) return
     try {
-      await navigator.clipboard.writeText(oauthStore.authURL)
+      await Clipboard.SetText(oauthStore.authURL)
       oauthLinkCopied = true
       if (oauthCopiedResetTimer) clearTimeout(oauthCopiedResetTimer)
       oauthCopiedResetTimer = setTimeout(() => { oauthLinkCopied = false }, 1500)
@@ -536,17 +522,17 @@
       password: authMethod === 'oauth2' ? '' : password,
       imapHost,
       imapPort,
-      imapSecurity,
-      imapAuthMechanism,
+      imapSecurity: enumValue(imapSecurity, Object.values(account.SecurityType)),
+      imapAuthMechanism: enumValue(imapAuthMechanism, Object.values(account.AuthMechanism)),
       smtpHost,
       smtpPort,
-      smtpSecurity,
+      smtpSecurity: enumValue(smtpSecurity, Object.values(account.SecurityType)),
       noOutgoingServer,
       smtpUsername,
       smtpPassword,
-      smtpAuthMechanism,
+      smtpAuthMechanism: enumValue(smtpAuthMechanism, Object.values(account.AuthMechanism)),
       replyForwardIdentityId: replyForwardIdentityID,
-      authType: authMethod,
+      authType: enumValue(authMethod, Object.values(account.AuthType)),
       syncPeriodDays: Number(syncPeriodDays),
       syncInterval: Number(syncInterval),
       readReceiptRequestPolicy,
@@ -1294,7 +1280,7 @@
                   <Select.Trigger class="h-10">
                     <Select.Value placeholder={$_('account.replyForwardWithDefault')}>
                       {#if replyForwardIdentityID}
-                        {@const allIdentities = availableIdentityGroups.flatMap(g => (g.identities || []).map(i => ({ identity: i, group: g })))}
+                        {@const allIdentities = availableIdentityGroups.flatMap(g => present(g.identities).map(i => ({ identity: i, group: g })))}
                         {@const found = allIdentities.find(x => x.identity.id === replyForwardIdentityID)}
                         {#if found}
                           {#if found.group.account?.color}
@@ -1319,7 +1305,7 @@
                           {/if}
                           {group.account?.name || group.account?.email}
                         </Select.GroupHeading>
-                        {#each group.identities || [] as identity (identity.id)}
+                        {#each present(group.identities) as identity (identity.id)}
                           <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
                         {/each}
                       </Select.Group>

@@ -44,7 +44,7 @@ func (m *LinuxNetworkMonitor) Start(ctx context.Context) error {
 		return nil
 	}
 
-	// Try XDG Desktop Portal first (works in Flatpak without extra permissions)
+	// Try XDG Desktop Portal first
 	if err := m.startPortal(ctx); err == nil {
 		return nil
 	}

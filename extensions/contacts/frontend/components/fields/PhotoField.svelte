@@ -13,8 +13,7 @@
   import Icon from '@iconify/svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { Contacts_ResizeContactPhoto as ResizeContactPhoto } from '$wailsjs/go/app/App'
+  import { Contacts_ResizeContactPhoto as ResizeContactPhoto } from '$bindings/github.com/hkdb/aerion/app/app'
   import type { PhotoState } from './types'
 
   interface Props {

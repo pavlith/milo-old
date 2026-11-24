@@ -10,13 +10,12 @@
 </script>
 
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import { formatRelativeDate } from '$lib/utils/date'
   import { _, locale } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { message } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { Star, Unstar } from '../../../../wailsjs/go/app/App'
+  import { message } from '$lib/models'
+  import { Star, Unstar } from '$bindings/github.com/hkdb/aerion/app/app'
   import MessageContextMenu from '$lib/components/common/MessageContextMenu.svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import { toasts } from '$lib/stores/toast'
@@ -263,7 +262,7 @@
   // Get message IDs from the conversation for context menu
   // Use messageIds field (populated by ListConversationsByFolder), fallback to messages array
   const ownMessageIds = $derived(
-    conversation.messageIds || conversation.messages?.map((m) => m.id) || []
+    conversation.messageIds || present(conversation.messages).map(m => m.id)
   )
 
   // Determine star/read state from this conversation

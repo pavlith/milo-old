@@ -1,7 +1,6 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs path
-  import { account, folder } from '../../../../wailsjs/go/models'
+  import { account, folder } from '$lib/models'
   import FolderTreeItem from './FolderTreeItem.svelte'
   import { _ } from '$lib/i18n'
 

@@ -25,8 +25,7 @@
   import ColorPicker from '$lib/components/kit/ColorPicker.svelte'
   import AddCalendarDefaultsControl from './AddCalendarDefaultsControl.svelte'
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     /** Backend ID of the just-persisted source. Passed through to the

@@ -13,10 +13,8 @@
   import { Button } from '$lib/components/ui/button'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_QueryFreeBusy } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import { Calendar_QueryFreeBusy } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { backend } from '$lib/models'
 
   interface Props {
     open: boolean

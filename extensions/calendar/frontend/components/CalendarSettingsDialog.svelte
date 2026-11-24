@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import { formatTimeSince } from '$lib/utils/date'
   // CalendarSettingsDialog — Calendar extension's settings.
   //
@@ -23,14 +24,12 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import AddCalDAVSourceDialog from './AddCalDAVSourceDialog.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_SetSyncInterval, Calendar_DeleteCalendar, Calendar_SetOrganizerIdentity, Calendar_ReprobeCalDAVOrganizerIdentities, Calendar_RenameSource, GetAccounts } from '$wailsjs/go/app/App.js'
+  import { Calendar_SetSyncInterval, Calendar_DeleteCalendar, Calendar_SetOrganizerIdentity, Calendar_ReprobeCalDAVOrganizerIdentities, Calendar_RenameSource, GetAccounts } from '$bindings/github.com/hkdb/aerion/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
   import { logger } from '$extensions/calendar/frontend/lib/logger'
   import { Input } from '$lib/components/ui/input'
   import TimezonePicker from './TimezonePicker.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     open: boolean
@@ -344,7 +343,7 @@
     try {
       const accts = (await GetAccounts()) || []
       const map: Record<string, string> = {}
-      for (const a of accts) map[a.id] = a.email
+      for (const a of present(accts)) map[a.id] = a.email
       emailByAccountId = map
     } catch (e) {
       logger.warn(`reauth: load accounts failed: ${e}`)

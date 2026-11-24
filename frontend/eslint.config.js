@@ -9,7 +9,7 @@ export default tseslint.config(
   // Global ignores
   {
     ignores: [
-      'wailsjs/**',
+      'bindings/**',
       'dist/**',
       'node_modules/**',
       '**/*.config.{js,ts,cjs,mjs}',

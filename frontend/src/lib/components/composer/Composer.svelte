@@ -1,13 +1,12 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import { onMount, onDestroy, getContext, setContext, untrack } from 'svelte'
   import Icon from '@iconify/svelte'
   import type { Editor } from '@tiptap/core'
   import { createComposerEditor } from './composerEditor'
   import PlainTextEditor from './PlainTextEditor.svelte'
-  // @ts-ignore - Wails generated imports
-  import { smtp, account, app } from '../../../../wailsjs/go/models'
-  // @ts-ignore - Wails runtime for events
-  import { EventsOn, EventsOff } from '../../../../wailsjs/runtime/runtime.js'
+  import { smtp, account, app } from '$lib/models'
+  import { EventsOn, EventsOff } from '$lib/desktop'
   import { type ComposerApi, COMPOSER_API_KEY, createMainWindowApi } from '$lib/composerApi'
   import { isImageAllowedSync } from '$lib/stores/imageAllowlist.svelte'
   import { getAlwaysLoadImages } from '$lib/stores/settings.svelte'
@@ -81,13 +80,14 @@
     closeRequested?: boolean
     /** Callback when close request has been handled */
     onCloseHandled?: () => void
+    onKeepEditing?: () => void
     /** Callback when recipient or subject changes (for dynamic window title) */
     onTitleChange?: (to: string, subject: string) => void
     /** Whether remote images were loaded in the viewer before reply/forward */
     imagesLoaded?: boolean
   }
 
-  let { accountId, initialMessage = null, draftId = null, messageId = null, onClose, onSent, api: propApi, isDetached = false, closeRequested = false, onCloseHandled, onTitleChange, imagesLoaded = false }: Props = $props()
+  let { accountId, initialMessage = null, draftId = null, messageId = null, onClose, onSent, api: propApi, isDetached = false, closeRequested = false, onCloseHandled, onKeepEditing, onTitleChange, imagesLoaded = false }: Props = $props()
 
   // Get API from context, props, or create default main window API
   const contextApi = getContext<ComposerApi | undefined>(COMPOSER_API_KEY)
@@ -361,7 +361,6 @@
   // Confirmation dialogs state
   let showEmptySubjectDialog = $state(false)
   let showMissingAttachmentDialog = $state(false)
-  let showFlatpakDndDialog = $state(false)
   let showCloseConfirm = $state(false)
   let closeLoading = $state<'discard' | 'save' | null>(null)
 
@@ -739,7 +738,7 @@
         // Exclude receive-only accounts: their identities can't actually
         // be used as a From address, so they don't belong in the picker.
         allGroups = (groups || []).filter(g => !g.account?.noOutgoingServer)
-        identities = allGroups.flatMap(g => g.identities || [])
+        identities = allGroups.flatMap(g => present(g.identities))
 
         const sourceReplyForwardId = sourceGroup?.account?.noOutgoingServer
           ? ((sourceGroup.account as any).replyForwardIdentityId || '')
@@ -1269,9 +1268,9 @@
       const message = buildMessage()
       await api.sendMessage(activeAccountId, message)
 
-      // Delete the draft on successful send (fire-and-forget - don't block UI)
+      // Finish local draft cleanup before closing the window.
       if (currentDraftId) {
-        deleteDraft().catch(err => console.error('Failed to delete draft after send:', err))
+        await deleteDraft().catch(err => console.error('Failed to delete draft after send:', err))
       }
 
       addToast({
@@ -1364,6 +1363,7 @@
   function handleKeepEditing() {
     showCloseConfirm = false
     onCloseHandled?.()
+    onKeepEditing?.()
   }
 
   // Pop out to detached window
@@ -1696,10 +1696,6 @@
           data: att.data,
         }]
       } catch {
-        // Direct read failed — if Flatpak, show permission info dialog
-        if (await api.isFlatpak()) {
-          showFlatpakDndDialog = true
-        }
         return
       }
     }
@@ -1707,7 +1703,7 @@
   }
 
   // Attachment handling — uses HTML file input so WebKitGTK routes through
-  // the FileChooser portal (required for Flatpak sandbox file access)
+  // the native file chooser
   function handleAttachFiles() {
     // Append to DOM before clicking (required for WebKitGTK to reliably
     // open the file chooser dialog on the first click)
@@ -1845,10 +1841,6 @@
           }
         }
         if (directReadFailed) {
-          // If Flatpak, show permission info dialog
-          if (await api.isFlatpak()) {
-            showFlatpakDndDialog = true
-          }
           return
         }
         scheduleDraftSave()
@@ -1967,7 +1959,7 @@
                     {/if}
                     {group.account?.name || group.account?.email}
                   </Select.GroupHeading>
-                  {#each group.identities || [] as identity (identity.id)}
+                  {#each present(group.identities) as identity (identity.id)}
                     <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
                   {/each}
                 </Select.Group>
@@ -2264,24 +2256,7 @@
   </AlertDialog.Content>
 </AlertDialog.Root>
 
-<!-- Flatpak Drag-and-Drop Info Dialog -->
-<AlertDialog.Root bind:open={showFlatpakDndDialog}>
-  <AlertDialog.Content>
-    <AlertDialog.Header>
-      <AlertDialog.Title>{$_('composer.flatpakDndTitle')}</AlertDialog.Title>
-      <AlertDialog.Description>
-        <p class="mb-3">{$_('composer.flatpakDndDescription')}</p>
-        <p class="mb-2">{$_('composer.flatpakDndGrantExample')}</p>
-        <code class="block bg-muted px-3 py-2 rounded text-sm font-mono mb-3 select-all overflow-x-auto">flatpak override --user --filesystem=home io.github.hkdb.Aerion</code>
-        <p class="mb-3 text-sm text-destructive">{$_('composer.flatpakDndSecurityWarning')}</p>
-        <p class="text-sm text-muted-foreground">{$_('composer.flatpakDndAlternative')}</p>
-      </AlertDialog.Description>
-    </AlertDialog.Header>
-    <AlertDialog.Footer>
-      <AlertDialog.Action onclick={() => showFlatpakDndDialog = false}>{$_('common.ok')}</AlertDialog.Action>
-    </AlertDialog.Footer>
-  </AlertDialog.Content>
-</AlertDialog.Root>
+
 
 <!-- Close Confirmation Dialog -->
 <ThreeOptionDialog

@@ -10,7 +10,7 @@ import (
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/oauth2"
 	"github.com/hkdb/aerion/internal/platform"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // OAuthStatus represents the OAuth status for an account
@@ -49,7 +49,7 @@ func (a *App) StartOAuthFlow(provider string) error {
 	// Start the OAuth flow
 	authURL, err := a.oauth2Manager.StartAuthFlow(a.ctx, provider)
 	if err != nil {
-		wailsRuntime.EventsEmit(a.ctx, "oauth:error", map[string]interface{}{
+		emit("oauth:error", map[string]interface{}{
 			"provider": provider,
 			"error":    err.Error(),
 		})
@@ -58,18 +58,18 @@ func (a *App) StartOAuthFlow(provider string) error {
 
 	// Emit started event with the auth URL so the frontend can show a
 	// "Copy link" fallback affordance for users whose browser fails to open.
-	wailsRuntime.EventsEmit(a.ctx, "oauth:started", map[string]interface{}{
+	emit("oauth:started", map[string]interface{}{
 		"provider": provider,
 		"authURL":  authURL,
 	})
 
 	// Open browser with auth URL. Try the OpenURI portal first — works in
-	// Flatpak sandbox (where xdg-open can't reach host browsers) and triggers
+	// Wayland desktops and triggers
 	// the host's URL-handler notification on Wayland DEs. Fall back to Wails'
 	// BrowserOpenURL on any portal error.
 	if perr := platform.PortalOpenURI(authURL); perr != nil {
 		log.Debug().Err(perr).Msg("Portal OpenURI failed, falling back to BrowserOpenURL")
-		wailsRuntime.BrowserOpenURL(a.ctx, authURL)
+		_ = application.Get().Browser.OpenURL(authURL)
 	}
 
 	// Wait for callback in background
@@ -78,7 +78,7 @@ func (a *App) StartOAuthFlow(provider string) error {
 		tokens, email, err := a.oauth2Manager.WaitForCallback(a.ctx)
 		if err != nil {
 			log.Error().Err(err).Str("provider", provider).Msg("OAuth callback failed")
-			wailsRuntime.EventsEmit(a.ctx, "oauth:error", map[string]interface{}{
+			emit("oauth:error", map[string]interface{}{
 				"provider": provider,
 				"error":    err.Error(),
 			})
@@ -95,7 +95,7 @@ func (a *App) StartOAuthFlow(provider string) error {
 			Msg("OAuth flow completed successfully")
 
 		// Emit success event with tokens info (frontend will handle account creation)
-		wailsRuntime.EventsEmit(a.ctx, "oauth:success", map[string]interface{}{
+		emit("oauth:success", map[string]interface{}{
 			"provider":  provider,
 			"email":     email,
 			"expiresIn": tokens.ExpiresIn,
@@ -286,23 +286,23 @@ func (a *App) StartCustomOAuthFlow(authURL, tokenURL, userinfoURL string, scopes
 	authRedirectURL, err := a.oauth2Manager.StartAuthFlowWithProvider(a.ctx, provider)
 	if err != nil {
 		a.pendingCustomProvider = nil
-		wailsRuntime.EventsEmit(a.ctx, "oauth:error", map[string]interface{}{
+		emit("oauth:error", map[string]interface{}{
 			"provider": customOAuthProviderName,
 			"error":    err.Error(),
 		})
 		return fmt.Errorf("failed to start custom OAuth flow: %w", err)
 	}
 
-	wailsRuntime.EventsEmit(a.ctx, "oauth:started", map[string]interface{}{
+	emit("oauth:started", map[string]interface{}{
 		"provider": customOAuthProviderName,
 		"authURL":  authRedirectURL,
 	})
 
-	// Open browser with auth URL. Portal first (Flatpak/Wayland), Wails fallback —
+	// Open browser with auth URL. Portal first on Linux, Wails fallback —
 	// mirrors StartOAuthFlow.
 	if perr := platform.PortalOpenURI(authRedirectURL); perr != nil {
 		log.Debug().Err(perr).Msg("Portal OpenURI failed, falling back to BrowserOpenURL")
-		wailsRuntime.BrowserOpenURL(a.ctx, authRedirectURL)
+		_ = application.Get().Browser.OpenURL(authRedirectURL)
 	}
 
 	// Wait for callback in background. For custom providers the userinfo lookup is
@@ -313,7 +313,7 @@ func (a *App) StartCustomOAuthFlow(authURL, tokenURL, userinfoURL string, scopes
 		tokens, email, err := a.oauth2Manager.WaitForCallback(a.ctx)
 		if err != nil {
 			log.Error().Err(err).Str("provider", customOAuthProviderName).Msg("Custom OAuth callback failed")
-			wailsRuntime.EventsEmit(a.ctx, "oauth:error", map[string]interface{}{
+			emit("oauth:error", map[string]interface{}{
 				"provider": customOAuthProviderName,
 				"error":    err.Error(),
 			})
@@ -328,7 +328,7 @@ func (a *App) StartCustomOAuthFlow(authURL, tokenURL, userinfoURL string, scopes
 			Str("email", email).
 			Msg("Custom OAuth flow completed successfully")
 
-		wailsRuntime.EventsEmit(a.ctx, "oauth:success", map[string]interface{}{
+		emit("oauth:success", map[string]interface{}{
 			"provider":  customOAuthProviderName,
 			"email":     email,
 			"expiresIn": tokens.ExpiresIn,
@@ -524,7 +524,7 @@ func (a *App) CancelOAuthFlow() {
 	a.pendingOAuthTokens = nil
 	a.pendingOAuthEmail = ""
 
-	wailsRuntime.EventsEmit(a.ctx, "oauth:cancelled", nil)
+	emit("oauth:cancelled", nil)
 }
 
 // GetOAuthStatus returns the OAuth status for an account.

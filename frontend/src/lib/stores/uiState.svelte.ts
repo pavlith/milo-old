@@ -1,10 +1,9 @@
+import { definedEntries } from '$lib/bindingValues'
 // UI State persistence store
 // Handles saving and loading UI state across app sessions
 
-// @ts-ignore - wailsjs bindings
-import { GetUIState, SaveUIState } from '../../../wailsjs/go/app/App'
-// @ts-ignore - wailsjs bindings
-import { appstate } from '../../../wailsjs/go/models'
+import { GetUIState, SaveUIState } from '$bindings/github.com/hkdb/aerion/app/app'
+import { appstate } from '$lib/models'
 
 export interface UIState {
   selectedAccountId: string | null
@@ -84,9 +83,9 @@ export async function loadUIState(): Promise<UIState> {
         sidebarWidth: clamp(state.sidebarWidth || 240, SIDEBAR_MIN, SIDEBAR_MAX),
         listWidth: clamp(state.listWidth || 420, LIST_MIN, LIST_MAX),
         // Sidebar expand/collapse states
-        expandedAccounts: state.expandedAccounts || {},
+        expandedAccounts: definedEntries(state.expandedAccounts || {}),
         unifiedInboxExpanded: state.unifiedInboxExpanded !== false, // default true
-        collapsedFolders: state.collapsedFolders || {},
+        collapsedFolders: definedEntries(state.collapsedFolders || {}),
         activeExtension: state.activeExtension || 'mail',
       }
       activeExtensionState = currentState.activeExtension

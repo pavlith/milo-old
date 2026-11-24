@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { Clipboard } from '$lib/desktop'
+  import { definedEntries } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
-  import { BrowserOpenURL } from '../../../../wailsjs/runtime/runtime'
-  import { GetInlineAttachments, AddImageAllowlist, OpenURL } from '../../../../wailsjs/go/app/App'
+  import { BrowserOpenURL } from '$lib/desktop'
+  import { GetInlineAttachments, AddImageAllowlist, OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
   import { getCached, setCache } from '../../stores/inlineAttachmentCache'
   import { isImageAllowedSync, refreshImageAllowlist } from '$lib/stores/imageAllowlist.svelte'
   import { setFocusedPane, focusPreviousPane, focusNextPane } from '$lib/stores/keyboard.svelte'
@@ -354,12 +356,16 @@
       }, true);
     `
 
+    // Only the viewer's own script may run in the opaque-origin message frame.
+    const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)), byte =>
+      byte.toString(16).padStart(2, '0')).join('')
+
     return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; img-src ${imgSrc}; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${imgSrc}; font-src data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; connect-src 'none'; base-uri 'none'; form-action 'none';">
   <sty` + `le>${darkenStyles}
     /* Minimal base styles - avoid overriding email's inline styles */
     * { box-sizing: border-box; }
@@ -388,7 +394,7 @@
 </head>
 <body>
 ${processedHtml}
-<scr` + `ipt>${iframeScript}</scr` + `ipt>
+<scr` + `ipt nonce="${nonce}">${iframeScript}</scr` + `ipt>
 </body>
 </html>`
   }
@@ -625,8 +631,8 @@ ${processedHtml}
     }
 
     GetInlineAttachments(id)
-      .then((result: Record<string, string>) => {
-        const data = result || {}
+      .then(result => {
+        const data = definedEntries(result || {})
         inlineAttachments = data
         if (Object.keys(data).length > 0) {
           setCache(id, data)
@@ -713,7 +719,7 @@ ${processedHtml}
   async function copyTextToClipboard() {
     if (!ctxMenuText) return
     try {
-      await navigator.clipboard.writeText(ctxMenuText)
+      await Clipboard.SetText(ctxMenuText)
       ctxMenuVisible = false
     } catch (err) {
       console.error('[EmailBody] Failed to copy text:', err)
@@ -724,7 +730,7 @@ ${processedHtml}
   async function copyLinkToClipboard() {
     if (!ctxMenuUrl) return
     try {
-      await navigator.clipboard.writeText(ctxMenuUrl)
+      await Clipboard.SetText(ctxMenuUrl)
       ctxMenuVisible = false
     } catch (err) {
       console.error('[EmailBody] Failed to copy link:', err)

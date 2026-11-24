@@ -6,12 +6,9 @@
 //   - via $effect in CalendarPane: changes to
 //     calendarSources.visibleCalendarIDs or calendarView.visibleRange
 
-// @ts-ignore - wailsjs bindings
-import { Calendar_ListEventsInRange } from '$wailsjs/go/app/App.js'
-// @ts-ignore - wailsjs bindings
-import { EventsOn } from '$wailsjs/runtime/runtime.js'
-// @ts-ignore - wailsjs bindings
-import type { backend } from '$wailsjs/go/models'
+import { Calendar_ListEventsInRange } from '$bindings/github.com/hkdb/aerion/app/app'
+import { EventsOn } from '$lib/desktop'
+import type { backend } from '$lib/models'
 
 type EventInstance = backend.EventInstance
 

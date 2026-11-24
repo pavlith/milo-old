@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Clipboard } from '$lib/desktop'
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Select from '$lib/components/ui/select'
@@ -9,9 +11,7 @@
   import { addToast } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
   import { contactSourcesStore, type LinkedAccountInfo } from '$lib/stores/contactSources.svelte'
-  // @ts-ignore - wailsjs runtime
-  import { EventsOn, EventsOff } from '../../../../wailsjs/runtime/runtime'
-  // @ts-ignore - wailsjs path
+  import { EventsOn, EventsOff } from '$lib/desktop'
   import {
     DiscoverCardDAVAddressbooks,
     DiscoverCardDAVAddressbooksOAuth,
@@ -19,9 +19,8 @@
     AddContactSource,
     UpdateContactSource,
     GetSourceAddressbooks,
-  } from '../../../../wailsjs/go/app/App.js'
-  // @ts-ignore - wailsjs path
-  import type { carddav } from '../../../../wailsjs/go/models'
+  } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { carddav } from '$lib/models'
 
   interface Props {
     open?: boolean
@@ -235,7 +234,7 @@
   async function handleCopyOAuthLink() {
     if (!oauthAuthURL) return
     try {
-      await navigator.clipboard.writeText(oauthAuthURL)
+      await Clipboard.SetText(oauthAuthURL)
       oauthLinkCopied = true
       if (oauthCopiedResetTimer) clearTimeout(oauthCopiedResetTimer)
       oauthCopiedResetTimer = setTimeout(() => { oauthLinkCopied = false }, 1500)
@@ -247,7 +246,7 @@
   async function loadExistingAddressbooks() {
     if (!editSource) return
     try {
-      const addressbooks = await GetSourceAddressbooks(editSource.id)
+      const addressbooks = present(await GetSourceAddressbooks(editSource.id))
       if (addressbooks) {
         // Convert to AddressbookInfo format
         discoveredAddressbooks = addressbooks.map((ab: carddav.Addressbook) => ({
@@ -353,7 +352,7 @@
 
         const config = {
           name,
-          type: 'carddav' as const,
+          type: carddav.SourceType.SourceTypeCardDAV,
           url,
           username: cardDavIsOAuth ? '' : username,
           password: cardDavIsOAuth ? '' : password,
@@ -391,7 +390,7 @@
           // Writable is managed in Contacts extension settings, not here.
           const config = {
             name,
-            type: editSource.type as 'google' | 'microsoft',
+            type: editSource.type,
             url: '',
             username: '',
             password: '',

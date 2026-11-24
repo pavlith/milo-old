@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   // AddMicrosoftCalendarDialog — minimal three-step picker for attaching an
   // Outlook / Microsoft 365 calendar source to an existing Aerion mail
   // account. Phase 2 Chunk 4 sibling of AddGoogleCalendarDialog.
@@ -22,11 +23,9 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import CalendarColorPickStage from './CalendarColorPickStage.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  // @ts-ignore - wailsjs bindings
-  import { GetAccounts, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$wailsjs/go/app/App.js'
+  import { GetAccounts, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$bindings/github.com/hkdb/aerion/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { account, backend } from '$wailsjs/go/models'
+  import type { account, backend } from '$lib/models'
 
   interface Props {
     open: boolean
@@ -90,7 +89,7 @@
     loadingAccounts = true
     try {
       const list = await GetAccounts()
-      accounts = list || []
+      accounts = present(list)
       if (microsoftAccounts.length === 1) {
         selectedAccountId = microsoftAccounts[0].id
         void onAccountChange()

@@ -1,9 +1,8 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs path
-  import { folder } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { MoveToFolder, Undo } from '../../../../wailsjs/go/app/App.js'
+  import { folder } from '$lib/models'
+  import { MoveToFolder, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
   import FolderContextMenu from './FolderContextMenu.svelte'
   import Self from './FolderTreeItem.svelte'
   import { toasts } from '$lib/stores/toast'
@@ -173,7 +172,7 @@
 
   {#if hasChildren && !isCollapsed}
     <div class="ml-4">
-      {#each tree.children as childTree (childTree.folder?.id ?? 'unknown')}
+      {#each present(tree.children) as childTree (childTree.folder?.id ?? 'unknown')}
         <Self
           tree={childTree}
           {accountId}

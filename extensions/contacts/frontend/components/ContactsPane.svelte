@@ -13,10 +13,8 @@
   import { toasts } from '$lib/stores/toast'
   import { registerExtensionShortcut } from '$lib/stores/extensionShortcuts.svelte'
   import { KEY } from '$extensions/contacts/frontend/keyboard/shortcuts'
-  // @ts-ignore - wailsjs bindings
-  import { EventsOn } from '$wailsjs/runtime/runtime'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import { EventsOn } from '$lib/desktop'
+  import type { v1 } from '$lib/models'
 
   // Conflict events fire when a CardDAV write loses the optimistic-concurrency
   // race (server's ETag changed between read and PUT/DELETE). The Wails

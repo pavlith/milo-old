@@ -27,8 +27,7 @@
   // badge, search-mode swap. Extension just supplies label/count + per-extension
   // search markup + trailing action buttons.
   import ListHeader from '$lib/components/kit/ListHeader.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import type { v1 } from '$lib/models'
 
   interface Props {
     onAdd?: () => void

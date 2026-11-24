@@ -16,15 +16,13 @@
 // continues using the core store. Core code calling core methods unprefixed
 // is fine; only extension → core needs to go through the bridge.
 
-// @ts-ignore - wailsjs bindings
 import {
   Contacts_ListSources as ListSources,
   Contacts_LinkAccountSource as LinkAccountSource,
   Contacts_SyncSource as SyncSource,
   Contacts_SyncAllSources as SyncAllSources,
-} from '$wailsjs/go/app/App'
-// @ts-ignore - wailsjs bindings
-import type { v1 } from '$wailsjs/go/models'
+} from '$bindings/github.com/hkdb/aerion/app/app'
+import type { v1 } from '$lib/models'
 
 function createContactSourcesStore() {
   let sources = $state<v1.ContactSource[]>([])

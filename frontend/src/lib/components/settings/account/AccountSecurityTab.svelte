@@ -1,12 +1,11 @@
 <script lang="ts">
+  import { present, required } from '$lib/bindingValues'
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
   import { addToast } from '$lib/stores/toast'
   import { _, locale } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { smime } from '../../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
+  import { smime } from '$lib/models'
   import {
     ListSMIMECertificates,
     DeleteSMIMECertificate,
@@ -39,9 +38,8 @@
     GetPGPKeyServers,
     AddPGPKeyServer,
     RemovePGPKeyServer,
-  } from '../../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs path
-  import { pgp } from '../../../../../wailsjs/go/models'
+  } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { pgp } from '$lib/models'
 
   interface Props {
     accountId: string
@@ -123,14 +121,14 @@
         ListPGPSenderKeys(),
         GetPGPKeyServers(),
       ])
-      certificates = certs || []
+      certificates = present(certs)
       signPolicy = sPolicy || 'never'
       encryptPolicy = ePolicy || 'never'
-      senderCerts = senderCertList || []
-      pgpKeys = pKeys || []
+      senderCerts = present(senderCertList)
+      pgpKeys = present(pKeys)
       pgpSignPolicy = pgpSPolicy || 'never'
       pgpEncryptPolicy = pgpEPolicy || 'never'
-      pgpSenderKeys = pSenderKeys || []
+      pgpSenderKeys = present(pSenderKeys)
       keyServers = pKeyServers || []
     } catch (err) {
       console.error('Failed to load security data:', err)
@@ -161,7 +159,7 @@
       const result = await ImportSMIMECertificateFromPath(accountId, importFilePath, importPassword)
       addToast({
         type: 'success',
-        message: $_('security.certImported', { values: { count: result.chainLength } }),
+        message: $_('security.certImported', { values: { count: required(result, 'certificate import result').chainLength } }),
       })
       showImportDialog = false
       importFilePath = ''
@@ -188,7 +186,7 @@
       const result = await ImportSMIMECertificateFromPathBER(accountId, importFilePath, importPassword)
       addToast({
         type: 'success',
-        message: $_('security.certImported', { values: { count: result.chainLength } }),
+        message: $_('security.certImported', { values: { count: required(result, 'certificate import result').chainLength } }),
       })
       showImportDialog = false
       importFilePath = ''

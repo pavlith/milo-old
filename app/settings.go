@@ -6,7 +6,6 @@ import (
 
 	"github.com/hkdb/aerion/internal/account"
 	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/ipc"
 	"github.com/hkdb/aerion/internal/logging"
 	"github.com/hkdb/aerion/internal/settings"
 	"github.com/hkdb/aerion/internal/smtp"
@@ -148,8 +147,7 @@ func (a *App) SetThemeMode(mode string) error {
 		return err
 	}
 
-	// Broadcast theme change to all detached composer windows
-	a.BroadcastThemeChange(mode)
+	emit("theme:changed", mode)
 
 	return nil
 }
@@ -239,10 +237,9 @@ func (a *App) GetAutostart() (bool, error) {
 }
 
 // SetAutostart sets whether Aerion starts on login.
-// Manages the XDG autostart .desktop file or Flatpak Background portal.
+// Manages the desktop autostart setting.
 func (a *App) SetAutostart(enabled bool) error {
 	// Check current value to avoid unnecessary OS-level changes
-	// (e.g., Flatpak Background portal D-Bus calls that may fail)
 	current, _ := a.settingsStore.GetAutostart()
 
 	if err := a.settingsStore.SetAutostart(enabled); err != nil {
@@ -304,12 +301,7 @@ func (a *App) SetLanguage(language string) error {
 	if err := a.settingsStore.SetLanguage(language); err != nil {
 		return err
 	}
-	if a.ipcServer != nil {
-		msg, err := ipc.NewMessage(ipc.TypeLanguageChanged, ipc.LanguageChangedPayload{Language: language})
-		if err == nil {
-			_ = a.ipcServer.Broadcast(msg)
-		}
-	}
+	emit("language:changed", language)
 	return nil
 }
 

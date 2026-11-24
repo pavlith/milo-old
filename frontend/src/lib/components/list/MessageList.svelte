@@ -11,21 +11,19 @@
 </script>
 
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import { onMount, onDestroy } from 'svelte'
   import Icon from '@iconify/svelte'
   import ConversationRow from './ConversationRow.svelte'
   import { DropdownMenu } from 'bits-ui'
   import { cn } from '$lib/utils'
   import { Button } from '$lib/components/ui/button'
-  // @ts-ignore - wailsjs bindings
-  import { GetConversations, GetConversationCount, SyncFolder, ForceSyncFolder, CancelFolderSync, SetMessageListSortOrder, GetUnifiedInboxConversations, GetUnifiedInboxCount, SearchConversations, SearchUnifiedInbox, GetSearchCount, GetSearchCountUnifiedInbox, GetFTSIndexStatus, IsFTSIndexing, Trash, DeletePermanently, EmptyTrash, EmptySpam, Undo, IMAPSearchFolder, FetchServerMessage } from '../../../../wailsjs/go/app/App'
+  import { GetConversations, GetConversationCount, SyncFolder, ForceSyncFolder, CancelFolderSync, SetMessageListSortOrder, GetUnifiedInboxConversations, GetUnifiedInboxCount, SearchConversations, SearchUnifiedInbox, GetSearchCount, GetSearchCountUnifiedInbox, GetFTSIndexStatus, IsFTSIndexing, Trash, DeletePermanently, EmptyTrash, EmptySpam, Undo, IMAPSearchFolder, FetchServerMessage } from '$bindings/github.com/hkdb/aerion/app/app'
   import { toasts } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
   import { ConfirmDialog } from '$lib/components/ui/confirm-dialog'
-  // @ts-ignore - wailsjs path
-  import { message } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs runtime
-  import { EventsOn, EventsOff } from '../../../../wailsjs/runtime/runtime'
+  import { message } from '$lib/models'
+  import { EventsOn, EventsOff } from '$lib/desktop'
   import { getMessageListDensity, getMessageListSortOrder, setMessageListSortOrder, getShowMessageListProfilePics } from '$lib/stores/settings.svelte'
   import { contactPhotos } from '$lib/stores/contactPhotos.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
@@ -158,7 +156,7 @@
     if (!acct) return false
     for (const tree of acct.folders) {
       if (tree.folder?.id === fldId) return tree.folder.type === 'inbox'
-      for (const child of tree.children || []) {
+      for (const child of present(tree.children)) {
         if (child.folder?.id === fldId) return child.folder.type === 'inbox'
       }
     }
@@ -460,12 +458,12 @@
       if (generation !== loadGeneration) return
 
       if (currentOffset !== 0) {
-        conversations = [...conversations, ...(convList || [])]
+        conversations = [...conversations, ...present(convList).map(conversation => ({ ...conversation }))]
         totalCount = count
         return
       }
 
-      conversations = convList || []
+      conversations = present(convList).map(conversation => ({ ...conversation }))
 
       // Apply any flag changes that arrived while we were loading.
       // This fixes the race where MarkAsRead fires before the new array is ready.

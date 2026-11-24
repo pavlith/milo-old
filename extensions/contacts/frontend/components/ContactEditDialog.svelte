@@ -27,8 +27,7 @@
     PhotoState,
     SourceTypeID,
   } from './fields/types'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import type { v1 } from '$lib/models'
 
   interface Props {
     open: boolean

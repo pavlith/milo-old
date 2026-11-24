@@ -10,8 +10,7 @@
   import { Dialog as DialogPrimitive } from 'bits-ui'
   import { cn } from '$lib/utils'
   import { Button } from '$lib/components/ui/button'
-  // @ts-ignore - wailsjs path
-  import { OpenURL } from '../../../wailsjs/go/app/App.js'
+  import { OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
   import { _ } from '$lib/i18n'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
 
@@ -34,7 +33,7 @@
   const CHANGELOG_URL = 'https://github.com/hkdb/aerion/blob/main/CHANGELOG.md'
 
   // Open external links via the backend OpenURL: on Linux it tries the OpenURI
-  // portal first, so links work inside the Flatpak sandbox (where xdg-open —
+  // portal first for native desktop integration (xdg-open —
   // and thus Wails' BrowserOpenURL — can't reach the host browser).
   function openExternal(url: string) {
     OpenURL(url).catch((err: unknown) => console.error('Failed to open URL:', err))

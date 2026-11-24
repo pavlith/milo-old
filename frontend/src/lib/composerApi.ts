@@ -1,20 +1,20 @@
+import { definedEntries, present, required } from '$lib/bindingValues'
 /**
  * Composer API Abstraction Layer
  *
  * Provides a unified interface for composer operations that works in both:
  * - Main window (modal/inline composer) - uses App bindings
- * - Detached composer window - uses ComposerApp bindings
+ * - Detached composer window - uses the same App bindings
  *
  * The API is injected via Svelte context to allow different implementations
  * depending on the window type.
  */
 
-// @ts-ignore - Wails generated imports
-import { smtp, account, contact, app, smime, pgp } from '../../wailsjs/go/models'
+import { smtp, account, contact, app, smime, pgp } from '$lib/models'
 
 /**
  * Interface for composer API operations.
- * Both App and ComposerApp implement these methods with the same signatures.
+ * The shared mail service implements these operations for every window.
  */
 export interface ComposerApi {
   /** Send a composed email */
@@ -95,9 +95,6 @@ export interface ComposerApi {
   /** Read a file from a filesystem path as an attachment */
   readFileAsAttachment: (filePath: string) => Promise<app.ComposerAttachment | null>
 
-  /** Check if running inside a Flatpak sandbox */
-  isFlatpak: () => Promise<boolean>
-
   /**
    * Get all accounts with their identities (only available in main window).
    * Returns undefined in detached composer windows.
@@ -126,298 +123,150 @@ export function createMainWindowApi(): ComposerApi {
   // These will be resolved at runtime based on which entry point is used
   return {
     sendMessage: async (accountId: string, message: smtp.ComposeMessage) => {
-      const { SendMessage } = await import('../../wailsjs/go/app/App.js')
+      const { SendMessage } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return SendMessage(accountId, message)
     },
 
     searchContacts: async (query: string, limit: number) => {
-      const { SearchContacts } = await import('../../wailsjs/go/app/App.js')
-      return SearchContacts(query, limit) || []
+      const { SearchContacts } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      return present(await SearchContacts(query, limit))
     },
 
     getIdentities: async (accountId: string) => {
-      const { GetIdentities } = await import('../../wailsjs/go/app/App.js')
-      return GetIdentities(accountId)
+      const { GetIdentities } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      return present(await GetIdentities(accountId))
     },
 
     saveDraft: async (accountId: string, message: smtp.ComposeMessage, draftId: string) => {
-      const { SaveDraft } = await import('../../wailsjs/go/app/App.js')
+      const { SaveDraft } = await import('$bindings/github.com/hkdb/aerion/app/app')
       const result = await SaveDraft(accountId, message, draftId)
       return { id: result?.draft?.id || '', syncStatus: result?.draft?.syncStatus || 'pending' }
     },
 
     deleteDraft: async (draftId: string) => {
-      const { DeleteDraft } = await import('../../wailsjs/go/app/App.js')
+      const { DeleteDraft } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return DeleteDraft(draftId)
     },
 
     pickAttachmentFiles: async () => {
-      const { PickAttachmentFiles } = await import('../../wailsjs/go/app/App.js')
+      const { PickAttachmentFiles } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return PickAttachmentFiles()
     },
 
     getAccount: async (accountId: string) => {
-      const { GetAccount } = await import('../../wailsjs/go/app/App.js')
-      return GetAccount(accountId)
+      const { GetAccount } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      return required(await GetAccount(accountId), 'account')
     },
 
     getDefaultAddress: async (kind: string, accountId: string) => {
-      const { GetDefaultAddress } = await import('../../wailsjs/go/app/App.js')
+      const { GetDefaultAddress } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetDefaultAddress(kind, accountId)
     },
 
     hasSMIMECertificate: async (accountId: string) => {
-      const { HasSMIMECertificate } = await import('../../wailsjs/go/app/App.js')
+      const { HasSMIMECertificate } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return HasSMIMECertificate(accountId)
     },
 
     getSMIMECertificateForEmail: async (accountId: string, email: string) => {
-      const { GetSMIMECertificateForEmail } = await import('../../wailsjs/go/app/App.js')
+      const { GetSMIMECertificateForEmail } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetSMIMECertificateForEmail(accountId, email)
     },
 
     getSMIMESignPolicy: async (accountId: string) => {
-      const { GetSMIMESignPolicy } = await import('../../wailsjs/go/app/App.js')
+      const { GetSMIMESignPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetSMIMESignPolicy(accountId)
     },
 
     getSMIMEEncryptPolicy: async (accountId: string) => {
-      const { GetSMIMEEncryptPolicy } = await import('../../wailsjs/go/app/App.js')
+      const { GetSMIMEEncryptPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetSMIMEEncryptPolicy(accountId)
     },
 
     checkRecipientCerts: async (emails: string[]) => {
-      const { CheckRecipientCerts } = await import('../../wailsjs/go/app/App.js')
-      return CheckRecipientCerts(emails)
+      const { CheckRecipientCerts } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      return definedEntries(await CheckRecipientCerts(emails))
     },
 
     pickRecipientCertFile: async () => {
-      const { PickRecipientCertFile } = await import('../../wailsjs/go/app/App.js')
+      const { PickRecipientCertFile } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return PickRecipientCertFile()
     },
 
     importRecipientCert: async (email: string, filePath: string) => {
-      const { ImportRecipientCert } = await import('../../wailsjs/go/app/App.js')
+      const { ImportRecipientCert } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return ImportRecipientCert(email, filePath)
     },
 
     hasPGPKey: async (accountId: string) => {
-      const { HasPGPKey } = await import('../../wailsjs/go/app/App.js')
+      const { HasPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return HasPGPKey(accountId)
     },
 
     getPGPKeyForEmail: async (accountId: string, email: string) => {
-      const { GetPGPKeyForEmail } = await import('../../wailsjs/go/app/App.js')
+      const { GetPGPKeyForEmail } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetPGPKeyForEmail(accountId, email)
     },
 
     getPGPSignPolicy: async (accountId: string) => {
-      const { GetPGPSignPolicy } = await import('../../wailsjs/go/app/App.js')
+      const { GetPGPSignPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetPGPSignPolicy(accountId)
     },
 
     getPGPEncryptPolicy: async (accountId: string) => {
-      const { GetPGPEncryptPolicy } = await import('../../wailsjs/go/app/App.js')
+      const { GetPGPEncryptPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetPGPEncryptPolicy(accountId)
     },
 
     checkRecipientPGPKeys: async (emails: string[]) => {
-      const { CheckRecipientPGPKeys } = await import('../../wailsjs/go/app/App.js')
-      return CheckRecipientPGPKeys(emails)
+      const { CheckRecipientPGPKeys } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      return definedEntries(await CheckRecipientPGPKeys(emails))
     },
 
     pickRecipientPGPKeyFile: async () => {
-      const { PickRecipientPGPKeyFile } = await import('../../wailsjs/go/app/App.js')
+      const { PickRecipientPGPKeyFile } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return PickRecipientPGPKeyFile()
     },
 
     importRecipientPGPKey: async (email: string, filePath: string) => {
-      const { ImportRecipientPGPKey } = await import('../../wailsjs/go/app/App.js')
+      const { ImportRecipientPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return ImportRecipientPGPKey(email, filePath)
     },
 
     lookupWKD: async (email: string) => {
-      const { LookupWKD } = await import('../../wailsjs/go/app/App.js')
+      const { LookupWKD } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return LookupWKD(email)
     },
 
     lookupHKP: async (email: string) => {
-      const { LookupHKP } = await import('../../wailsjs/go/app/App.js')
+      const { LookupHKP } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return LookupHKP(email)
     },
 
     lookupPGPKey: async (email: string) => {
-      const { LookupPGPKey } = await import('../../wailsjs/go/app/App.js')
+      const { LookupPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return LookupPGPKey(email)
     },
 
     readFileAsAttachment: async (filePath: string) => {
-      const { ReadFileAsAttachment } = await import('../../wailsjs/go/app/App.js')
+      const { ReadFileAsAttachment } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return ReadFileAsAttachment(filePath)
     },
 
-    isFlatpak: async () => {
-      const { IsFlatpak } = await import('../../wailsjs/go/app/App.js')
-      return IsFlatpak()
-    },
-
     getAllAccountIdentities: async () => {
-      const { GetAllAccountIdentities } = await import('../../wailsjs/go/app/App.js')
+      const { GetAllAccountIdentities } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return GetAllAccountIdentities()
     },
 
     openComposerWindow: async (accountId: string, mode: string, messageId: string, draftId: string, mailtoURL?: string) => {
-      const { OpenComposerWindow } = await import('../../wailsjs/go/app/App.js')
+      const { OpenComposerWindow } = await import('$bindings/github.com/hkdb/aerion/app/app')
       return OpenComposerWindow(accountId, mode, messageId, draftId, mailtoURL || '')
     },
   }
 }
 
-/**
- * Creates the composer API implementation for the detached composer window.
- * Uses ComposerApp bindings.
- */
-export function createComposerWindowApi(_accountId: string): ComposerApi {
-  return {
-    sendMessage: async (accountId: string, message: smtp.ComposeMessage) => {
-      const { SendMessage } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return SendMessage(accountId, message)
-    },
-
-    searchContacts: async (query: string, limit: number) => {
-      const { SearchContacts } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return SearchContacts(query, limit) || []
-    },
-
-    getIdentities: async (accountId: string) => {
-      const { GetIdentities } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetIdentities(accountId)
-    },
-
-    saveDraft: async (accountId: string, message: smtp.ComposeMessage, draftId: string) => {
-      const { SaveDraft } = await import('../../wailsjs/go/app/ComposerApp.js')
-      const result = await SaveDraft(accountId, message, draftId || '')
-      return { id: result?.id || '', syncStatus: result?.syncStatus || 'pending' }
-    },
-
-    deleteDraft: async (draftId: string) => {
-      const { DeleteDraft } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return DeleteDraft(draftId)
-    },
-
-    pickAttachmentFiles: async () => {
-      const { PickAttachmentFiles } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return PickAttachmentFiles()
-    },
-
-    getAccount: async (accountId: string) => {
-      const { GetAccount } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetAccount(accountId)
-    },
-
-    getDefaultAddress: async (kind: string, accountId: string) => {
-      const { GetDefaultAddress } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetDefaultAddress(kind, accountId)
-    },
-
-    hasSMIMECertificate: async (accountId: string) => {
-      const { HasSMIMECertificate } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return HasSMIMECertificate(accountId)
-    },
-
-    getSMIMECertificateForEmail: async (accountId: string, email: string) => {
-      const { GetSMIMECertificateForEmail } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetSMIMECertificateForEmail(accountId, email)
-    },
-
-    getSMIMESignPolicy: async (accountId: string) => {
-      const { GetSMIMESignPolicy } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetSMIMESignPolicy(accountId)
-    },
-
-    getSMIMEEncryptPolicy: async (accountId: string) => {
-      const { GetSMIMEEncryptPolicy } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetSMIMEEncryptPolicy(accountId)
-    },
-
-    checkRecipientCerts: async (emails: string[]) => {
-      const { CheckRecipientCerts } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return CheckRecipientCerts(emails)
-    },
-
-    pickRecipientCertFile: async () => {
-      const { PickRecipientCertFile } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return PickRecipientCertFile()
-    },
-
-    importRecipientCert: async (email: string, filePath: string) => {
-      const { ImportRecipientCert } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return ImportRecipientCert(email, filePath)
-    },
-
-    hasPGPKey: async (accountId: string) => {
-      const { HasPGPKey } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return HasPGPKey(accountId)
-    },
-
-    getPGPKeyForEmail: async (accountId: string, email: string) => {
-      const { GetPGPKeyForEmail } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetPGPKeyForEmail(accountId, email)
-    },
-
-    getPGPSignPolicy: async (accountId: string) => {
-      const { GetPGPSignPolicy } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetPGPSignPolicy(accountId)
-    },
-
-    getPGPEncryptPolicy: async (accountId: string) => {
-      const { GetPGPEncryptPolicy } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetPGPEncryptPolicy(accountId)
-    },
-
-    checkRecipientPGPKeys: async (emails: string[]) => {
-      const { CheckRecipientPGPKeys } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return CheckRecipientPGPKeys(emails)
-    },
-
-    pickRecipientPGPKeyFile: async () => {
-      const { PickRecipientPGPKeyFile } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return PickRecipientPGPKeyFile()
-    },
-
-    importRecipientPGPKey: async (email: string, filePath: string) => {
-      const { ImportRecipientPGPKey } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return ImportRecipientPGPKey(email, filePath)
-    },
-
-    lookupWKD: async (email: string) => {
-      const { LookupWKD } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return LookupWKD(email)
-    },
-
-    lookupHKP: async (email: string) => {
-      const { LookupHKP } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return LookupHKP(email)
-    },
-
-    lookupPGPKey: async (email: string) => {
-      const { LookupPGPKey } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return LookupPGPKey(email)
-    },
-
-    readFileAsAttachment: async (filePath: string) => {
-      const { ReadFileAsAttachment } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return ReadFileAsAttachment(filePath)
-    },
-
-    isFlatpak: async () => {
-      const { IsFlatpak } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return IsFlatpak()
-    },
-
-    getAllAccountIdentities: async () => {
-      const { GetAllAccountIdentities } = await import('../../wailsjs/go/app/ComposerApp.js')
-      return GetAllAccountIdentities()
-    },
-  }
+// Detached editors use the shared mail service, with the pop-out action hidden.
+export function createComposerWindowApi(): ComposerApi {
+  const { openComposerWindow: _openComposerWindow, ...api } = createMainWindowApi()
+  return api
 }

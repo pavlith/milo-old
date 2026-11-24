@@ -18,10 +18,8 @@
   import { contactsView } from '$extensions/contacts/frontend/stores/contactsView.svelte'
   import { toasts } from '$lib/stores/toast'
   import WriteAccessAccountPicker from '$lib/components/oauth/WriteAccessAccountPicker.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { SetContactSourceWritable } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import { SetContactSourceWritable } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { v1 } from '$lib/models'
 
   let pendingEnable = $state<Record<string, boolean>>({})
 

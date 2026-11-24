@@ -16,10 +16,8 @@
   import * as Dialog from '$lib/components/ui/dialog'
   import { Button } from '$lib/components/ui/button'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { ListAuthContextsForProvider, Contacts_EnableWriteAccess } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { app } from '$wailsjs/go/models'
+  import { ListAuthContextsForProvider, Contacts_EnableWriteAccess } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { app } from '$lib/models'
 
   interface Props {
     open: boolean

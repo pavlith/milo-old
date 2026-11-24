@@ -1,7 +1,8 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import { _ } from '$lib/i18n'
-  import { WindowMinimise, WindowToggleMaximise, Quit } from '../../../../wailsjs/runtime/runtime'
+  import { WindowMinimise, WindowToggleMaximise } from '$lib/desktop'
+  import { QuitApp } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     onClose?: () => void
@@ -26,7 +27,7 @@
       onClose()
     } else {
       // For windows without custom onClose (e.g., composer), just quit directly
-      Quit()
+      QuitApp()
     }
   }
 </script>

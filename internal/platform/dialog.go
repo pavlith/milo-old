@@ -19,7 +19,7 @@ const (
 // is no Svelte UI to render the error in, and the caller intends to exit
 // immediately after the dialog closes.
 //
-// Linux: zenity → kdialog → xmessage → stderr fallback chain. macOS: osascript.
+// Linux: zenity → kdialog → xmessage → stderr fallback chain.
 // Windows: user32!MessageBoxW. Display failures degrade silently to a stderr
 // write so the underlying message is still surfaced somewhere.
 //
@@ -48,7 +48,6 @@ func ShowDialogAsync(icon DialogIcon, title, text string) {
 //   - Linux (zenity): two-button dialog via --extra-button; URLs inline
 //     in text are also clickable via Pango markup.
 //   - Linux (kdialog / xmessage): two-button dialog with custom labels.
-//   - macOS (osascript): two-button "display dialog".
 //   - Windows: MB_YESNO with explanatory text appended.
 //
 // All backends degrade gracefully — if the chosen tool isn't available,

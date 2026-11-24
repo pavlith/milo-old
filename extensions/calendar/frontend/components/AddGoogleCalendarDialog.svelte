@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   // AddGoogleCalendarDialog — minimal three-step picker for attaching a Google
   // calendar source to an existing Aerion mail account. Phase 2 Chunk 3.
   //
@@ -25,11 +26,9 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import CalendarColorPickStage from './CalendarColorPickStage.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  // @ts-ignore - wailsjs bindings
-  import { GetAccounts, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$wailsjs/go/app/App.js'
+  import { GetAccounts, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$bindings/github.com/hkdb/aerion/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { account, backend } from '$wailsjs/go/models'
+  import type { account, backend } from '$lib/models'
 
   interface Props {
     open: boolean
@@ -96,7 +95,7 @@
     loadingAccounts = true
     try {
       const list = await GetAccounts()
-      accounts = list || []
+      accounts = present(list)
       if (googleAccounts.length === 1) {
         selectedAccountId = googleAccounts[0].id
         void onAccountChange()

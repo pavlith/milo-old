@@ -1,14 +1,12 @@
 <script lang="ts">
+  import { Clipboard } from '$lib/desktop'
+  import { definedEntries, present } from '$lib/bindingValues'
   import { onMount, onDestroy, tick } from 'svelte'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs bindings
-  import { GetConversation, GetReadReceiptResponsePolicy, SendReadReceipt, IgnoreReadReceipt, GetMarkAsReadDelay, GetMessageSource, ProcessSMIMEMessage, ProcessPGPMessage, FetchMessageBody } from '../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs path
-  import { EventsOn } from '../../../../wailsjs/runtime/runtime'
-  // @ts-ignore - wailsjs path
-  import { message as messageModels } from '../../../../wailsjs/go/models'
+  import { GetConversation, GetReadReceiptResponsePolicy, SendReadReceipt, IgnoreReadReceipt, GetMarkAsReadDelay, GetMessageSource, ProcessSMIMEMessage, ProcessPGPMessage, FetchMessageBody } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { EventsOn } from '$lib/desktop'
+  import { message as messageModels } from '$lib/models'
   import AttachmentList from './AttachmentList.svelte'
   import EmailBody from './EmailBody.svelte'
   import { toasts } from '$lib/stores/toast'
@@ -98,6 +96,12 @@
   }
 
   // State
+  async function loadThread(threadId: string, folderId: string) {
+    const result = await GetConversation(threadId, folderId)
+    // Bindings return classes, while message flags and bodies are edited in place.
+    return result && { ...result, messages: present(result.messages).map(message => ({ ...message })) }
+  }
+
   let conversation = $state<messageModels.Conversation | null>(null)
   // Per-message EmailBody refs, used to pull each rendered body for printing.
   let emailBodyRefs: Record<string, { getPrintableHtml(): Promise<string> }> = {}
@@ -178,7 +182,7 @@
           pendingMarkAsReadIds = new Set()
           if (conversation?.messages) {
             // Update isRead flag locally
-            for (const m of conversation.messages) {
+            for (const m of threadMessages) {
               if (data.messageIds.includes(m.id)) {
                 m.isRead = data.isRead
               }
@@ -191,7 +195,7 @@
           }
         } else {
           // External change on displayed conversation
-          if (conversation?.messages?.some(m => data.messageIds.includes(m.id))) {
+          if (threadMessages.some(m => data.messageIds.includes(m.id))) {
             if (!data.isRead) {
               // Marked as unread externally — close the conversation to prevent
               // scheduleMarkAsRead from re-marking it read
@@ -212,10 +216,10 @@
 
     cleanupFunctions.push(
       EventsOn('messages:moved', (data: { messageIds: string[], destFolderId: string }) => {
-        if (!conversation?.messages?.some(m => data.messageIds.includes(m.id))) return
+        if (!threadMessages.some(m => data.messageIds.includes(m.id))) return
 
-        const movedCount = conversation.messages.filter(m => data.messageIds.includes(m.id)).length
-        const remainingCount = conversation.messages.length - movedCount
+        const movedCount = threadMessages.filter(m => data.messageIds.includes(m.id)).length
+        const remainingCount = threadMessages.length - movedCount
 
         if (remainingCount === 0) {
           // All messages moved out — dismiss and auto-select next
@@ -231,10 +235,10 @@
 
     cleanupFunctions.push(
       EventsOn('messages:deleted', async (messageIds: string[]) => {
-        if (conversation?.messages?.some(m => messageIds.includes(m.id))) {
+        if (threadMessages.some(m => messageIds.includes(m.id))) {
           // Check how many messages were deleted
-          const deletedCount = conversation.messages.filter(m => messageIds.includes(m.id)).length
-          const remainingCount = conversation.messages.length - deletedCount
+          const deletedCount = threadMessages.filter(m => messageIds.includes(m.id)).length
+          const remainingCount = threadMessages.length - deletedCount
 
           if (remainingCount === 0) {
             // All messages deleted - navigate away
@@ -298,7 +302,7 @@
       // we actually navigate, so at the first/last boundary native Tab passes
       // through and the user can leave the viewer normally.
       if (e.key === 'Tab' && conversation?.messages) {
-        const messageIds = conversation.messages.map(m => m.id)
+        const messageIds = threadMessages.map(m => m.id)
         const currentIndex = focusedMessageId ? messageIds.indexOf(focusedMessageId) : -1
 
         if (e.shiftKey) {
@@ -416,7 +420,7 @@
   // This avoids the visible flash/re-render when a sync completes with no changes.
   async function refreshConversation(tid: string, fid: string) {
     try {
-      const updated = await GetConversation(tid, fid)
+      const updated = await loadThread(tid, fid)
 
       // Stale guard: user navigated away while we were fetching
       if (threadId !== tid) return
@@ -441,15 +445,15 @@
       // Expand any new unread messages
       if (conversation.messages) {
         const newExpanded = new Set(expandedMessages)
-        conversation.messages.forEach((m, i) => {
+        threadMessages.forEach((m, i) => {
           if (!m.isRead || i === conversation!.messages!.length - 1) {
             newExpanded.add(m.id)
           }
         })
         expandedMessages = newExpanded
-        scheduleMarkAsRead(tid, conversation.messages)
-        processSMIMEMessages(conversation.messages)
-        processPGPMessages(conversation.messages)
+        scheduleMarkAsRead(tid, threadMessages)
+        processSMIMEMessages(threadMessages)
+        processPGPMessages(threadMessages)
       }
 
       await tick()
@@ -472,7 +476,7 @@
     error = null
 
     try {
-      const result = await GetConversation(tid, fid)
+      const result = await loadThread(tid, fid)
 
       // Stale guard: user navigated away while we were fetching
       if (threadId !== tid) return
@@ -491,7 +495,7 @@
       // Auto-expand unread messages and the last message
       if (conversation?.messages) {
         const newExpanded = new Set<string>()
-        conversation.messages.forEach((m, i) => {
+        threadMessages.forEach((m, i) => {
           // Expand if unread or if it's the last message
           if (!m.isRead || i === conversation!.messages!.length - 1) {
             newExpanded.add(m.id)
@@ -500,16 +504,16 @@
         expandedMessages = newExpanded
 
         // Schedule auto-mark-as-read for unread messages
-        scheduleMarkAsRead(tid, conversation.messages)
+        scheduleMarkAsRead(tid, threadMessages)
 
         // Process S/MIME messages on-view
-        processSMIMEMessages(conversation.messages)
+        processSMIMEMessages(threadMessages)
 
         // Process PGP messages on-view
-        processPGPMessages(conversation.messages)
+        processPGPMessages(threadMessages)
 
         // Fetch bodies for messages that don't have them yet (on-demand)
-        fetchUnfetchedBodies(conversation.messages)
+        fetchUnfetchedBodies(threadMessages)
       }
     } catch (err) {
       console.error('Failed to load conversation:', err)
@@ -547,9 +551,9 @@
           const updated = await FetchMessageBody(msg.id)
           // Update the message in the conversation if still viewing
           if (conversation?.messages) {
-            const idx = conversation.messages.findIndex(m => m.id === msg.id)
+            const idx = conversation.messages.findIndex(m => m?.id === msg.id)
             if (idx >= 0 && updated) {
-              conversation.messages[idx] = updated
+              conversation.messages[idx] = { ...updated }
               conversation = conversation // trigger reactivity
             }
           }
@@ -557,7 +561,7 @@
           console.error('Failed to fetch body for message:', msg.id, err)
           // Message may have been deleted from server — remove from conversation display
           if (conversation?.messages) {
-            conversation.messages = conversation.messages.filter(m => m.id !== msg.id)
+            conversation.messages = threadMessages.filter(m => m.id !== msg.id)
             conversation = conversation // trigger reactivity
           }
         }
@@ -575,7 +579,10 @@
       smimeLoading = new Set([...smimeLoading, msg.id])
 
       ProcessSMIMEMessage(msg.id).then(result => {
-        smimeResults = { ...smimeResults, [msg.id]: result }
+        if (result) {
+          const inlineAttachments = definedEntries(result.inlineAttachments ?? {})
+          smimeResults = { ...smimeResults, [msg.id]: { ...result, inlineAttachments } }
+        }
         const next = new Set(smimeLoading)
         next.delete(msg.id)
         smimeLoading = next
@@ -598,7 +605,10 @@
       pgpLoading = new Set([...pgpLoading, msg.id])
 
       ProcessPGPMessage(msg.id).then(result => {
-        pgpResults = { ...pgpResults, [msg.id]: result }
+        if (result) {
+          const inlineAttachments = definedEntries(result.inlineAttachments ?? {})
+          pgpResults = { ...pgpResults, [msg.id]: { ...result, inlineAttachments } }
+        }
         const next = new Set(pgpLoading)
         next.delete(msg.id)
         pgpLoading = next
@@ -667,7 +677,7 @@
 
       // Check for auto-send read receipt on expand
       if (readReceiptPolicy === 'always' && conversation?.messages) {
-        const msg = conversation.messages.find(m => m.id === messageId)
+        const msg = threadMessages.find(m => m.id === messageId)
         if (msg) {
           handleMessageExpanded(msg)
         }
@@ -678,14 +688,14 @@
 
   function expandAll() {
     if (conversation?.messages) {
-      expandedMessages = new Set(conversation.messages.map(m => m.id))
+      expandedMessages = new Set(threadMessages.map(m => m.id))
     }
   }
 
   function collapseAll() {
     // Keep only the last message expanded
     if (conversation?.messages && conversation.messages.length > 0) {
-      expandedMessages = new Set([conversation.messages[conversation.messages.length - 1].id])
+      expandedMessages = new Set([threadMessages.at(-1)?.id ?? ''])
     }
   }
 
@@ -754,14 +764,14 @@
 
   export function getLastMessageId(): string | null {
     if (!conversation?.messages || conversation.messages.length === 0) return null
-    return conversation.messages[conversation.messages.length - 1].id
+    return threadMessages.at(-1)?.id ?? ''
   }
 
   // Re-fetch conversation to pick up flag changes (star, read) from external actions
   export async function refreshFlags() {
     if (!threadId || !folderId) return
     try {
-      const updated = await GetConversation(threadId, folderId)
+      const updated = await loadThread(threadId, folderId)
       // Best-effort flag refresh: never replace a shown thread with an empty
       // one (the thread may have just been deleted/moved, #260).
       if (!updated?.messages?.length) return
@@ -801,7 +811,7 @@
 
   async function handleArchive() {
     if (!conversation?.messages) return
-    const messageIds = conversation.messages.map(m => m.id)
+    const messageIds = threadMessages.map(m => m.id)
 
     try {
       await Archive(messageIds)
@@ -823,7 +833,7 @@
       showDeleteConfirm = true
     } else {
       // Move to trash (undoable)
-      const messageIds = conversation.messages.map(m => m.id)
+      const messageIds = threadMessages.map(m => m.id)
       try {
         const movedToTrash = await Trash(messageIds)
         const toastMsg = movedToTrash ? $_('toast.movedToTrash') : $_('toast.deletedFromFolder')
@@ -839,7 +849,7 @@
 
   async function handleConfirmPermanentDelete() {
     if (!conversation?.messages) return
-    const messageIds = conversation.messages.map(m => m.id)
+    const messageIds = threadMessages.map(m => m.id)
 
     try {
       await DeletePermanently(messageIds)
@@ -886,7 +896,7 @@
 
   async function handleSpam() {
     if (!conversation?.messages) return
-    const messageIds = conversation.messages.map(m => m.id)
+    const messageIds = threadMessages.map(m => m.id)
 
     try {
       if (isSpamFolder) {
@@ -914,8 +924,8 @@
     if (!conversation?.messages || !threadId || !folderId) return
 
     // Toggle based on current state - star if any unstarred, unstar if all starred
-    const wasAllStarred = conversation.messages.every(m => m.isStarred)
-    const messageIds = conversation.messages.map(m => m.id)
+    const wasAllStarred = threadMessages.every(m => m.isStarred)
+    const messageIds = threadMessages.map(m => m.id)
 
     try {
       if (wasAllStarred) {
@@ -926,7 +936,7 @@
         await Star(messageIds)
         toasts.success($_('toast.starred'))
       }
-      conversation = await GetConversation(threadId, folderId)
+      conversation = await loadThread(threadId, folderId)
       onActionComplete?.()
     } catch (err) {
       console.error('Star toggle failed:', err)
@@ -938,8 +948,8 @@
     if (!conversation?.messages) return
 
     // Toggle based on current state
-    const allRead = conversation.messages.every(m => m.isRead)
-    const messageIds = conversation.messages.map(m => m.id)
+    const allRead = threadMessages.every(m => m.isRead)
+    const messageIds = threadMessages.map(m => m.id)
 
     // Tag these as our own operation so the readChanged listener treats
     // the resulting event as a local toggle (update flags + counts) rather
@@ -1105,13 +1115,14 @@
   }
 
   // Computed: are all messages in the conversation starred?
+  const threadMessages = $derived(present(conversation?.messages))
   const allStarred = $derived(
-    conversation?.messages?.every(m => m.isStarred) ?? false
+    threadMessages.length > 0 && threadMessages.every(m => m.isStarred)
   )
 
   // Computed: are all messages in the conversation read?
   const allRead = $derived(
-    conversation?.messages?.every(m => m.isRead) ?? false
+    threadMessages.length > 0 && threadMessages.every(m => m.isRead)
   )
 
   // Computed: is this the Trash folder?
@@ -1128,8 +1139,8 @@
   // Otherwise show the whole thread.
   const visibleMessages = $derived(
     inFocusMode && focusModeKind === 'message' && focusedMessageIdInFocus
-      ? (conversation?.messages?.filter(m => m.id === focusedMessageIdInFocus) ?? [])
-      : (conversation?.messages ?? [])
+      ? (threadMessages.filter(m => m.id === focusedMessageIdInFocus))
+      : threadMessages
   )
 
   // Reference to the scrollable content area
@@ -1250,7 +1261,7 @@
   // Copy text to clipboard with toast feedback
   async function copyToClipboard(text: string, label: string = 'Text') {
     try {
-      await navigator.clipboard.writeText(text)
+      await Clipboard.SetText(text)
       toasts.success($_('viewer.copiedToClipboard', { values: { label } }))
     } catch {
       toasts.error($_('viewer.failedToCopy'))

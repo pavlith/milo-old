@@ -5,8 +5,7 @@
   import AccountDialog from './AccountDialog.svelte'
   import DeleteAccountDialog from './DeleteAccountDialog.svelte'
   import AerionCoreOAuthSection from './AerionCoreOAuthSection.svelte'
-  // @ts-ignore - wailsjs path
-  import type { account } from '../../../../wailsjs/go/models'
+  import type { account } from '$lib/models'
   import { _ } from '$lib/i18n'
 
   // Filter out shared mailboxes — they're managed from the parent account's Identity tab

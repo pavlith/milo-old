@@ -7,17 +7,13 @@
   import Composer from './lib/components/composer/Composer.svelte'
   import ToastContainer from './lib/components/ui/toast/ToastContainer.svelte'
   import SpellSuggestionMenu from './lib/spellcheck/SpellSuggestionMenu.svelte'
-  import { addToast } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
   import { createComposerWindowApi } from '$lib/composerApi'
   import { getShowTitleBar, getNativeTitleBar, setShowTitleBar, setNativeTitleBar, setDarkComposerBody } from '$lib/stores/settings.svelte'
   import { applyTheme } from '$lib/stores/theme.svelte'
-  // @ts-ignore - wailsjs imports
-  import { GetComposeMode, PrepareReply, GetDraft, CloseWindow, GetThemeMode, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, RefreshWindowConstraints, NotifyStartupComplete } from '../wailsjs/go/app/ComposerApp.js'
-  // @ts-ignore - wailsjs imports
-  import { smtp, app } from '../wailsjs/go/models'
-  // @ts-ignore - wailsjs runtime
-  import { WindowMinimise, WindowToggleMaximise, WindowShow, WindowSetTitle, EventsOn, EventsOff } from '../wailsjs/runtime/runtime'
+  import { GetComposeMode, PrepareComposer, FinishComposer, KeepComposerOpen, GetThemeMode, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, NotifyStartupComplete } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { smtp, app } from '$lib/models'
+  import { WindowMinimise, WindowToggleMaximise, WindowShow, WindowSetTitle, EventsOn, EventsOff } from '$lib/desktop'
 
   // Compose mode info from backend
   let composeMode = $state<app.ComposeMode | null>(null)
@@ -94,46 +90,11 @@
     // so KDE/Plasma sees the placeholder → real window handoff cleanly (#154).
     NotifyStartupComplete()
 
-    // Remove GTK max size constraints that Wails v2 sets at startup
-    RefreshWindowConstraints()
+    EventsOn('composer:close', requestClose)
 
-    // Listen for shutdown request from main window
-    EventsOn('app:shutdown', (_reason: string) => {
-      addToast({
-        type: 'info',
-        message: $_('toast.mainWindowClosing'),
-      })
-      // Give user a moment to see the toast, then close
-      setTimeout(() => {
-        CloseWindow()
-      }, 1000)
-    })
-
-    // Load compose mode and initial data
     try {
       composeMode = await GetComposeMode()
-
-      // If editing a draft, load it
-      if (composeMode?.draftId) {
-        const draft = await GetDraft()
-        if (draft) {
-          initialMessage = draft
-        }
-      }
-      // If replying/forwarding, prepare the message
-      else if (composeMode?.mode !== 'new' && composeMode?.messageId) {
-        const prepared = await PrepareReply()
-        if (prepared) {
-          initialMessage = prepared
-        }
-      }
-      // For new message, PrepareReply returns a message with just the From address
-      else {
-        const prepared = await PrepareReply()
-        if (prepared) {
-          initialMessage = prepared
-        }
-      }
+      initialMessage = await PrepareComposer()
     } catch (err) {
       console.error('Failed to initialize composer:', err)
       error = String(err)
@@ -144,7 +105,7 @@
 
   onDestroy(() => {
     EventsOff('theme:changed')
-    EventsOff('app:shutdown')
+    EventsOff('composer:close')
   })
 
   // Window control functions
@@ -169,7 +130,7 @@
 
   // Handle composer close (after send or discard confirmation)
   function handleComposerClose() {
-    CloseWindow()
+    void FinishComposer()
   }
 
   // Handle message sent
@@ -177,7 +138,7 @@
     // The Composer component shows its own toast
     // Close the window after a brief delay
     setTimeout(() => {
-      CloseWindow()
+      void FinishComposer()
     }, 500)
   }
 </script>
@@ -254,7 +215,7 @@
           <Icon icon="mdi:alert-circle" class="w-12 h-12 text-destructive" />
           <p class="text-sm text-destructive">{error}</p>
           <button
-            onclick={() => CloseWindow()}
+            onclick={() => void FinishComposer()}
             class="px-4 py-2 text-sm bg-muted hover:bg-muted/80 rounded-md transition-colors"
           >
             {$_('window.closeWindow')}
@@ -269,10 +230,11 @@
         messageId={composeMode.messageId || null}
         onClose={handleComposerClose}
         onSent={handleMessageSent}
-        api={createComposerWindowApi(composeMode.accountId)}
+        api={createComposerWindowApi()}
         isDetached={true}
         closeRequested={closeRequested}
         onCloseHandled={handleCloseHandled}
+        onKeepEditing={() => void KeepComposerOpen()}
         onTitleChange={handleTitleChange}
       />
     {/if}

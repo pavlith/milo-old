@@ -7,10 +7,8 @@
 // fetched twice across overlapping/rapid ensure() calls (fast folder switching).
 // Reads the local contact DB only — no network — so it works offline.
 
-// @ts-ignore - wailsjs bindings
-import { GetContactPhotos } from '../../../wailsjs/go/app/App.js'
-// @ts-ignore - wailsjs bindings
-import { EventsOn } from '../../../wailsjs/runtime/runtime'
+import { GetContactPhotos } from '$bindings/github.com/hkdb/aerion/app/app'
+import { EventsOn } from '$lib/desktop'
 
 type Photo = { data: string; mediaType: string }
 

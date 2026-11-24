@@ -10,8 +10,7 @@
 //   import { logger } from '$extensions/calendar/frontend/lib/logger'
 //   logger.warn(`failed to read localStorage: ${err}`)
 
-// @ts-ignore - Wails generated bindings
-import { Calendar_LogFrontend } from '$wailsjs/go/app/App.js'
+import { Calendar_LogFrontend } from '$bindings/github.com/hkdb/aerion/app/app'
 
 function emit(level: string, message: string): void {
   Calendar_LogFrontend(level, message).catch(() => {})

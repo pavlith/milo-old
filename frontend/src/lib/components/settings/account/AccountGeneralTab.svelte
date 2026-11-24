@@ -9,8 +9,7 @@
     syncPeriodOptions,
   } from '$lib/config/providers'
   import { _ } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { account } from '../../../../../wailsjs/go/models'
+  import { account } from '$lib/models'
 
   interface Props {
     /** The account being edited */

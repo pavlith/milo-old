@@ -125,7 +125,7 @@ func runDialogCmd(cmd *exec.Cmd, block bool) bool {
 // showDialogWithLink walks the same zenity → kdialog → xmessage → stderr
 // fallback chain as showDialog, but each backend is configured for two
 // buttons (close + action). If the user clicks the action button, the URL
-// is opened via xdg-open (after a portal attempt on Flatpak).
+// is opened via xdg-open.
 func showDialogWithLink(icon DialogIcon, title, text, actionLabel, actionURL string) {
 	if tryZenityWithLink(icon, title, text, actionLabel, actionURL) {
 		return
@@ -222,8 +222,7 @@ func tryXmessageWithLink(title, text, actionLabel, actionURL string) bool {
 // effort: failures are silent (we've already shown the URL to the user as
 // text in the dialog, so they can copy/paste it manually if needed).
 //
-// Prefers the XDG OpenURI portal so Flatpak builds reach the host's URL
-// handler, falling back to xdg-open.
+// Prefers the XDG OpenURI portal and falls back to xdg-open.
 func openURLBestEffort(url string) {
 	if err := PortalOpenURI(url); err == nil {
 		return

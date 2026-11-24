@@ -7,8 +7,7 @@
   // handlers (which vary per site — re-fetch vs reload, toast vs inline error).
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_GrantCalendarAccess } from '$wailsjs/go/app/App.js'
+  import { Calendar_GrantCalendarAccess } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     provider: 'google' | 'microsoft'

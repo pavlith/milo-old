@@ -15,7 +15,7 @@ import (
 	"github.com/hkdb/aerion/internal/notification"
 	"github.com/hkdb/aerion/internal/oauth2"
 	"github.com/hkdb/aerion/internal/platform"
-	wailsRuntime "github.com/wailsapp/wails/v2/pkg/runtime"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 // coreImpl is the host-side implementation of coreapi.Core handed to each
@@ -307,7 +307,7 @@ func (a *extensionAuth) StartIncrementalConsent(req coreapi.StartIncrementalCons
 
 	if perr := platform.PortalOpenURI(authURL); perr != nil {
 		log.Debug().Err(perr).Msg("Portal OpenURI failed, falling back to BrowserOpenURL")
-		wailsRuntime.BrowserOpenURL(a.app.ctx, authURL)
+		_ = application.Get().Browser.OpenURL(authURL)
 	}
 
 	tokens, email, err := a.app.oauth2Manager.WaitForCallback(a.app.ctx)

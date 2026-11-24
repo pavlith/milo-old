@@ -15,10 +15,8 @@
   import WriteAccessAccountPicker from '$lib/components/oauth/WriteAccessAccountPicker.svelte'
   import { contactSourcesStore } from '$extensions/contacts/frontend/stores/contactSources.svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { SetContactSourceWritable } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import { SetContactSourceWritable } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { v1 } from '$lib/models'
 
   interface Props {
     open: boolean

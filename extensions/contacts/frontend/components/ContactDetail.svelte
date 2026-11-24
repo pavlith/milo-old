@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Clipboard } from '$lib/desktop'
   import { _ } from 'svelte-i18n'
   import DetailPane from '$lib/components/kit/DetailPane.svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
@@ -8,8 +9,7 @@
   import { contactsView, deleteLocalContact } from '$extensions/contacts/frontend/stores/contactsView.svelte'
   import { contactSourcesStore } from '$extensions/contacts/frontend/stores/contactSources.svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import type { v1 } from '$wailsjs/go/models'
+  import type { v1 } from '$lib/models'
 
   // Edit-dialog state lives in ContactsPane (hoisted so the 'e' keyboard
   // shortcut can open it from anywhere within the pane). The button below
@@ -49,7 +49,7 @@
 
   async function copyEmail(email: string) {
     try {
-      await navigator.clipboard.writeText(email)
+      await Clipboard.SetText(email)
       toasts.success($_('contacts.toast.emailCopied', { values: { email } }))
     } catch {
       toasts.error($_('contacts.toast.emailCopyFailed'))

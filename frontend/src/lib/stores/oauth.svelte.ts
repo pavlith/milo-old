@@ -1,3 +1,4 @@
+import { required } from '$lib/bindingValues'
 /**
  * OAuth state store for managing OAuth2 authentication flows
  */
@@ -13,9 +14,8 @@ import {
   ReauthorizeAccount,
   TestOAuthConnection,
   GetAccount,
-} from '../../../wailsjs/go/app/App'
-// @ts-ignore - wailsjs runtime
-import { EventsOn, EventsOff } from '../../../wailsjs/runtime/runtime'
+} from '$bindings/github.com/hkdb/aerion/app/app'
+import { EventsOn, EventsOff } from '$lib/desktop'
 import { get } from 'svelte/store'
 import { _ } from '$lib/i18n'
 import { addToast } from './toast'
@@ -47,7 +47,7 @@ class OAuthStore {
   flowError = $state<string | null>(null)
   flowResult = $state<OAuthFlowResult | null>(null)
   // Authorization URL — exposed so the UI can offer a "Copy link" fallback
-  // when the browser fails to open (e.g., portal misconfig in Flatpak).
+  // when the browser fails to open.
   authURL = $state<string | null>(null)
 
   // Configured providers (cached)
@@ -233,7 +233,7 @@ class OAuthStore {
    * Get OAuth status for an account.
    */
   async getAccountStatus(accountId: string): Promise<OAuthStatus> {
-    return await GetOAuthStatus(accountId)
+    return required(await GetOAuthStatus(accountId), 'GetOAuthStatus result')
   }
 
   /**

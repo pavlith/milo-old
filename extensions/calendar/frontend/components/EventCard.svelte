@@ -8,8 +8,7 @@
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { eventChipFill } from '$extensions/calendar/frontend/lib/eventColor'
   import { getIsDarkActive } from '$lib/stores/theme.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     instance: backend.EventInstance

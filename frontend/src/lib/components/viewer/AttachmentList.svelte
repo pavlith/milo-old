@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
-  import { GetAttachments, SaveAttachmentAs, SaveAllAttachments, OpenAttachment, SaveEncryptedAttachmentAs, OpenEncryptedAttachment, SaveAllEncryptedAttachments, OpenFile, OpenFolder } from '../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs path
-  import { message as messageModels } from '../../../../wailsjs/go/models'
+  import { GetAttachments, SaveAttachmentAs, SaveAllAttachments, OpenAttachment, SaveEncryptedAttachmentAs, OpenEncryptedAttachment, SaveAllEncryptedAttachments, OpenFile, OpenFolder } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { message as messageModels } from '$lib/models'
   import { toasts } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
 
@@ -47,7 +47,7 @@
   async function loadAttachments(msgId: string) {
     loading = true
     try {
-      const result = await GetAttachments(msgId)
+      const result = present(await GetAttachments(msgId))
       attachments = result || []
     } catch (err) {
       console.error('Failed to load attachments:', err)

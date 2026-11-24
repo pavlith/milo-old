@@ -4,10 +4,8 @@
   import Switch from '$lib/components/ui/switch/Switch.svelte'
   import RecipientInput from '$lib/components/composer/RecipientInput.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
-  // @ts-ignore - Wails generated imports
-  import { smtp } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetDefaultAddress, GetDefaultAddressEnabled, SetDefaultAddress, SetDefaultAddressEnabled } from '../../../../wailsjs/go/app/App.js'
+  import { smtp } from '$lib/models'
+  import { GetDefaultAddress, GetDefaultAddressEnabled, SetDefaultAddress, SetDefaultAddressEnabled } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     /** Backend default-address kind: 'bcc' | 'replyto' */

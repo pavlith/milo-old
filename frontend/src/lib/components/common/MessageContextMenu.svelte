@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import { ContextMenu as ContextMenuPrimitive } from 'bits-ui'
   import {
@@ -20,9 +21,8 @@
     MoveToFolder,
     CopyToFolder,
     Undo,
-  } from '../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs path
-  import { account } from '../../../../wailsjs/go/models'
+  } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { account } from '$lib/models'
   import { toasts } from '$lib/stores/toast'
   import { ConfirmDialog } from '$lib/components/ui/confirm-dialog'
   import FolderPickerDialog from './FolderPickerDialog.svelte'
@@ -95,7 +95,7 @@
 
     accountsLoading = true
     try {
-      const result = await GetAccounts()
+      const result = present(await GetAccounts())
       accounts = result || []
       accountsLoaded = true
     } catch (err) {

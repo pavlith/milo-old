@@ -5,8 +5,7 @@
 
   import { _ } from 'svelte-i18n'
   import Avatar from '$lib/components/kit/Avatar.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     attendees: backend.Attendee[]

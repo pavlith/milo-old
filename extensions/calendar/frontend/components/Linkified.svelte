@@ -13,8 +13,7 @@
   // (heading, paragraph, whitespace-pre-wrap div).
 
   import { logger } from '$extensions/calendar/frontend/lib/logger'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_OpenURL } from '$wailsjs/go/app/App.js'
+  import { Calendar_OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     text: string | undefined | null

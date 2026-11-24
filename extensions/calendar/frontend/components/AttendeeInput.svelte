@@ -10,10 +10,8 @@
   import { _ } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_SearchContacts } from '$wailsjs/go/app/App'
-  // @ts-ignore - wailsjs bindings
-  import { backend, v1 } from '$wailsjs/go/models'
+  import { Calendar_SearchContacts } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { backend, v1 } from '$lib/models'
 
   interface Props {
     attendees: backend.AttendeeInput[]

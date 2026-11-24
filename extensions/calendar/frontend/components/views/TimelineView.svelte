@@ -25,11 +25,9 @@
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { toTzDate, fromTzDate } from '$extensions/calendar/frontend/lib/tzMath'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_UpdateEvent } from '$wailsjs/go/app/App.js'
+  import { Calendar_UpdateEvent } from '$bindings/github.com/hkdb/aerion/app/app'
   import SendInvitationsDialog from '$extensions/calendar/frontend/components/SendInvitationsDialog.svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     /** Local-time dates to render, one per column. Length 1 for DayView, 7 for WeekView. */

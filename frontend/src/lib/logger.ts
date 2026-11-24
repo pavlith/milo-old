@@ -21,8 +21,7 @@
  * if needed.
  */
 
-// @ts-ignore - Wails generated bindings
-import { LogFrontend } from '../../wailsjs/go/app/App.js'
+import { LogFrontend } from '$bindings/github.com/hkdb/aerion/app/app'
 
 function emit(level: string, message: string): void {
   // Fire-and-forget — never await, never throw. Swallow errors so a logger

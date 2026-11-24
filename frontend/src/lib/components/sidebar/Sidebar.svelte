@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import { onMount } from 'svelte'
   import AccountSection from './AccountSection.svelte'
@@ -13,12 +14,10 @@
   import { isAccountExpanded, setAccountExpanded, isUnifiedInboxExpanded, setFolderCollapsed, getUIState, getUIStateVersion, saveUIState } from '$lib/stores/uiState.svelte'
   import { setFocusedPane } from '$lib/stores/keyboard.svelte'
   import { _, locale } from '$lib/i18n'
-  // @ts-ignore - wailsjs path
-  import { account, folder } from '../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetUnifiedInboxUnreadCount } from '../../../../wailsjs/go/app/App'
+  import { account, folder } from '$lib/models'
+  import { GetUnifiedInboxUnreadCount } from '$bindings/github.com/hkdb/aerion/app/app'
   import { formatTimeSince } from '$lib/utils/date'
-  import { EventsOn } from '../../../../wailsjs/runtime/runtime'
+  import { EventsOn } from '$lib/desktop'
 
   // Folder item type for flat navigation list
   interface FolderNavItem {
@@ -71,7 +70,7 @@
     const collectIds = (trees: folder.FolderTree[]) => {
       for (const tree of trees) {
         if (tree.folder) allFolderIds.add(tree.folder.id)
-        if (tree.children) collectIds(tree.children)
+        if (present(tree.children)) collectIds(present(tree.children))
       }
     }
     for (const acc of accountStore.accounts) {
@@ -188,8 +187,8 @@
           if (f.folder?.type === 'inbox') {
             return f.folder
           }
-          if (f.children) {
-            const found = findInbox(f.children)
+          if (present(f.children)) {
+            const found = findInbox(present(f.children))
             if (found) return found
           }
         }
@@ -309,8 +308,8 @@
           const findInbox = (trees: folder.FolderTree[]): folder.Folder | null => {
             for (const tree of trees) {
               if (tree.folder?.type === 'inbox') return tree.folder
-              if (tree.children) {
-                const found = findInbox(tree.children)
+              if (present(tree.children)) {
+                const found = findInbox(present(tree.children))
                 if (found) return found
               }
             }
@@ -359,7 +358,7 @@
             }
             // Skip children of collapsed folders
             if (tree.children && tree.children.length > 0 && tree.folder && collapsedFolders[tree.folder.id] === false) {
-              flattenFolders(tree.children)
+              flattenFolders(present(tree.children))
             }
           }
         }
@@ -524,8 +523,8 @@
   function findTreeNode(trees: folder.FolderTree[], folderId: string): folder.FolderTree | null {
     for (const tree of trees) {
       if (tree.folder?.id === folderId) return tree
-      if (tree.children) {
-        const found = findTreeNode(tree.children, folderId)
+      if (present(tree.children)) {
+        const found = findTreeNode(present(tree.children), folderId)
         if (found) return found
       }
     }

@@ -5,7 +5,7 @@ import path from 'path'
 
 // Extensions live outside frontend/ at the repo root (../extensions/<name>/frontend/...).
 // $extensions aliases the extensions dir so App.svelte and other host files
-// can import extension Svelte components and stores cleanly. $wailsjs aliases
+// can import extension Svelte components and stores cleanly. $bindings aliases
 // the generated Wails bindings so deep extension files don't need ../ chains.
 //
 // Because extension Svelte/TS files live OUTSIDE frontend/, Rollup's default
@@ -21,14 +21,12 @@ import path from 'path'
 //      manifest ID so we know which extension to move the dep to when we
 //      eventually split deps per-extension (npm workspaces / per-extension
 //      package.json — tracked as future architectural work).
-//   3. Run `python3 build/flatpak/flathub/gen-node-sources.py` so Flatpak
-//      CI picks up the new tarball (per project memory).
 //
 // Aliases are grouped as:
 //   - SHARED — used by kit primitives or multiple extensions
 //   - PER-EXTENSION — used by exactly one extension today; comment names it
 const EXTENSIONS_DIR = path.resolve(__dirname, '../extensions')
-const WAILSJS_DIR = path.resolve(__dirname, './wailsjs')
+const BINDINGS_DIR = path.resolve(__dirname, './bindings')
 const NODE_MODULES_DIR = path.resolve(__dirname, './node_modules')
 
 // https://vitejs.dev/config/
@@ -39,7 +37,7 @@ export default defineConfig({
       '$lib': path.resolve('./src/lib'),
       '$': path.resolve('./src'),
       '$extensions': EXTENSIONS_DIR,
-      '$wailsjs': WAILSJS_DIR,
+      '$bindings': BINDINGS_DIR,
       // ── SHARED (kit primitives + most/all extensions) ───────────────────
       '@iconify/svelte': path.resolve(NODE_MODULES_DIR, '@iconify/svelte'),
       'svelte-i18n':     path.resolve(NODE_MODULES_DIR, 'svelte-i18n'),

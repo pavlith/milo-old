@@ -6,8 +6,7 @@
   import { Label } from '$lib/components/ui/label'
   import { _ } from '$lib/i18n'
   import SignatureEditor from './SignatureEditor.svelte'
-  // @ts-ignore - wailsjs path
-  import { account } from '../../../../../wailsjs/go/models'
+  import { account } from '$lib/models'
 
   interface Props {
     /** Whether the dialog is open */

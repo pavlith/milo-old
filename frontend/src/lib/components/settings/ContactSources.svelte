@@ -8,8 +8,7 @@
   import ContactSourceDialog from './ContactSourceDialog.svelte'
   import { _, locale } from '$lib/i18n'
   import { formatTimeSince } from '$lib/utils/date'
-  // @ts-ignore - wailsjs path
-  import type { carddav } from '../../../../wailsjs/go/models'
+  import type { carddav } from '$lib/models'
 
   // Dialog state
   let showAddDialog = $state(false)

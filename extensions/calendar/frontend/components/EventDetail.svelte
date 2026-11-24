@@ -22,14 +22,10 @@
   import { logger } from '$extensions/calendar/frontend/lib/logger'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_DeleteEvent } from '$wailsjs/go/app/App.js'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_GetEvent } from '$wailsjs/go/app/App.js'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_OpenURL } from '$wailsjs/go/app/App.js'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import { Calendar_DeleteEvent } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_GetEvent } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
+  import type { backend } from '$lib/models'
 
   interface Props {
     eventId: string | null
@@ -73,7 +69,7 @@
     loading = true
     loadError = null
     Calendar_GetEvent(id)
-      .then((ev: backend.Event) => {
+      .then(ev => {
         // Drop result if a newer fetch superseded us mid-flight.
         if (eventId !== id) return
         event = ev ?? null
@@ -156,7 +152,7 @@
   function onRSVPed() {
     if (!eventId) return
     Calendar_GetEvent(eventId)
-      .then((ev: backend.Event) => {
+      .then(ev => {
         event = ev ?? null
       })
       .catch((err: unknown) => {
@@ -352,7 +348,7 @@
     // re-query here.
     if (eventId) {
       Calendar_GetEvent(eventId)
-        .then((ev: backend.Event) => {
+        .then(ev => {
           event = ev ?? null
         })
         .catch((err: unknown) => {

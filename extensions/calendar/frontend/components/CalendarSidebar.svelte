@@ -19,8 +19,7 @@
   import AddCalendarMenu from './AddCalendarMenu.svelte'
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import { onMount, onDestroy } from 'svelte'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   interface Props {
     onOpenSettings?: () => void

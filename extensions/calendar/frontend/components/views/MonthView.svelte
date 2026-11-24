@@ -18,8 +18,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import { events } from '$extensions/calendar/frontend/stores/events.svelte'
   import { toTzDate } from '$extensions/calendar/frontend/lib/tzMath'
-  // @ts-ignore - wailsjs bindings
-  import type { backend } from '$wailsjs/go/models'
+  import type { backend } from '$lib/models'
 
   // Per-cell event count now tracks the available cell height (#323) instead of
   // a fixed 3. PILL_PX = one EventCard row (text-xs + py-0.5) plus the gap-0.5;

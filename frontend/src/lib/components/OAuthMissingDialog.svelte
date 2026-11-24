@@ -8,8 +8,7 @@
   import { Button } from '$lib/components/ui/button'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs path
-  import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime'
+  import { BrowserOpenURL } from '$lib/desktop'
   import { _ } from '$lib/i18n'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
 

@@ -1,7 +1,6 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
-  // @ts-ignore - wailsjs path
-  import type { account, folder } from '../../../../wailsjs/go/models'
+  import type { account, folder } from '$lib/models'
   import { isUnifiedInboxExpanded, setUnifiedInboxExpanded } from '$lib/stores/uiState.svelte'
   import FolderContextMenu from './FolderContextMenu.svelte'
   import { _ } from '$lib/i18n'

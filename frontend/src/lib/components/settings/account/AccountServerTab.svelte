@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { present, definedEntries } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
@@ -9,12 +10,9 @@
     authMechanismOptions,
     syncIntervalOptions,
   } from '$lib/config/providers'
-  // @ts-ignore - wailsjs path
-  import { account, certificate, app } from '../../../../../wailsjs/go/models'
-  // @ts-ignore - wailsjs path
-  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetTrustedCertificates, RemoveTrustedCertificate, GetFolders, SubscribeFolder, UnsubscribeFolder, SubscribeAllFolders } from '../../../../../wailsjs/go/app/App'
-  // @ts-ignore - wailsjs path
-  import { folder } from '../../../../../wailsjs/go/models'
+  import { account, certificate, app } from '$lib/models'
+  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetTrustedCertificates, RemoveTrustedCertificate, GetFolders, SubscribeFolder, UnsubscribeFolder, SubscribeAllFolders } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { folder } from '$lib/models'
   import { Button } from '$lib/components/ui/button'
   import { _, locale } from '$lib/i18n'
   import ConfirmDialog from '$lib/components/ui/confirm-dialog/ConfirmDialog.svelte'
@@ -185,7 +183,7 @@
     if (syncFolders.length > 0) return
     loadingSyncFolders = true
     try {
-      syncFolders = await GetFolders(editAccount.id)
+      syncFolders = present(await GetFolders(editAccount.id))
     } catch (err) {
       console.error('Failed to load folders for sync:', err)
     } finally {
@@ -207,7 +205,7 @@
     try {
       await SubscribeAllFolders(editAccount.id)
       // Refresh folder list to show updated subscription state
-      syncFolders = await GetFolders(editAccount.id)
+      syncFolders = present(await GetFolders(editAccount.id))
     } catch (err) {
       console.error('Failed to subscribe to all folders:', err)
     }
@@ -270,8 +268,8 @@
 
     loadingFolders = true
     try {
-      availableFolders = await GetAccountFoldersForMapping(editAccount.id)
-      autoDetectedFolders = await GetAutoDetectedFolders(editAccount.id)
+      availableFolders = present(await GetAccountFoldersForMapping(editAccount.id))
+      autoDetectedFolders = definedEntries(await GetAutoDetectedFolders(editAccount.id))
     } catch (err) {
       console.error('Failed to load folders for mapping:', err)
     } finally {
@@ -297,7 +295,7 @@
     loadingCerts = true
     try {
       const hosts = [imapHost, smtpHost].filter(h => h)
-      const result = await GetTrustedCertificates(hosts)
+      const result = present(await GetTrustedCertificates(hosts))
       trustedCerts = result || []
     } catch (err) {
       console.error('Failed to load trusted certificates:', err)
@@ -464,7 +462,7 @@
           <Select.Trigger class="h-10">
             <Select.Value placeholder={$_('account.replyForwardWithDefault')}>
               {#if replyForwardIdentityID}
-                {@const allIdentities = (availableIdentityGroups || []).flatMap(g => (g.identities || []).map(i => ({ identity: i, group: g })))}
+                {@const allIdentities = (availableIdentityGroups || []).flatMap(g => present(g.identities).map(i => ({ identity: i, group: g })))}
                 {@const found = allIdentities.find(x => x.identity.id === replyForwardIdentityID)}
                 {#if found}
                   {#if found.group.account?.color}
@@ -489,7 +487,7 @@
                   {/if}
                   {group.account?.name || group.account?.email}
                 </Select.GroupHeading>
-                {#each group.identities || [] as identity (identity.id)}
+                {#each present(group.identities) as identity (identity.id)}
                   <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
                 {/each}
               </Select.Group>

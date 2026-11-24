@@ -9,8 +9,7 @@
   import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
   import { toasts } from '$lib/stores/toast'
-  // @ts-ignore - wailsjs bindings
-  import { Calendar_UpdateMyAttendeeStatus } from '$wailsjs/go/app/App'
+  import { Calendar_UpdateMyAttendeeStatus } from '$bindings/github.com/hkdb/aerion/app/app'
 
   interface Props {
     eventId: string
