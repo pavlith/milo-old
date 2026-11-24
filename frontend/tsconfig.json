@@ -8,6 +8,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "$lib": ["src/lib"],
       "$lib/*": ["src/lib/*"],
       "$/*": ["src/*"],
       "$extensions/*": ["../extensions/*"],
