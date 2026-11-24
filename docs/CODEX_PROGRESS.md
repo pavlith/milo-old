@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-24. Stage 4 is complete on the Linux Wails 3 baseline. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-25. Stage 4 is complete and reviewed on the Linux Wails 3 baseline. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -82,6 +82,13 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Clean `npm ci`, `npm run check` (0 errors and 0 warnings), lint, production build, `make build`, `go test ./...` and `go vet ./...` passed. The Linux build used the pinned Wails CLI and a temporary GTK4/WebKitGTK sysroot. Both HTML entries built and generated bindings matched the baseline. Vite retains its chunk-size and dynamic-import warnings. Knip exits 1 with exactly the baseline findings. Its targeted exceptions cover the CSS-only animation package and Popover exports consumed by the Calendar extension outside the npm root.
 - Linux Wails under Xvfb verified Terms → OAuth warning → What's New, Settings and nested confirmation focus, menu navigation and Escape, selection persistence, both themes and locales, toast expiry, Calendar and Contacts, virtualized mail and iframe isolation, the inline composer and two detached TipTap windows. A separate WebKitGTK fixture verified nested menu navigation, long Select scrolling, checkbox binding, and control contrast, focus and disabled styling in both themes. The smoke run used isolated local data and covered Linux only.
 
+### Stage 4 implementation review
+
+- Tracked the installed [official shadcn-svelte skill](../.agents/skills/shadcn-svelte/SKILL.md) at the upstream revision pinned in `skills-lock.json`. The 1.8.1 CLI and published schema accept `components.json`. In temporary copies the CLI recognized Select and Separator and generated candidates at the resolved `$lib` paths. `lucide` is a supported generator setting. Adapt candidate imports to Iconify before integrating them. [Configuration reference](https://shadcn-svelte.com/docs/components-json).
+- Reviewed the 14 priority components and their consumers against the registry and Bits UI 2.22.0. **A** — `Button` defaults to `type="button"` so form actions such as Cancel no longer submit implicitly. Explicit submit buttons still submit. **B** — associated labels with General and Composer settings selects and restored visible focus on the OAuth help button. MiniCalendar owns Enter and Space while its portal is focused, restores focus to its header after year and month selection, and exposes localized full date labels and the current date.
+- **C** — Local barrel aliases and spacing conventions remain supported. **D** — Retained the single-value Select wrapper, Iconify, custom toast behavior, dialog guard, `preventScroll={false}`, overlay layering and focus callbacks. The 20 semantic tokens resolve in both palettes. Both built HTML entries share the CSS bundle with the Calendar and Contacts classes.
+- `npm run check` reported 0 errors and 0 warnings. Lint, production build and Linux `make build` passed with existing build warnings. Knip exited 1 with output identical to the Stage 4 baseline. Isolated Linux Wails/Xvfb and WebKitGTK checks covered the startup dialog sequence, nested confirmation focus, menus and long Select scrolling, both palettes and locales, Calendar keyboard activation and focus, Contacts, virtualized mail and iframe isolation, and two detached TipTap composers.
+
 ## Next action
 
-Stage 5 — Application UI migration using shadcn-svelte. Follow §8 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).
+Stage 5 remains pending. Apply the shared components to application UI according to §§8 and 11 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md), starting with settings, forms and menus. Verify both native windows and extension consumers as that work proceeds.

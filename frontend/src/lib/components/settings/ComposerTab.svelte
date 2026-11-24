@@ -119,9 +119,9 @@
 
 <div class="space-y-6 p-1">
   <div class="space-y-2">
-    <Label>{$_('settings.composerMode')}</Label>
+    <Label for="composer-open-mode">{$_('settings.composerMode')}</Label>
     <Select.Root value={composerMode} onValueChange={handleComposerModeChange}>
-      <Select.Trigger>
+      <Select.Trigger id="composer-open-mode">
         <Select.Value placeholder={$_('settings.composerMode')}>
           {getModeLabel(composerMode)}
         </Select.Value>
@@ -138,9 +138,9 @@
   </div>
 
   <div class="space-y-2">
-    <Label>{$_('settings.mailtoMode')}</Label>
+    <Label for="composer-mailto-mode">{$_('settings.mailtoMode')}</Label>
     <Select.Root value={mailtoMode} onValueChange={handleMailtoModeChange}>
-      <Select.Trigger>
+      <Select.Trigger id="composer-mailto-mode">
         <Select.Value placeholder={$_('settings.mailtoMode')}>
           {getModeLabel(mailtoMode)}
         </Select.Value>
@@ -157,9 +157,9 @@
   </div>
 
   <div class="space-y-2">
-    <Label>{$_('settings.composerFormat')}</Label>
+    <Label for="composer-format">{$_('settings.composerFormat')}</Label>
     <Select.Root value={composerFormat} onValueChange={handleFormatChange}>
-      <Select.Trigger>
+      <Select.Trigger id="composer-format">
         <Select.Value placeholder={$_('settings.composerFormat')}>
           {getFormatLabel(composerFormat)}
         </Select.Value>
@@ -186,9 +186,9 @@
     </h3>
 
     <div class="space-y-2">
-      <Label>{$_('settingsGeneral.readReceiptPolicy')}</Label>
+      <Label for="read-receipt-policy">{$_('settingsGeneral.readReceiptPolicy')}</Label>
       <Select.Root value={readReceiptResponsePolicy} onValueChange={handlePolicyChange}>
-        <Select.Trigger>
+        <Select.Trigger id="read-receipt-policy">
           <Select.Value placeholder={$_('settingsGeneral.selectPolicy')}>
             {getPolicyLabel(readReceiptResponsePolicy)}
           </Select.Value>

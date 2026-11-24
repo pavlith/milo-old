@@ -167,9 +167,9 @@
     </h3>
 
     <div class="space-y-2">
-      <Label>{$_('settingsGeneral.titleBar')}</Label>
+      <Label for="title-bar-style">{$_('settingsGeneral.titleBar')}</Label>
       <Select.Root value={titleBarValue} onValueChange={handleTitleBarChange}>
-        <Select.Trigger>
+        <Select.Trigger id="title-bar-style">
           <Select.Value>
             {getTitleBarLabel(titleBarValue)}
           </Select.Value>
@@ -329,7 +329,7 @@
       </div>
       {#if accentBarUnread}
         <Select.Root value={accentUnreadStyle} onValueChange={(v) => { if (v) accentUnreadStyle = v }}>
-          <Select.Trigger>
+          <Select.Trigger aria-label={$_('settingsGeneral.accentStyle')}>
             <Select.Value>
               {accentUnreadStyle === 'bar' ? $_('settingsGeneral.accentStyleBar') : accentUnreadStyle === 'glowdot' ? $_('settingsGeneral.accentStyleGlowDot') : $_('settingsGeneral.accentStyleDot')}
             </Select.Value>
@@ -344,9 +344,9 @@
     </div>
 
     <div class="space-y-2">
-      <Label>{$_('settingsGeneral.messageListDensity')}</Label>
+      <Label for="message-list-density">{$_('settingsGeneral.messageListDensity')}</Label>
       <Select.Root value={messageListDensity} onValueChange={handleDensityChange}>
-        <Select.Trigger>
+        <Select.Trigger id="message-list-density">
           <Select.Value placeholder={$_('settingsGeneral.selectDensity')}>
             {getDensityLabel(messageListDensity)}
           </Select.Value>

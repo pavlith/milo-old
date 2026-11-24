@@ -7,9 +7,11 @@
   // grid, Day/Agenda complete at a day. The ‹ › pagers only move the
   // local browse cursor — the live anchor (and thus event fetches) is
   // untouched until something is actually picked.
+  import { tick } from 'svelte'
   import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover'
+  import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { calendarView } from '$extensions/calendar/frontend/stores/calendarView.svelte'
   import { toTzDate } from '$extensions/calendar/frontend/lib/tzMath'
 
@@ -23,6 +25,7 @@
   let open = $state(false)
   type Level = 'days' | 'months' | 'years'
   let level = $state<Level>('days')
+  let headerButton: HTMLButtonElement | undefined = $state()
   // Browse cursor — where the popover is looking, independent of the live
   // anchor until a pick happens. Reset on every open.
   let cursor = $state<Date>(new Date())
@@ -73,6 +76,10 @@
   const daysHeader = $derived(
     new Intl.DateTimeFormat($locale || undefined, { month: 'long', year: 'numeric' }).format(cursor)
   )
+  const dayFormatter = $derived(new Intl.DateTimeFormat($locale || undefined, {
+    dateStyle: 'full',
+    timeZone: calendarSettings.effectiveTimezone,
+  }))
 
   // Week view selects by week: the whole row hovers/selects as one unit
   const weekMode = $derived(calendarView.viewKind === 'week')
@@ -88,7 +95,7 @@
     return Array.from({ length: 12 }, (_unused, m) => fmt.format(new Date(2000, m, 1)))
   })
 
-  function pickMonth(m: number) {
+  async function pickMonth(m: number) {
     const target = new Date(cursor.getFullYear(), m, 1)
     // Month view completes here — other views drill down to pick a day/week
     if (calendarView.viewKind === 'month') {
@@ -98,14 +105,18 @@
     }
     cursor = target
     level = 'days'
+    await tick()
+    headerButton?.focus()
   }
 
   // ── Years level ─────────────────────────────────────────────────────
   const yearPageStart = $derived(Math.floor(cursor.getFullYear() / 12) * 12)
 
-  function pickYear(y: number) {
+  async function pickYear(y: number) {
     cursor = new Date(y, cursor.getMonth(), 1)
     level = 'months'
+    await tick()
+    headerButton?.focus()
   }
 
   // ── Header pager: moves the browse cursor at the current level ──────
@@ -131,6 +142,11 @@
       level = 'years'
     }
   }
+
+  function handlePopoverKeyDown(event: KeyboardEvent) {
+    // Keep native button activation inside the portal ahead of host shortcuts.
+    if (event.key === 'Enter' || event.key === ' ') event.stopPropagation()
+  }
 </script>
 
 <Popover bind:open onOpenChange={handleOpenChange}>
@@ -139,10 +155,15 @@
     aria-label={$_('calendar.viewSwitcher.pickDate')}
     title={$_('calendar.viewSwitcher.pickDate')}
   >
-    <h2 class="text-sm font-semibold text-foreground truncate">{title}</h2>
-    <Icon icon="mdi:chevron-down" class="w-4 h-4 text-muted-foreground shrink-0" />
+    <span class="text-sm font-semibold text-foreground truncate">{title}</span>
+    <Icon icon="mdi:chevron-down" class="w-4 h-4 text-muted-foreground shrink-0" aria-hidden="true" />
   </PopoverTrigger>
-  <PopoverContent align="start" class="w-[280px] p-2">
+  <PopoverContent
+    align="start"
+    class="w-[280px] p-2"
+    aria-label={$_('calendar.viewSwitcher.pickDate')}
+    onkeydown={handlePopoverKeyDown}
+  >
     <!-- Header: ‹ label › — label click drills up -->
     <div class="flex items-center justify-between mb-1">
       <button
@@ -154,6 +175,7 @@
         <Icon icon="mdi:chevron-left" class="w-4 h-4 text-muted-foreground" />
       </button>
       <button
+        bind:this={headerButton}
         type="button"
         class="text-sm font-semibold rounded-md px-2 py-1 transition-colors {level === 'years' ? 'cursor-default' : 'hover:bg-muted'}"
         onclick={drillUp}
@@ -191,6 +213,8 @@
           {#each row.cells as cell (cell.date.getTime())}
             <button
               type="button"
+              aria-label={dayFormatter.format(cell.date)}
+              aria-current={cell.isToday ? 'date' : undefined}
               class="h-8 text-xs rounded-md transition-colors
                      {weekMode ? '' : 'hover:bg-muted'}
                      {cell.isOtherMonth ? 'text-muted-foreground/50' : 'text-foreground'}
