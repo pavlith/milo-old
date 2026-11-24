@@ -1,27 +1,25 @@
 <script lang="ts">
   import { AlertDialog as AlertDialogPrimitive } from 'bits-ui'
   import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
+  import { buttonVariants, type ButtonSize, type ButtonVariant } from '../button'
 
-  interface Props {
-    class?: string
-    children?: Snippet
-    onclick?: (e: MouseEvent) => void
-    disabled?: boolean
+  type Props = AlertDialogPrimitive.ActionProps & {
+    variant?: ButtonVariant
+    size?: ButtonSize
   }
 
-  let { class: className, children, onclick, disabled }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    variant = 'default',
+    size,
+    ...restProps
+  }: Props = $props()
 </script>
 
 <AlertDialogPrimitive.Action
-  class={cn(
-    'inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-    className
-  )}
-  {onclick}
-  {disabled}
->
-  {#if children}
-    {@render children()}
-  {/if}
-</AlertDialogPrimitive.Action>
+  bind:ref
+  data-slot="alert-dialog-action"
+  class={cn(buttonVariants({ variant, size }), className)}
+  {...restProps}
+/>

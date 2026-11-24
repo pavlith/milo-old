@@ -757,8 +757,9 @@
         <!-- Manage folder sync toggle (opt-in) -->
         <div class="space-y-1">
           <div class="flex items-center gap-3">
-            <Label>{$_('account.manageFolderSync')}</Label>
+            <Label for="manage-folder-sync">{$_('account.manageFolderSync')}</Label>
             <Switch
+              id="manage-folder-sync"
               bind:checked={syncFoldersEnabled}
               onCheckedChange={(v) => { syncFoldersEnabled = v; onSyncFoldersEnabledChange(v); if (v) loadSyncFolders() }}
             />
@@ -771,8 +772,9 @@
         {#if syncFoldersEnabled}
           <!-- Sync All Folders toggle -->
           <div class="flex items-center gap-3">
-            <Label>{$_('account.syncAllFolders')}</Label>
+            <Label for="sync-all-folders">{$_('account.syncAllFolders')}</Label>
             <Switch
+              id="sync-all-folders"
               bind:checked={syncAllFolders}
               onCheckedChange={handleSyncAllToggle}
             />

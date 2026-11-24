@@ -8,8 +8,6 @@ import Trigger from './select-trigger.svelte'
 const Group = SelectPrimitive.Group
 const GroupHeading = SelectPrimitive.GroupHeading
 
-// Value is just a span to display the selected value inside Trigger
-// We'll create a simple wrapper component
 import Value from './select-value.svelte'
 
 export {

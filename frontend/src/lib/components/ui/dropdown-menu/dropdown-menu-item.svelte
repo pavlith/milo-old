@@ -1,31 +1,22 @@
 <script lang="ts">
   import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui'
   import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
 
-  interface Props {
-    class?: string
-    inset?: boolean
-    disabled?: boolean
-    children?: Snippet
-    onSelect?: () => void
-  }
-
-  let { class: className, inset = false, disabled = false, children, onSelect }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    inset,
+    ...restProps
+  }: DropdownMenuPrimitive.ItemProps & { inset?: boolean } = $props()
 </script>
 
 <DropdownMenuPrimitive.Item
-  {disabled}
-  onSelect={onSelect}
+  bind:ref
+  data-slot="dropdown-menu-item"
+  data-inset={inset || undefined}
   class={cn(
-    'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden',
-    'focus:bg-accent focus:text-accent-foreground',
-    'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-    inset && 'pl-8',
+    'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden data-inset:pl-8 data-highlighted:bg-accent data-highlighted:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50',
     className
   )}
->
-  {#if children}
-    {@render children()}
-  {/if}
-</DropdownMenuPrimitive.Item>
+  {...restProps}
+/>

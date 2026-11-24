@@ -1,55 +1,59 @@
 <script lang="ts">
   import { Dialog as DialogPrimitive } from 'bits-ui'
-  import { cn } from '$lib/utils'
+  import { cn, type WithoutChild, type WithoutChildrenOrChild } from '$lib/utils'
   import { _ } from '$lib/i18n'
   import Icon from '@iconify/svelte'
-  import type { Snippet } from 'svelte'
   import DialogOverlay from './dialog-overlay.svelte'
 
-  interface Props {
-    class?: string
-    children?: Snippet
-    /** Prevent focus from returning to trigger element on close */
+  type Props = Omit<WithoutChild<DialogPrimitive.ContentProps>, 'preventScroll'> & {
+    portalProps?: WithoutChildrenOrChild<DialogPrimitive.PortalProps>
+    overlayClass?: string
+    showCloseButton?: boolean
     preventCloseAutoFocus?: boolean
-    /** Handler for clicks/touches outside the dialog. Call e.preventDefault()
-     *  to prevent the dialog from closing on outside interaction. */
-    onInteractOutside?: (e: Event) => void
   }
 
-  let { class: className, children, preventCloseAutoFocus = false, onInteractOutside }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    children,
+    portalProps,
+    overlayClass,
+    showCloseButton = true,
+    preventCloseAutoFocus = false,
+    onCloseAutoFocus,
+    ...restProps
+  }: Props = $props()
 
   function handleCloseAutoFocus(e: Event) {
-    if (preventCloseAutoFocus) {
-      e.preventDefault()
-    }
+    if (preventCloseAutoFocus) e.preventDefault()
+    onCloseAutoFocus?.(e)
   }
 </script>
 
-<DialogPrimitive.Portal>
-  <DialogOverlay />
-  <div class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-    <!-- preventScroll={false}: body scroll-lock disabled app-wide. The layout is
-         fixed-height (body never scrolls) and the overlay already blocks the
-         background; the lock's body-style snapshot leaks pointer-events:none
-         across chained dialogs (first-run Terms → What's New, #448). -->
-    <DialogPrimitive.Content
-      preventScroll={false}
-      onCloseAutoFocus={handleCloseAutoFocus}
-      onInteractOutside={onInteractOutside}
-      class={cn(
-        'pointer-events-auto grid w-full min-w-0 max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg',
-        className
-      )}
-    >
-      {#if children}
-        {@render children()}
-      {/if}
+<DialogPrimitive.Portal {...portalProps}>
+  <DialogOverlay class={overlayClass} />
+  <!-- The fixed-height layout uses the overlay to block clicks. Body scroll locking
+       can leave pointer-events disabled after chained dialogs (#448). -->
+  <DialogPrimitive.Content
+    bind:ref
+    data-slot="dialog-content"
+    preventScroll={false}
+    onCloseAutoFocus={handleCloseAutoFocus}
+    class={cn(
+      'fixed left-1/2 top-1/2 z-50 grid w-full min-w-0 max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg outline-hidden sm:rounded-lg',
+      className
+    )}
+    {...restProps}
+  >
+    {@render children?.()}
+    {#if showCloseButton}
       <DialogPrimitive.Close
-        class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+        data-slot="dialog-close"
+        class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none"
       >
-        <Icon icon="mdi:close" class="h-4 w-4" />
+        <Icon icon="mdi:close" class="size-4" aria-hidden="true" />
         <span class="sr-only">{$_('common.close')}</span>
       </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
-  </div>
+    {/if}
+  </DialogPrimitive.Content>
 </DialogPrimitive.Portal>

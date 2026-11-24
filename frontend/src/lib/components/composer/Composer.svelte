@@ -2078,13 +2078,13 @@
           {#if showPGPSignOption}
             <div class="flex items-center gap-1.5" title={$_('composer.pgpSign')}>
               <span>{$_('composer.sign')}</span>
-              <Switch bind:checked={pgpSignMessage} onCheckedChange={(v) => { if (v) { signMessage = false } }} class="scale-75 origin-left" />
+              <Switch aria-label={$_('composer.pgpSign')} bind:checked={pgpSignMessage} onCheckedChange={(v) => { if (v) { signMessage = false } }} class="scale-75 origin-left" />
             </div>
           {/if}
           {#if showPGPEncryptOption}
             <div class="flex items-center gap-1.5" title={$_('composer.pgpEncrypt')}>
               <span>{$_('composer.encrypt')}</span>
-              <Switch bind:checked={pgpEncryptMessage} onCheckedChange={(v) => { if (v) { encryptMessage = false } }} class="scale-75 origin-left" />
+              <Switch aria-label={$_('composer.pgpEncrypt')} bind:checked={pgpEncryptMessage} onCheckedChange={(v) => { if (v) { encryptMessage = false } }} class="scale-75 origin-left" />
             </div>
           {/if}
         </div>
@@ -2107,13 +2107,13 @@
           {#if showSignOption}
             <div class="flex items-center gap-1.5" title={$_('composer.smimeSign')}>
               <span>{$_('composer.sign')}</span>
-              <Switch bind:checked={signMessage} onCheckedChange={(v) => { if (v) { pgpSignMessage = false } }} class="scale-75 origin-left" />
+              <Switch aria-label={$_('composer.smimeSign')} bind:checked={signMessage} onCheckedChange={(v) => { if (v) { pgpSignMessage = false } }} class="scale-75 origin-left" />
             </div>
           {/if}
           {#if showEncryptOption}
             <div class="flex items-center gap-1.5" title={$_('composer.smimeEncrypt')}>
               <span>{$_('composer.encrypt')}</span>
-              <Switch bind:checked={encryptMessage} onCheckedChange={(v) => { if (v) { pgpEncryptMessage = false } }} class="scale-75 origin-left" />
+              <Switch aria-label={$_('composer.smimeEncrypt')} bind:checked={encryptMessage} onCheckedChange={(v) => { if (v) { pgpEncryptMessage = false } }} class="scale-75 origin-left" />
             </div>
           {/if}
         </div>

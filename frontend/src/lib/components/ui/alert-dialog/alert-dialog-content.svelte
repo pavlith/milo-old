@@ -1,44 +1,40 @@
 <script lang="ts">
   import { AlertDialog as AlertDialogPrimitive } from 'bits-ui'
-  import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
+  import { cn, type WithoutChild, type WithoutChildrenOrChild } from '$lib/utils'
+  import DialogOverlay from '../dialog/dialog-overlay.svelte'
 
-  interface Props {
-    class?: string
-    children?: Snippet
-    onOpenAutoFocus?: (e: Event) => void
-    /** Prevent focus from returning to trigger element on close */
+  type Props = Omit<WithoutChild<AlertDialogPrimitive.ContentProps>, 'preventScroll'> & {
+    portalProps?: WithoutChildrenOrChild<AlertDialogPrimitive.PortalProps>
     preventCloseAutoFocus?: boolean
   }
 
-  let { class: className, children, onOpenAutoFocus, preventCloseAutoFocus = false }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    portalProps,
+    preventCloseAutoFocus = false,
+    onCloseAutoFocus,
+    ...restProps
+  }: Props = $props()
 
   function handleCloseAutoFocus(e: Event) {
-    if (preventCloseAutoFocus) {
-      e.preventDefault()
-    }
+    if (preventCloseAutoFocus) e.preventDefault()
+    onCloseAutoFocus?.(e)
   }
 </script>
 
-<AlertDialogPrimitive.Portal>
-  <AlertDialogPrimitive.Overlay
-    class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+<AlertDialogPrimitive.Portal {...portalProps}>
+  <DialogOverlay data-slot="alert-dialog-overlay" />
+  <!-- Keep body scroll locking disabled for nested or chained dialogs (#448). -->
+  <AlertDialogPrimitive.Content
+    bind:ref
+    data-slot="alert-dialog-content"
+    preventScroll={false}
+    onCloseAutoFocus={handleCloseAutoFocus}
+    class={cn(
+      'fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg outline-hidden sm:rounded-lg [&>*]:min-w-0',
+      className
+    )}
+    {...restProps}
   />
-  <div class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-    <!-- preventScroll={false}: body scroll-lock disabled app-wide (see
-         dialog-content.svelte, #448). -->
-    <AlertDialogPrimitive.Content
-      preventScroll={false}
-      class={cn(
-        'pointer-events-auto grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg [&>*]:min-w-0',
-        className
-      )}
-      {onOpenAutoFocus}
-      onCloseAutoFocus={handleCloseAutoFocus}
-    >
-      {#if children}
-        {@render children()}
-      {/if}
-    </AlertDialogPrimitive.Content>
-  </div>
 </AlertDialogPrimitive.Portal>

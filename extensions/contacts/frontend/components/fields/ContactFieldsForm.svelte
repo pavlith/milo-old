@@ -61,6 +61,7 @@
   import { _ } from 'svelte-i18n'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
+  import { Textarea } from '$lib/components/ui/textarea'
   import PhotoField from './PhotoField.svelte'
   import EmailsField from './EmailsField.svelte'
   import PhonesField from './PhonesField.svelte'
@@ -209,13 +210,13 @@
     <!-- Note -->
     <div>
       <Label for="cf-note">{$_('contacts.edit.note')}</Label>
-      <textarea
+      <Textarea
         id="cf-note"
         bind:value={noteInput}
         disabled={saving}
         rows={3}
-        class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-y"
-      ></textarea>
+        class="flex"
+      />
     </div>
   {/if}
 </div>

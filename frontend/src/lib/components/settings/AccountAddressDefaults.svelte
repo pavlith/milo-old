@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
+  import { Label } from '$lib/components/ui/label'
   import RecipientInput from '$lib/components/composer/RecipientInput.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { smtp } from '$lib/models'
@@ -93,7 +94,7 @@
     {#each accounts as acc (acc.account.id)}
       <div class="px-1 py-1 space-y-2">
         <div class="flex items-center justify-between gap-2">
-          <span class="text-sm truncate">{acc.account.name} — {acc.account.email}</span>
+          <Label for={`default-${kind}-${acc.account.id}`} class="text-sm truncate font-normal">{acc.account.name} — {acc.account.email}</Label>
           <Switch
             id={`default-${kind}-${acc.account.id}`}
             checked={enabled[acc.account.id] ?? false}

@@ -84,7 +84,7 @@
       <AlertDialog.Action
         onclick={handleDelete}
         disabled={deleting}
-        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        variant="destructive"
       >
         {#if deleting}
           <Icon icon="mdi:loading" class="w-4 h-4 mr-2 animate-spin" />

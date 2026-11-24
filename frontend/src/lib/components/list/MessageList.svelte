@@ -15,8 +15,7 @@
   import { onMount, onDestroy } from 'svelte'
   import Icon from '@iconify/svelte'
   import ConversationRow from './ConversationRow.svelte'
-  import { DropdownMenu } from 'bits-ui'
-  import { cn } from '$lib/utils'
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
   import { Button } from '$lib/components/ui/button'
   import { GetConversations, GetConversationCount, SyncFolder, ForceSyncFolder, CancelFolderSync, SetMessageListSortOrder, GetUnifiedInboxConversations, GetUnifiedInboxCount, SearchConversations, SearchUnifiedInbox, GetSearchCount, GetSearchCountUnifiedInbox, GetFTSIndexStatus, IsFTSIndexing, Trash, DeletePermanently, EmptyTrash, EmptySpam, Undo, IMAPSearchFolder, FetchServerMessage } from '$bindings/github.com/hkdb/aerion/app/app'
   import { toasts } from '$lib/stores/toast'
@@ -1502,36 +1501,21 @@
               class="w-5 h-5 text-muted-foreground"
             />
           </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              side="bottom"
-              align="end"
-              sideOffset={4}
-              class={cn(
-                'z-50 min-w-[180px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-                'data-[state=open]:animate-in data-[state=closed]:animate-out',
-                'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-                'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-                'data-[side=bottom]:slide-in-from-top-2'
-              )}
+          <DropdownMenu.Content align="end" class="min-w-45">
+            <DropdownMenu.Item
+              onSelect={syncFolder}
             >
-              <DropdownMenu.Item
-                onSelect={syncFolder}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
-              >
-                <Icon icon="mdi:refresh" class="w-4 h-4 mr-2" />
-                {$_('messageList.syncFolder')}
-              </DropdownMenu.Item>
-              <DropdownMenu.Separator class="-mx-1 my-1 h-px bg-border" />
-              <DropdownMenu.Item
-                onSelect={forceSyncFolder}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
-              >
-                <Icon icon="mdi:refresh-auto" class="w-4 h-4 mr-2" />
-                {$_('messageList.forceResync')}
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
+              <Icon icon="mdi:refresh" class="w-4 h-4 mr-2" />
+              {$_('messageList.syncFolder')}
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator />
+            <DropdownMenu.Item
+              onSelect={forceSyncFolder}
+            >
+              <Icon icon="mdi:refresh-auto" class="w-4 h-4 mr-2" />
+              {$_('messageList.forceResync')}
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
         </DropdownMenu.Root>
       {/if}
       <button
@@ -1551,33 +1535,19 @@
             class="w-5 h-5 {filterMode ? 'text-primary' : 'text-muted-foreground'}"
           />
         </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            side="bottom"
-            align="end"
-            sideOffset={4}
-            class={cn(
-              'z-50 min-w-[180px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-              'data-[state=open]:animate-in data-[state=closed]:animate-out',
-              'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-              'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-              'data-[side=bottom]:slide-in-from-top-2'
-            )}
-          >
-            {#each filterOptions as opt (opt.value ?? opt.label)}
-              {#if opt.separator}
-                <DropdownMenu.Separator class="-mx-1 my-1 h-px bg-border" />
-              {/if}
-              <DropdownMenu.Item
-                onSelect={() => setFilter(opt.value)}
-                class="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground"
-              >
-                <Icon icon="mdi:check" class="w-4 h-4 mr-2 {filterMode === opt.value ? '' : 'invisible'}" />
-                {opt.label}
-              </DropdownMenu.Item>
-            {/each}
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
+        <DropdownMenu.Content align="end" class="min-w-45">
+          {#each filterOptions as opt (opt.value ?? opt.label)}
+            {#if opt.separator}
+              <DropdownMenu.Separator />
+            {/if}
+            <DropdownMenu.Item
+              onSelect={() => setFilter(opt.value)}
+            >
+              <Icon icon="mdi:check" class="w-4 h-4 mr-2 {filterMode === opt.value ? '' : 'invisible'}" />
+              {opt.label}
+            </DropdownMenu.Item>
+          {/each}
+        </DropdownMenu.Content>
       </DropdownMenu.Root>
       <button
         class="p-2 rounded-md hover:bg-muted transition-colors"

@@ -9,8 +9,7 @@
   // untouched until something is actually picked.
   import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
-  import { Popover } from 'bits-ui'
-  import { cn } from '$lib/utils'
+  import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover'
   import { calendarView } from '$extensions/calendar/frontend/stores/calendarView.svelte'
   import { toTzDate } from '$extensions/calendar/frontend/lib/tzMath'
 
@@ -134,115 +133,102 @@
   }
 </script>
 
-<Popover.Root bind:open onOpenChange={handleOpenChange}>
-  <Popover.Trigger
+<Popover bind:open onOpenChange={handleOpenChange}>
+  <PopoverTrigger
     class="flex items-center gap-1 ml-2 min-w-0 rounded-md px-1.5 py-0.5 hover:bg-muted transition-colors"
     aria-label={$_('calendar.viewSwitcher.pickDate')}
     title={$_('calendar.viewSwitcher.pickDate')}
   >
     <h2 class="text-sm font-semibold text-foreground truncate">{title}</h2>
     <Icon icon="mdi:chevron-down" class="w-4 h-4 text-muted-foreground shrink-0" />
-  </Popover.Trigger>
-  <Popover.Portal>
-    <Popover.Content
-      side="bottom"
-      align="start"
-      sideOffset={4}
-      class={cn(
-        'z-50 w-[280px] rounded-md border bg-popover p-2 text-popover-foreground shadow-md',
-        'data-[state=open]:animate-in data-[state=closed]:animate-out',
-        'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-        'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-        'data-[side=bottom]:slide-in-from-top-2'
-      )}
-    >
-      <!-- Header: ‹ label › — label click drills up -->
-      <div class="flex items-center justify-between mb-1">
-        <button
-          type="button"
-          class="p-1.5 rounded-md hover:bg-muted transition-colors"
-          aria-label={$_('calendar.viewSwitcher.prev')}
-          onclick={() => page(-1)}
-        >
-          <Icon icon="mdi:chevron-left" class="w-4 h-4 text-muted-foreground" />
-        </button>
-        <button
-          type="button"
-          class="text-sm font-semibold rounded-md px-2 py-1 transition-colors {level === 'years' ? 'cursor-default' : 'hover:bg-muted'}"
-          onclick={drillUp}
-        >
-          {#if level === 'days'}
-            {daysHeader}
-          {:else if level === 'months'}
-            {cursor.getFullYear()}
-          {:else}
-            {yearPageStart}–{yearPageStart + 11}
-          {/if}
-        </button>
-        <button
-          type="button"
-          class="p-1.5 rounded-md hover:bg-muted transition-colors"
-          aria-label={$_('calendar.viewSwitcher.next')}
-          onclick={() => page(1)}
-        >
-          <Icon icon="mdi:chevron-right" class="w-4 h-4 text-muted-foreground" />
-        </button>
-      </div>
+  </PopoverTrigger>
+  <PopoverContent align="start" class="w-[280px] p-2">
+    <!-- Header: ‹ label › — label click drills up -->
+    <div class="flex items-center justify-between mb-1">
+      <button
+        type="button"
+        class="p-1.5 rounded-md hover:bg-muted transition-colors"
+        aria-label={$_('calendar.viewSwitcher.prev')}
+        onclick={() => page(-1)}
+      >
+        <Icon icon="mdi:chevron-left" class="w-4 h-4 text-muted-foreground" />
+      </button>
+      <button
+        type="button"
+        class="text-sm font-semibold rounded-md px-2 py-1 transition-colors {level === 'years' ? 'cursor-default' : 'hover:bg-muted'}"
+        onclick={drillUp}
+      >
+        {#if level === 'days'}
+          {daysHeader}
+        {:else if level === 'months'}
+          {cursor.getFullYear()}
+        {:else}
+          {yearPageStart}–{yearPageStart + 11}
+        {/if}
+      </button>
+      <button
+        type="button"
+        class="p-1.5 rounded-md hover:bg-muted transition-colors"
+        aria-label={$_('calendar.viewSwitcher.next')}
+        onclick={() => page(1)}
+      >
+        <Icon icon="mdi:chevron-right" class="w-4 h-4 text-muted-foreground" />
+      </button>
+    </div>
 
-      {#if level === 'days'}
-        <div class="grid grid-cols-7 mb-1">
-          {#each weekdayLabels as wd (wd)}
-            <div class="text-center text-[10px] font-medium text-muted-foreground py-0.5">{wd}</div>
-          {/each}
-        </div>
-        {#each dayRows as row, r (r)}
-          <div
-            class="grid grid-cols-7 rounded-md
-                   {weekMode ? 'hover:bg-muted transition-colors' : ''}
-                   {weekMode && row.isAnchorWeek ? 'bg-primary/20' : ''}"
-          >
-            {#each row.cells as cell (cell.date.getTime())}
-              <button
-                type="button"
-                class="h-8 text-xs rounded-md transition-colors
-                       {weekMode ? '' : 'hover:bg-muted'}
-                       {cell.isOtherMonth ? 'text-muted-foreground/50' : 'text-foreground'}
-                       {!weekMode && cell.isAnchor ? 'bg-primary text-primary-foreground hover:bg-primary' : ''}
-                       {cell.isToday && !(cell.isAnchor && !weekMode) ? 'ring-1 ring-inset ring-primary' : ''}"
-                onclick={() => pickDay(cell.date)}
-              >
-                {cell.label}
-              </button>
-            {/each}
-          </div>
+    {#if level === 'days'}
+      <div class="grid grid-cols-7 mb-1">
+        {#each weekdayLabels as wd (wd)}
+          <div class="text-center text-[10px] font-medium text-muted-foreground py-0.5">{wd}</div>
         {/each}
-      {:else if level === 'months'}
-        <div class="grid grid-cols-4 gap-1">
-          {#each monthNames as name, m (m)}
+      </div>
+      {#each dayRows as row, r (r)}
+        <div
+          class="grid grid-cols-7 rounded-md
+                 {weekMode ? 'hover:bg-muted transition-colors' : ''}
+                 {weekMode && row.isAnchorWeek ? 'bg-primary/20' : ''}"
+        >
+          {#each row.cells as cell (cell.date.getTime())}
             <button
               type="button"
-              class="h-9 text-xs rounded-md hover:bg-muted transition-colors
-                     {m === toTzDate(calendarView.anchorDate).getMonth() && cursor.getFullYear() === calendarView.anchorDate.getFullYear() ? 'bg-primary text-primary-foreground hover:bg-primary' : 'text-foreground'}"
-              onclick={() => pickMonth(m)}
+              class="h-8 text-xs rounded-md transition-colors
+                     {weekMode ? '' : 'hover:bg-muted'}
+                     {cell.isOtherMonth ? 'text-muted-foreground/50' : 'text-foreground'}
+                     {!weekMode && cell.isAnchor ? 'bg-primary text-primary-foreground hover:bg-primary' : ''}
+                     {cell.isToday && !(cell.isAnchor && !weekMode) ? 'ring-1 ring-inset ring-primary' : ''}"
+              onclick={() => pickDay(cell.date)}
             >
-              {name}
+              {cell.label}
             </button>
           {/each}
         </div>
-      {:else}
-        <div class="grid grid-cols-4 gap-1">
-          {#each Array.from({ length: 12 }, (_unused, i) => yearPageStart + i) as y (y)}
-            <button
-              type="button"
-              class="h-9 text-xs rounded-md hover:bg-muted transition-colors
-                     {y === calendarView.anchorDate.getFullYear() ? 'bg-primary text-primary-foreground hover:bg-primary' : 'text-foreground'}"
-              onclick={() => pickYear(y)}
-            >
-              {y}
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </Popover.Content>
-  </Popover.Portal>
-</Popover.Root>
+      {/each}
+    {:else if level === 'months'}
+      <div class="grid grid-cols-4 gap-1">
+        {#each monthNames as name, m (m)}
+          <button
+            type="button"
+            class="h-9 text-xs rounded-md hover:bg-muted transition-colors
+                   {m === toTzDate(calendarView.anchorDate).getMonth() && cursor.getFullYear() === calendarView.anchorDate.getFullYear() ? 'bg-primary text-primary-foreground hover:bg-primary' : 'text-foreground'}"
+            onclick={() => pickMonth(m)}
+          >
+            {name}
+          </button>
+        {/each}
+      </div>
+    {:else}
+      <div class="grid grid-cols-4 gap-1">
+        {#each Array.from({ length: 12 }, (_unused, i) => yearPageStart + i) as y (y)}
+          <button
+            type="button"
+            class="h-9 text-xs rounded-md hover:bg-muted transition-colors
+                   {y === calendarView.anchorDate.getFullYear() ? 'bg-primary text-primary-foreground hover:bg-primary' : 'text-foreground'}"
+            onclick={() => pickYear(y)}
+          >
+            {y}
+          </button>
+        {/each}
+      </div>
+    {/if}
+  </PopoverContent>
+</Popover>

@@ -1,29 +1,27 @@
 <script lang="ts">
   import { ContextMenu as ContextMenuPrimitive } from 'bits-ui'
-  import { cn } from '$lib/utils'
+  import { cn, type WithoutChild } from '$lib/utils'
   import Icon from '@iconify/svelte'
-  import type { Snippet } from 'svelte'
 
-  interface Props {
-    class?: string
-    inset?: boolean
-    children?: Snippet
-  }
-
-  let { class: className, inset = false, children }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    inset,
+    children,
+    ...restProps
+  }: WithoutChild<ContextMenuPrimitive.SubTriggerProps> & { inset?: boolean } = $props()
 </script>
 
 <ContextMenuPrimitive.SubTrigger
+  bind:ref
+  data-slot="context-menu-sub-trigger"
+  data-inset={inset || undefined}
   class={cn(
-    'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden',
-    'focus:bg-accent focus:text-accent-foreground',
-    'data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-    inset && 'pl-8',
+    'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden data-inset:pl-8 data-highlighted:bg-accent data-highlighted:text-accent-foreground data-[state=open]:bg-accent data-[state=open]:text-accent-foreground data-disabled:opacity-50',
     className
   )}
+  {...restProps}
 >
-  {#if children}
-    {@render children()}
-  {/if}
-  <Icon icon="mdi:chevron-right" class="ml-auto h-4 w-4" />
+  {@render children?.()}
+  <Icon icon="mdi:chevron-right" class="pointer-events-none ml-auto size-4 shrink-0" aria-hidden="true" />
 </ContextMenuPrimitive.SubTrigger>

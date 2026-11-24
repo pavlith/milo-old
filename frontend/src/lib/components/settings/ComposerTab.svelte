@@ -228,7 +228,7 @@
       <div class="space-y-1 max-h-48 overflow-y-auto rounded-md border border-border p-2">
         {#each dictLanguages as lang (lang.code)}
           <div class="flex items-center justify-between px-1 py-1">
-            <span class="text-sm">{lang.name}</span>
+            <Label for={`spellcheck-lang-${lang.code}`} class="font-normal">{lang.name}</Label>
             <Switch
               id={`spellcheck-lang-${lang.code}`}
               checked={spellcheckLanguages.includes(lang.code)}

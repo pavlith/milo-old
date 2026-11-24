@@ -3,6 +3,7 @@
   import { account, folder } from '$lib/models'
   import FolderTreeItem from './FolderTreeItem.svelte'
   import { _ } from '$lib/i18n'
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 
   interface Props {
     account: account.Account
@@ -46,8 +47,6 @@
     onMessagesMoved,
   }: Props = $props()
 
-  let showMenu = $state(false)
-
   // Toggle expand/collapse via callback
   function toggleExpanded() {
     onToggleExpanded?.()
@@ -56,34 +55,7 @@
   function selectFolder(f: folder.Folder) {
     onFolderSelect?.(acc.id, f.id, f.path, f.name, f.type)
   }
-
-  function toggleMenu(e: MouseEvent) {
-    e.stopPropagation()
-    showMenu = !showMenu
-  }
-
-  function handleEdit() {
-    showMenu = false
-    onEdit?.()
-  }
-
-  function handleDelete() {
-    showMenu = false
-    onDelete?.()
-  }
-
-  function handleSync() {
-    showMenu = false
-    onSync?.()
-  }
-
-  // Close menu when clicking outside
-  function handleClickOutside() {
-    showMenu = false
-  }
 </script>
-
-<svelte:window onclick={handleClickOutside} />
 
 <div class="mb-2">
   <!-- Account Header -->
@@ -110,47 +82,29 @@
       {/if}
     </button>
 
-    <!-- Account Menu Button -->
-    <button
-      class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-      onclick={toggleMenu}
-    >
-      <Icon icon="mdi:dots-vertical" class="w-4 h-4 text-muted-foreground" />
-    </button>
-
-    <!-- Dropdown Menu -->
-    {#if showMenu}
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <div
-        class="absolute right-2 top-full mt-1 z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-md py-1"
-        role="menu"
-        tabindex="-1"
-        onclick={(e) => e.stopPropagation()}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger
+        class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 data-[state=open]:opacity-100"
+        aria-label={`${acc.name}: ${$_('aria.accountActions')}`}
       >
-        <button
-          class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
-          onclick={handleSync}
-        >
-          <Icon icon="mdi:sync" class="w-4 h-4" />
+        <Icon icon="mdi:dots-vertical" class="size-4" aria-hidden="true" />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content align="end">
+        <DropdownMenu.Item class="gap-2 px-3 py-2" onSelect={onSync}>
+          <Icon icon="mdi:sync" class="size-4" />
           <span>{$_('sidebar.syncNow')}</span>
-        </button>
-        <button
-          class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
-          onclick={handleEdit}
-        >
-          <Icon icon="mdi:pencil-outline" class="w-4 h-4" />
+        </DropdownMenu.Item>
+        <DropdownMenu.Item class="gap-2 px-3 py-2" onSelect={onEdit}>
+          <Icon icon="mdi:pencil-outline" class="size-4" />
           <span>{$_('sidebar.editAccount')}</span>
-        </button>
-        <div class="my-1 border-t border-border"></div>
-        <button
-          class="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-          onclick={handleDelete}
-        >
-          <Icon icon="mdi:delete-outline" class="w-4 h-4" />
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item class="gap-2 px-3 py-2 data-highlighted:bg-destructive data-highlighted:text-destructive-foreground" onSelect={onDelete}>
+          <Icon icon="mdi:delete-outline" class="size-4" />
           <span>{$_('sidebar.deleteAccount')}</span>
-        </button>
-      </div>
-    {/if}
+        </DropdownMenu.Item>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   </div>
 
   <!-- Sync Error — bar removed; spinner in header + phase label in bottom status convey sync state. -->

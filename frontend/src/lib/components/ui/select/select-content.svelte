@@ -1,47 +1,50 @@
 <script lang="ts">
   import { Select as SelectPrimitive } from 'bits-ui'
-  import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
+  import Icon from '@iconify/svelte'
+  import { cn, type WithoutChild, type WithoutChildrenOrChild } from '$lib/utils'
 
-  interface Props {
-    class?: string;
-    children?: Snippet;
-    position?: 'popper' | 'item-aligned';
-    side?: 'top' | 'bottom' | 'left' | 'right';
-    sideOffset?: number;
-    align?: 'start' | 'center' | 'end';
+  type Props = WithoutChild<SelectPrimitive.ContentProps> & {
+    position?: 'popper' | 'item-aligned'
+    portalProps?: WithoutChildrenOrChild<SelectPrimitive.PortalProps>
   }
 
   let {
+    ref = $bindable(null),
     class: className,
     children,
     position = 'popper',
     side = 'bottom',
     sideOffset = 4,
     align = 'start',
+    portalProps,
+    preventScroll = false,
+    ...restProps
   }: Props = $props()
 </script>
 
-<SelectPrimitive.Portal>
+<SelectPrimitive.Portal {...portalProps}>
   <SelectPrimitive.Content
+    bind:ref
+    data-slot="select-content"
     {side}
     {sideOffset}
     {align}
+    {preventScroll}
     class={cn(
-      'relative z-50 min-w-[8rem] max-h-96 overflow-y-auto scrollbar-thin rounded-md border bg-popover text-popover-foreground shadow-md',
-      'data-[state=open]:animate-in data-[state=closed]:animate-out',
-      'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-      'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
-      'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      'relative z-50 flex max-h-96 min-w-32 flex-col overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md origin-(--bits-select-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
       position === 'popper' && 'max-h-[min(24rem,var(--bits-select-content-available-height))]',
       className
     )}
+    {...restProps}
   >
-    <div class="p-1">
-      {#if children}
-        {@render children()}
-      {/if}
-    </div>
+    <SelectPrimitive.ScrollUpButton data-slot="select-scroll-up-button" class="flex shrink-0 items-center justify-center py-1">
+      <Icon icon="mdi:chevron-up" class="size-4" aria-hidden="true" />
+    </SelectPrimitive.ScrollUpButton>
+    <SelectPrimitive.Viewport data-slot="select-viewport" class="min-h-0 overflow-y-auto p-1">
+      {@render children?.()}
+    </SelectPrimitive.Viewport>
+    <SelectPrimitive.ScrollDownButton data-slot="select-scroll-down-button" class="flex shrink-0 items-center justify-center py-1">
+      <Icon icon="mdi:chevron-down" class="size-4" aria-hidden="true" />
+    </SelectPrimitive.ScrollDownButton>
   </SelectPrimitive.Content>
 </SelectPrimitive.Portal>

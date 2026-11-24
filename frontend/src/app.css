@@ -1,4 +1,5 @@
 @import 'tailwindcss' source(none);
+@import 'tw-animate-css';
 @import './themes.css';
 
 /* Both windows load this stylesheet. Extensions live outside the Vite root. */

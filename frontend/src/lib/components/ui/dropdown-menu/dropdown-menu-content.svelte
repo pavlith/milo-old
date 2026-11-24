@@ -1,36 +1,33 @@
 <script lang="ts">
   import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui'
-  import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
+  import { cn, type WithoutChildrenOrChild } from '$lib/utils'
 
-  interface Props {
-    class?: string
-    children?: Snippet
-    side?: 'top' | 'bottom' | 'left' | 'right'
-    align?: 'start' | 'center' | 'end'
-    sideOffset?: number
+  type Props = DropdownMenuPrimitive.ContentProps & {
+    portalProps?: WithoutChildrenOrChild<DropdownMenuPrimitive.PortalProps>
   }
 
-  let { class: className, children, side = 'bottom', align = 'start', sideOffset = 4 }: Props = $props()
+  let {
+    ref = $bindable(null),
+    class: className,
+    side = 'bottom',
+    align = 'start',
+    sideOffset = 4,
+    portalProps,
+    ...restProps
+  }: Props = $props()
 </script>
 
-<DropdownMenuPrimitive.Portal>
+<DropdownMenuPrimitive.Portal {...portalProps}>
   <DropdownMenuPrimitive.Content
+    bind:ref
+    data-slot="dropdown-menu-content"
     {side}
     {align}
     {sideOffset}
     class={cn(
-      'z-50 min-w-[160px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
-      'data-[state=open]:animate-in data-[state=closed]:animate-out',
-      'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-      'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2',
-      'data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+      'z-50 min-w-40 max-h-(--bits-dropdown-menu-content-available-height) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md origin-(--bits-dropdown-menu-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
       className
     )}
-  >
-    {#if children}
-      {@render children()}
-    {/if}
-  </DropdownMenuPrimitive.Content>
+    {...restProps}
+  />
 </DropdownMenuPrimitive.Portal>

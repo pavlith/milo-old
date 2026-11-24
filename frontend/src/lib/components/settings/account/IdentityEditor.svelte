@@ -4,6 +4,9 @@
   import { Button } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
+  import { Checkbox } from '$lib/components/ui/checkbox'
+  import { Textarea } from '$lib/components/ui/textarea'
+  import { Separator } from '$lib/components/ui/separator'
   import { _ } from '$lib/i18n'
   import SignatureEditor from './SignatureEditor.svelte'
   import { account } from '$lib/models'
@@ -208,16 +211,14 @@
       </div>
 
       <!-- Divider -->
-      <div class="border-t border-border"></div>
+      <Separator />
 
       <!-- Signature Section -->
       <div class="space-y-4">
         <div class="flex items-center gap-2">
-          <input
-            type="checkbox"
+          <Checkbox
             id="signatureEnabled"
             bind:checked={signatureEnabled}
-            class="w-4 h-4 rounded border-input accent-primary"
           />
           <Label for="signatureEnabled" class="cursor-pointer font-medium">
             {$_('identity.useSignature')}
@@ -253,45 +254,39 @@
                 {$_('identity.generateFromHtml')}
               </Button>
             </div>
-            <textarea
+            <Textarea
               id="signatureText"
               bind:value={signatureText}
               placeholder="Plain text version for text-only emails..."
-              class="w-full min-h-[80px] p-3 text-sm bg-background border border-input rounded-md resize-y focus:outline-hidden focus:ring-2 focus:ring-ring font-mono"
-            ></textarea>
+              class="min-h-20 p-3 font-mono"
+            />
             <p class="text-xs text-muted-foreground">
               {$_('identity.plainTextHelp')}
             </p>
           </div>
 
           <!-- Divider -->
-          <div class="border-t border-border"></div>
+          <Separator />
 
           <!-- Signature Behavior -->
           <div class="space-y-4">
             <Label class="font-medium">{$_('identity.appendSignatureTo')}</Label>
             <div class="flex flex-wrap gap-4">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   bind:checked={signatureForNew}
-                  class="w-4 h-4 rounded border-input accent-primary"
                 />
                 <span class="text-sm">{$_('identity.newMessages')}</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   bind:checked={signatureForReply}
-                  class="w-4 h-4 rounded border-input accent-primary"
                 />
                 <span class="text-sm">{$_('identity.replies')}</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
+                <Checkbox
                   bind:checked={signatureForForward}
-                  class="w-4 h-4 rounded border-input accent-primary"
                 />
                 <span class="text-sm">{$_('identity.forwards')}</span>
               </label>
@@ -327,11 +322,9 @@
 
           <!-- Separator Option -->
           <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               id="signatureSeparator"
               bind:checked={signatureSeparator}
-              class="w-4 h-4 rounded border-input accent-primary"
             />
             <Label for="signatureSeparator" class="cursor-pointer text-sm">
               {$_('identity.addSeparator')} (<code class="text-xs bg-muted px-1 rounded">-- </code>)

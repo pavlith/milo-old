@@ -937,6 +937,7 @@
     "selectColor": "Выбрать цвет",
     "emailContent": "Содержимое письма",
     "closeContextMenu": "Закрыть контекстное меню",
+    "accountActions": "Действия с учётной записью",
     "signatureEditor": "Редактор подписи",
     "selectPresetColor": "Выбрать цвет «{color}»",
     "backToList": "Вернуться к списку писем",

@@ -1,19 +1,19 @@
 <script lang="ts">
-  import type { Snippet } from 'svelte'
+  import { Select as SelectPrimitive } from 'bits-ui'
+  import { cn, type WithoutChild } from '$lib/utils'
 
-  interface Props {
-    placeholder?: string;
-    class?: string;
-    children?: Snippet;
-  }
-
-  let { placeholder = 'Select...', class: className, children }: Props = $props()
+  let {
+    ref = $bindable(null),
+    placeholder = 'Select...',
+    class: className,
+    ...restProps
+  }: WithoutChild<SelectPrimitive.ValueProps> = $props()
 </script>
 
-<span class="block truncate {className}">
-  {#if children}
-    {@render children()}
-  {:else}
-    <span class="text-muted-foreground">{placeholder}</span>
-  {/if}
-</span>
+<SelectPrimitive.Value
+  bind:ref
+  data-slot="select-value"
+  {placeholder}
+  class={cn('block truncate', className)}
+  {...restProps}
+/>

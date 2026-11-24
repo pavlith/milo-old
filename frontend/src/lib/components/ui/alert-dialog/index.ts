@@ -1,5 +1,4 @@
 import { AlertDialog as AlertDialogPrimitive } from 'bits-ui'
-import Root from './alert-dialog.svelte'
 import Content from './alert-dialog-content.svelte'
 import Header from './alert-dialog-header.svelte'
 import Footer from './alert-dialog-footer.svelte'
@@ -8,6 +7,7 @@ import Description from './alert-dialog-description.svelte'
 import Action from './alert-dialog-action.svelte'
 import Cancel from './alert-dialog-cancel.svelte'
 
+const Root = AlertDialogPrimitive.Root
 const Trigger = AlertDialogPrimitive.Trigger
 const Portal = AlertDialogPrimitive.Portal
 

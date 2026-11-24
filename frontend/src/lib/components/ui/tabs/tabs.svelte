@@ -1,29 +1,19 @@
 <script lang="ts">
   import { Tabs as TabsPrimitive } from 'bits-ui'
   import { cn } from '$lib/utils'
-  import type { Snippet } from 'svelte'
-
-  interface Props {
-    value?: string;
-    onValueChange?: (value: string) => void;
-    class?: string;
-    children?: Snippet;
-  }
 
   let {
+    ref = $bindable(null),
     value = $bindable(),
-    onValueChange,
     class: className,
-    children,
     ...restProps
-  }: Props = $props()
+  }: TabsPrimitive.RootProps = $props()
 </script>
 
 <TabsPrimitive.Root
+  bind:ref
   bind:value
-  onValueChange={onValueChange}
-  class={cn('w-full', className)}
+  data-slot="tabs"
+  class={cn('group/tabs w-full', className)}
   {...restProps}
->
-  {@render children?.()}
-</TabsPrimitive.Root>
+/>
