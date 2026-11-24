@@ -26,6 +26,6 @@ Review the affected screens in both languages. Check long labels and interpolate
 
 ## Desktop metadata and spellcheck
 
-The Linux launcher (`build/linux/aerion.desktop`) uses English base strings and `[ru]` entries. The AppStream listing (`build/flatpak/io.github.hkdb.Aerion.metainfo.xml`) uses English base strings and `xml:lang="ru"` entries. Validate changes with `desktop-file-validate` and `appstreamcli validate`.
+The Linux launcher (`build/linux/aerion.desktop`) uses English base strings and `[ru]` entries. Validate changes with `desktop-file-validate`.
 
 Spellcheck dictionaries are selected separately under **Settings → Composer**. Current dictionaries include US and UK English, Czech, German, French, Italian, Norwegian Bokmål, Dutch and Turkish. The Russian interface uses English spellcheck by default when no dictionaries are selected. A Russian dictionary is currently unavailable.

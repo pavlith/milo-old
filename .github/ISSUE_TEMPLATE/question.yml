@@ -8,7 +8,6 @@ body:
       label: Operating System
       options:
         - Linux
-        - Mac
         - Windows
     validations:
       required: true
@@ -38,9 +37,9 @@ body:
       placeholder: e.g. 24.04, 41, Rolling
 
   - type: dropdown
-    id: webkit2gtk
+    id: webkitgtk
     attributes:
-      label: Is webkit2gtk 4.1 installed?
+      label: Is WebKitGTK 6.0 installed?
       description: Required if OS is Linux
       options:
         - "Yes"
@@ -52,9 +51,7 @@ body:
       label: Install Method
       options:
         - Windows Binary
-        - MacOS DMG
         - Linux Binary
-        - Flatpak
         - Compile from Source
     validations:
       required: true

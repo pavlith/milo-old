@@ -95,7 +95,7 @@ Companion docs:
   `google-calendar`, NOT `google_calendar` or `googleCalendar`.
 - **R21.** Frontend Svelte components live in
   `extensions/<name>/frontend/components/`. Use the `$extensions/<name>/...`
-  Vite/tsconfig path alias to import them. Use `$wailsjs` for generated
+  Vite/tsconfig path alias to import them. Use `$bindings` for generated
   Wails bindings. Use `$lib` for kit primitives.
 
 ## 6 · Host wiring (the only place core code touches an extension)
@@ -151,7 +151,7 @@ Companion docs:
   adding a core migration.
 - **R33.** After backend changes that add/remove Wails methods, run
   `make generate` to regenerate frontend bindings
-  (`frontend/wailsjs/go/app/App.{js,d.ts}`). Source of truth is the Go
+  (`frontend/bindings/github.com/hkdb/aerion/app/app.ts`). Source of truth is the Go
   method signatures; the JS bindings follow.
 
 ## 9 · The smell checklist (self-correct before committing a design)

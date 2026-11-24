@@ -15,9 +15,9 @@ This repository uses only two branches:
 - `dev`: all development, fixes, documentation and translations. Work directly here; do not create task, feature or versioned release branches.
 - `main`: stable, reviewed code. Promote tested changes through a `dev` → `main` pull request when a release is approved; use a merge that preserves ancestry rather than squash/rebase so the long-lived branches retain shared history. Releases use version tags on `main`, not extra branches.
 
-Start work with `git switch dev` (use `git switch --track origin/dev` on a fresh clone). Submit contribution PRs to `dev`. This policy applies to this repository; external repositories such as Flathub keep their own submission workflow.
+Start work with `git switch dev` (use `git switch --track origin/dev` on a fresh clone). Submit contribution PRs to `dev`.
 
-Before promoting `dev`, merge any newer `origin/main` commits into `dev`, including automated release-manifest updates, resolve conflicts and validate the result. Do not force-push either branch. Commits, pushes, promotion to `main` and release publication require task authorization; see [release steps](docs/RELEASE.md).
+Before promoting `dev`, merge any newer `origin/main` commits into `dev` resolve conflicts and validate the result. Do not force-push either branch. Commits, pushes, promotion to `main` and release publication require task authorization; see [release steps](docs/RELEASE.md).
 
 ### Reporting Bugs
 
@@ -175,9 +175,10 @@ npm run knip
 
 ### Prerequisites
 
-- **Go** as required by `go.mod` (currently 1.25.0)
+- **Go** as required by `go.mod` (currently 1.26.0)
 - **Node.js** 24 (matches CI)
-- **Wails** v2 CLI
+- **GTK4**, **WebKitGTK 6.0** and the native tools listed in [BUILD.md](docs/BUILD.md)
+- **Wails** v3 CLI (pinned by `make`)
 - **Git**
 
 ### Development Setup
@@ -196,7 +197,7 @@ npm run knip
 3. **Install frontend dependencies**
    ```bash
    cd frontend
-   npm install
+   npm ci
    cd ..
    ```
 
@@ -216,16 +217,7 @@ npm run knip
 ```bash
 make build
 ```
-Local Flatpak test build:
-
-```bash
-make flatpak-dev
-```
-Test Flatpak production build:
-
-```bash
-make flatpak
-```
+Native Linux setup and build commands are in [BUILD.md](docs/BUILD.md).
 
 ## Questions?
 

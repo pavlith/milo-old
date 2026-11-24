@@ -11,8 +11,6 @@ Maintained by: @hkdb
 
 Windows has Outlook
 
-Mac has Mail
-
 Linux has.....
  - Thunderbird - Clunky and too much legacy structure
  - Geary - Crippled by Gnome Online Accounts and search is unreliable
@@ -36,10 +34,7 @@ A standalone lightweight e-mail client inspired by [Geary](https://wiki.gnome.or
 ### 🖥 OS Support
 ---
 
-Although Linux is a first-class citizen here, it also works on:
-
-- MacOS
-- Windows
+Linux is the current build and validation target. Windows platform code and installer resources are retained for the follow-up milestone.
 
 
 ### 🪶 Features
@@ -82,7 +77,7 @@ Although Linux is a first-class citizen here, it also works on:
 ### 🚀 Installation
 ---
 
-- [Official Installation Guide](https://aerion.3df.io/docs/getting-started/installation/)
+- [Native Linux build and installation](docs/BUILD.md)
 
 
 ### 📖 Documentation

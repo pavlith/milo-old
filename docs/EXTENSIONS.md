@@ -100,7 +100,7 @@ Full architectural rationale lives in [`context/EXTENSION_ARCHITECTURE.md`](../c
 
 **`internal/kit/` — shared extension-facing building blocks.** Backend analog of the frontend `lib/components/kit/`. Modules under `internal/kit/*` are generic, extension-agnostic (no extension-specific naming or behavior) and may be imported directly from extension code — they're carved out from the otherwise blanket "extensions can't import `internal/*`" rule. Today's only member is [`internal/kit/davutil`](../internal/kit/davutil), which holds the `XMLFixTransport` and the `NewHTTPClient(timeout)` builder both `internal/carddav` and the calendar extension use to normalize WebDAV ETag / lastmodified server quirks. Add a new `internal/kit/<area>/` when two consumers need the same primitive and one of them is an extension.
 
-**The Bridge pattern + the `app/` minimum**: Wails v2 binds methods on structs in the `Bind` list at `wails.Run` time, generating frontend bindings via Go reflection. Because Go's reflection enumerates methods on **embedded** types via standard method promotion, the host (App) can embed a `*Bridge` struct from each extension's package; the Bridge's methods then appear in the generated `App.d.ts` as if they were on App. The actual method definitions live in `extensions/<name>/backend/bridge.go`. The only host-side file (`app/extension_<name>.go`) is reduced to about 10 lines: importing the extension's package, declaring the embedded field on App, and one constructor call that wires the bridge's host-provided dependencies during Startup.
+**The Bridge pattern.** Wails v3 registers the host with `application.NewService`. The host embeds each extension's bridge, so promoted methods appear in the generated App bindings. Method definitions live in `extensions/<name>/backend/bridge.go`, with dependency wiring in `app/extension_<name>.go`.
 
 **Method naming — the `<Extension>_` prefix rule (HARD):** every Wails-bound bridge method MUST be named `<ExtensionName>_<MethodName>` (e.g., `Contacts_UpdateContact`, `Calendar_CreateEvent`). Embedded-method promotion happens in a single flat namespace on App; without the prefix, two extensions that both define `UpdateRecord()` would collide silently. The prefix is enforced by code review when accepting 3rd-party extension PRs — see [§ Contributing a new extension](#contributing-a-new-extension).
 
@@ -285,7 +285,7 @@ func (b *Bridge) Contacts_ListContactsForBrowse(query, sourceID string, limit, o
 
 ### Host-side startup
 
-`app/app.go` embeds the bridge **directly on the App struct**. Go's standard embedded-field method promotion exposes every `Contacts_*` method as if it were on App, so Wails reflection picks them up at `wails.Run` time and emits them into `frontend/wailsjs/go/app/App.{js,d.ts}`. No `Bind` list edit required, no per-method adapter.
+`app/app.go` embeds the bridge **directly on the App struct**. Go's standard embedded-field method promotion exposes every `Contacts_*` method as if it were on App, so Wails reflection picks them up at `wails.Run` time and emits them into `frontend/bindings/github.com/hkdb/aerion/app/app.ts`. No `Bind` list edit required, no per-method adapter.
 
 ```go
 // app/app.go
@@ -777,7 +777,7 @@ Two halves: the five `Register*` methods that extensions use to publish UI surfa
 **`OpenURL(url string) error`** opens the given URL in the user's system browser via the host's hardened resolver. Behavior:
 
 - **Protocol allowlist** — only common safe schemes (http, https, mailto, etc.) are permitted; `file://` and other dangerous schemes are rejected with `"URL protocol not allowed for security reasons"`.
-- **Linux:** tries the XDG `OpenURI` portal first (works inside Flatpak where `xdg-open` can't reach host browsers), falls back to `xdg-open`.
+- **Linux:** tries the XDG `OpenURI` portal first, falls back to `xdg-open`.
 - **Other platforms:** delegates to the platform's standard URL handler.
 
 Extensions consume this instead of reaching for Wails' `BrowserOpenURL` directly so the security gates stay centralized. Calendar's `EventDetail` uses it to make URLs in event summary / location / description clickable; pattern is reusable from any extension's frontend through its own `<Extension>_OpenURL` Wails wrapper.
@@ -945,7 +945,7 @@ kv := store.KV()           // coreapi.KVStore backed by ext_kv table
 
 **Migrations** start at version 1, increment monotonically. Each runs inside a transaction. Already-applied versions are skipped on every startup. Each extension's migration sequence is INDEPENDENT — no global migration namespace.
 
-**File location:** Linux `~/.local/share/aerion/extensions/<name>/data.db`, macOS `~/Library/Application Support/Aerion/extensions/<name>/data.db`, Windows `%LOCALAPPDATA%\aerion\extensions\<name>\data.db`. The `extensions/` parent is created by [`internal/platform/paths.go EnsureDirectories`](../internal/platform/paths.go).
+**File location:** Linux `~/.local/share/aerion/extensions/<name>/data.db`, Windows `%LOCALAPPDATA%\aerion\extensions\<name>\data.db`. The `extensions/` parent is created by [`internal/platform/paths.go EnsureDirectories`](../internal/platform/paths.go).
 
 **Lifecycle:** Per the architecture doc, stores open EAGERLY at `App.Startup`, regardless of whether the extension is currently enabled. This keeps schemas valid across enable/disable cycles — users can disable, the migrations stay applied, re-enabling is instantaneous.
 
@@ -1220,7 +1220,7 @@ When you ship a new extension, add its key constant alongside the existing two. 
 
 ## Wails-bound surface
 
-The frontend calls these via the generated Wails bindings at `frontend/wailsjs/go/app/App.{js,d.ts}`. After modifying any Wails-bound method on `*App` OR on an embedded `*Bridge`, run `make generate` to regenerate the bindings.
+The frontend calls these via the generated Wails bindings at `frontend/bindings/github.com/hkdb/aerion/app/app.ts`. After modifying any Wails-bound method on `*App` OR on an embedded `*Bridge`, run `make generate` to regenerate the bindings.
 
 ### Host methods (`App` package, no prefix)
 
@@ -1253,7 +1253,7 @@ import {
   Contacts_GetContactDetail     as GetContactDetail,
   Contacts_UpdateContact        as UpdateContact,
   // ...
-} from '$wailsjs/go/app/App'
+} from '$bindings/github.com/hkdb/aerion/app/app'
 ```
 
 Currently bound by the Contacts extension's bridge (all gate on `extension_contacts_enabled`; all lazy-init on first enabled call):
@@ -1334,23 +1334,14 @@ Rail switching is bound to `Ctrl+Tab` / `Ctrl+Shift+Tab` in [`App.svelte`](../fr
 
 ### Generated Wails bindings
 
-For files inside `frontend/src/`, use relative paths:
+Use the same imports from core and extension frontend files:
 
 ```ts
-// @ts-ignore - wailsjs bindings
-import { ListContactsForBrowse } from '../../../wailsjs/go/app/App'
+import { Contacts_ListContactsForBrowse } from '$bindings/github.com/hkdb/aerion/app/app'
+import type { v1 } from '$lib/models'
 ```
 
-For files inside `extensions/<name>/frontend/`, use the `$wailsjs` alias:
-
-```ts
-// @ts-ignore - wailsjs bindings
-import { ListContactsForBrowse } from '$wailsjs/go/app/App'
-// @ts-ignore - wailsjs bindings
-import type { v1 } from '$wailsjs/go/models'
-```
-
-The `@ts-ignore` lines stay mandatory in both locations — the generated `.d.ts` files don't carry TS-friendly path aliases.
+Run `make generate` after changing a bound Go method or model.
 
 ### Extension i18n
 
@@ -1444,17 +1435,16 @@ Two aliases are configured in [`frontend/vite.config.ts`](../frontend/vite.confi
 | Alias | Resolves to | Used by |
 |---|---|---|
 | `$extensions/*` | `<repo>/extensions/*` | Host (App.svelte, AccountDialog.svelte) importing extension Svelte components |
-| `$wailsjs/*` | `<repo>/frontend/wailsjs/*` | Extension Svelte/TS files importing generated Wails bindings (without deep `../` chains) |
+| `$bindings/*` | `<repo>/frontend/bindings/*` | Extension Svelte/TS files importing generated Wails bindings (without deep `../` chains) |
 
 Because extension files live outside `frontend/`, Rollup's default node-modules walking doesn't find `frontend/node_modules`. Shared npm dependencies (currently `@iconify/svelte`, `svelte-i18n`) are aliased explicitly in `vite.config.ts` to point back at the host's `node_modules`. Add new entries to the alias list as extensions pull in additional npm packages.
 
 **Extension-pulled deps convention (interim).** Until per-extension `package.json` / npm workspaces land, every extension dep is installed at the host's `frontend/package.json` and aliased in `vite.config.ts`. Tag each alias with the owning extension's manifest ID in a comment so we know which deps to move when we split. The aliases in `vite.config.ts` are grouped into **SHARED** (kit + multi-extension) and **PER-EXTENSION** sections — keep new entries in the right group.
 
-Three steps to add an extension-pulled npm dep:
+Adding an extension frontend dependency:
 
 1. `npm install <pkg>` in `frontend/` (writes to host's `package.json` + `package-lock.json`).
 2. Add the alias to `vite.config.ts` under PER-EXTENSION, with the owning extension's manifest ID in a one-line comment.
-3. Run `python3 build/flatpak/flathub/gen-node-sources.py` so Flatpak CI picks up the tarball (per `feedback_regenerate_node_sources.md`). Commit lockfile + Flatpak sources together.
 
 If the dep's package.json ships a broken `exports` map (no `types` condition), add a small `.d.ts` shim under `extensions/<name>/frontend/lib/` so `svelte-check` can resolve it. `date-fns-tz` is the current example.
 

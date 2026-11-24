@@ -17,9 +17,8 @@ Each rollback section lists the **data lost on rollback** for that migration. Th
 
 - The Aerion DB file. Default path:
   - Linux: `~/.local/share/aerion/aerion.db`
-  - macOS: `~/Library/Application Support/Aerion/aerion.db`
   - Windows: `%LOCALAPPDATA%\aerion\aerion.db`
-- `sqlite3` command-line tool installed (most Linux/macOS systems have it; Windows users may need to install from sqlite.org).
+- `sqlite3` command-line tool installed (most Linux systems have it; Windows users may need to install from sqlite.org).
 - The matching rollback script for your migration, downloaded from the Aerion repo's `tools/db/` directory on the branch/tag corresponding to the version that introduced the migration.
 
 ---

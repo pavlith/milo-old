@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-23. Audit, Tailwind 4, theme consolidation and pre-v1 cleanup are complete. Requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-24. The Linux Wails 3 migration is complete. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -11,6 +11,7 @@ Updated 2026-11-23. Audit, Tailwind 4, theme consolidation and pre-v1 cleanup ar
 | Stage 2: Tailwind 4 | Complete | Validated both Vite entries, extension CSS and representative computed styles in Linux WebKitGTK. Native application validation remains listed below. |
 | Stage 3: Themes | Complete | Validated the two palettes, settings migration, both native Linux windows and detached composer IPC. |
 | Pre-v1 cleanup and localization | Complete | Removed system-theme compatibility and unused archives. Mail, Contacts and Calendar ship English and Russian. |
+| Wails 3 on Linux | Complete | Clean-copy builds and development startup, Go and frontend checks, and the Linux multi-window smoke test passed. See [WAILS3_MIGRATION.md](WAILS3_MIGRATION.md). |
 | Stage 4: shadcn-svelte | Not started | Follow §§5–6; existing wrappers untouched. |
 | Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
@@ -74,4 +75,4 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 
 ## Next action
 
-Stage 4 — shadcn-svelte integration. Follow §§5–6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).
+Stage 4 — shadcn-svelte integration on the Wails 3 baseline. Follow §§5–6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md).
