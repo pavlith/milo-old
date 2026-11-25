@@ -18,7 +18,7 @@
   bind:indeterminate
   data-slot="checkbox"
   class={cn(
-    'peer flex size-4 shrink-0 items-center justify-center rounded-sm border border-muted-foreground bg-background transition-colors data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground data-indeterminate:border-primary data-indeterminate:bg-primary data-indeterminate:text-primary-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-50',
+    'peer flex size-4 shrink-0 items-center justify-center rounded-sm border border-muted-foreground bg-background transition-none data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground data-indeterminate:border-primary data-indeterminate:bg-primary data-indeterminate:text-primary-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-50',
     className
   )}
   {...restProps}
