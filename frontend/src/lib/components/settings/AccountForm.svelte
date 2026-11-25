@@ -2,6 +2,9 @@
   import { Clipboard } from '$lib/desktop'
   import { present, definedEntries, enumValue, required } from '$lib/bindingValues'
   import { untrack } from 'svelte'
+  import AccountTextField from './account/AccountTextField.svelte'
+  import { createAccountFormAdapter } from './account/accountFormAdapter.svelte'
+  import { FieldGroup } from '$lib/components/ui/field'
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
   import { Input } from '$lib/components/ui/input'
@@ -548,6 +551,8 @@
   }
 
   // Validate form
+  const accountFields = createAccountFormAdapter(() => ({ name, displayName, email }), () => errors)
+
   function validate(): boolean {
     errors = {}
 
@@ -741,59 +746,37 @@
         </div>
       {/if}
 
-      <!-- Basic Fields -->
-      <div class="grid gap-4">
-        <div class="space-y-2">
-          <Label for="name">{$_('account.accountName')}</Label>
-          <div class="flex items-center gap-3">
+      <FieldGroup class="gap-4">
+        <AccountTextField
+          form={accountFields}
+          name="name"
+          label={$_('account.accountName')}
+          placeholder={$_('account.accountNamePlaceholder')}
+          description={$_('account.colorHelp')}
+          bind:value={name}
+        >
+          {#snippet leading()}
             <ColorPicker value={color} onchange={(c) => color = c} />
-            <Input
-              id="name"
-              type="text"
-              placeholder={$_('account.accountNamePlaceholder')}
-              bind:value={name}
-              class={errors.name ? 'border-destructive' : ''}
-            />
-          </div>
-          <p class="text-xs text-muted-foreground">
-            {$_('account.colorHelp')}
-          </p>
-          {#if errors.name}
-            <p class="text-sm text-destructive">{errors.name}</p>
-          {/if}
-        </div>
+          {/snippet}
+        </AccountTextField>
+        <AccountTextField
+          form={accountFields}
+          name="displayName"
+          label={$_('account.displayName')}
+          placeholder={$_('account.displayNamePlaceholder')}
+          description={$_('account.displayNameHelp')}
+          bind:value={displayName}
+        />
+        <AccountTextField
+          form={accountFields}
+          name="email"
+          label={$_('account.emailAddress')}
+          placeholder="you@example.com"
+          bind:value={email}
+        />
+      </FieldGroup>
 
-        <div class="space-y-2">
-          <Label for="displayName">{$_('account.displayName')}</Label>
-          <Input
-            id="displayName"
-            type="text"
-            placeholder={$_('account.displayNamePlaceholder')}
-            bind:value={displayName}
-            class={errors.displayName ? 'border-destructive' : ''}
-          />
-          <p class="text-xs text-muted-foreground">
-            {$_('account.displayNameHelp')}
-          </p>
-          {#if errors.displayName}
-            <p class="text-sm text-destructive">{errors.displayName}</p>
-          {/if}
-        </div>
-
-        <div class="space-y-2">
-          <Label for="email">{$_('account.emailAddress')}</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            bind:value={email}
-            class={errors.email ? 'border-destructive' : ''}
-          />
-          {#if errors.email}
-            <p class="text-sm text-destructive">{errors.email}</p>
-          {/if}
-        </div>
-
+      <div class="grid gap-4">
         <div class="space-y-2">
           <Label for="username">{$_('account.username')}</Label>
           <Input

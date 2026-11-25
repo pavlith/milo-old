@@ -6,8 +6,10 @@
   import UnifiedInboxSection from './UnifiedInboxSection.svelte'
   import AccountDialog from '$lib/components/settings/AccountDialog.svelte'
   import DeleteAccountDialog from '$lib/components/settings/DeleteAccountDialog.svelte'
-  import SettingsDialog from '$lib/components/settings/SettingsDialog.svelte'
-  import SidebarFooter from '$lib/components/kit/SidebarFooter.svelte'
+  import * as SidebarUI from '$lib/components/ui/sidebar'
+  import { ScrollArea } from '$lib/components/ui/scroll-area'
+  import { Separator } from '$lib/components/ui/separator'
+  import { cn } from '$lib/utils'
   import { Button } from '$lib/components/ui/button'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { contactSourcesStore } from '$lib/stores/contactSources.svelte'
@@ -33,7 +35,7 @@
   let focusedAccountId = $state<string | null>(null)
 
   // Ref to scrollable container for auto-scroll
-  let scrollContainer: HTMLDivElement | null = null
+  let scrollContainer = $state<HTMLElement | null>(null)
 
   // Track expanded state for each account (reactive, synced with persisted state)
   let expandedAccounts = $state<Record<string, boolean>>({})
@@ -140,7 +142,6 @@
   // Dialog state
   let showAccountDialog = $state(false)
   let showDeleteDialog = $state(false)
-  let showSettingsDialog = $state(false)
   let editingAccount = $state<account.Account | null>(null)
   let deletingAccount = $state<account.Account | null>(null)
 
@@ -532,152 +533,122 @@
   }
 </script>
 
-<div class="flex flex-col h-full {isFlashing ? 'pane-focus-flash' : ''}">
-  <!-- Header with Compose Button -->
-  <div class="px-4 py-3 border-b border-border">
-    <div class="flex items-center gap-2">
-      <button
-        class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-        onclick={onCompose}
+<SidebarUI.Root class={cn('w-full', isFlashing && 'pane-focus-flash')}>
+  <SidebarUI.Header class="flex-row items-center gap-2 px-3 py-2">
+    <Button size="sm" class="min-w-0 flex-1 gap-2" onclick={onCompose}>
+      <Icon icon="mdi:pencil" class="size-4" data-icon="inline-start" />
+      <span class="truncate">{$_('sidebar.compose')}</span>
+    </Button>
+    {#if showBackButton}
+      <Button
+        variant="ghost"
+        size="icon"
+        class="size-8"
+        title={$_('responsive.back')}
+        aria-label={$_('aria.closeSidebar')}
+        onclick={onBack}
       >
-        <Icon icon="mdi:pencil" class="w-4 h-4" />
-        <span>{$_('sidebar.compose')}</span>
-      </button>
-      {#if showBackButton}
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors flex-shrink-0"
-          title={$_('responsive.back')}
-          aria-label={$_('aria.closeSidebar')}
-          onclick={onBack}
-        >
-          <Icon icon="mdi:close" class="w-5 h-5 text-muted-foreground" />
-        </button>
-      {/if}
-    </div>
-  </div>
+        <Icon icon="mdi:close" class="size-4" />
+      </Button>
+    {/if}
+  </SidebarUI.Header>
+  <Separator />
 
-  <!-- Account List -->
-  <div class="flex-1 overflow-y-auto scrollbar-thin py-2" bind:this={scrollContainer}>
-    {#if accountStore.loading}
-      <div class="flex items-center justify-center py-8">
-        <Icon icon="mdi:loading" class="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
-    {:else if accountStore.accounts.length === 0}
-      <!-- Empty State -->
-      <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
-        <Icon icon="mdi:email-plus-outline" class="w-12 h-12 text-muted-foreground mb-3" />
-        <h3 class="text-sm font-medium mb-1">{$_('sidebar.noAccountsYet')}</h3>
-        <p class="text-xs text-muted-foreground mb-4">
-          {$_('sidebar.addFirstAccount')}
-        </p>
-        <Button size="sm" onclick={openAddAccount}>
-          <Icon icon="mdi:plus" class="w-4 h-4 mr-1" />
-          {$_('sidebar.addAccount')}
-        </Button>
-      </div>
-    {:else}
-      <!-- Unified Inbox Section (only show if more than 1 account) -->
-      {#if accountStore.accounts.length > 1}
-        <UnifiedInboxSection
-          accounts={getAccountsWithInbox()}
-          {unifiedUnreadCount}
-          {selectedAccountId}
-          {selectedFolderId}
-          {selectionSource}
-          onSelectUnified={handleUnifiedInboxSelect}
-          onSelectAccountInbox={handleAccountInboxSelect}
-        />
-        <div class="border-b border-border mx-3 my-1"></div>
-      {/if}
+  <SidebarUI.Content class="overflow-hidden">
+    <ScrollArea class="min-h-0 flex-1" bind:viewportRef={scrollContainer}>
+      <SidebarUI.Group>
+        {#if accountStore.loading}
+          <div class="flex items-center justify-center py-8">
+            <Icon icon="mdi:loading" class="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        {:else if accountStore.accounts.length === 0}
+          <!-- Empty State -->
+          <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+            <Icon icon="mdi:email-plus-outline" class="w-12 h-12 text-muted-foreground mb-3" />
+            <h3 class="text-sm font-medium mb-1">{$_('sidebar.noAccountsYet')}</h3>
+            <p class="text-xs text-muted-foreground mb-4">
+              {$_('sidebar.addFirstAccount')}
+            </p>
+            <Button size="sm" onclick={openAddAccount}>
+              <Icon icon="mdi:plus" class="w-4 h-4 mr-1" />
+              {$_('sidebar.addAccount')}
+            </Button>
+          </div>
+        {:else}
+          <!-- Unified Inbox Section (only show if more than 1 account) -->
+          {#if accountStore.accounts.length > 1}
+            <UnifiedInboxSection
+              accounts={getAccountsWithInbox()}
+              {unifiedUnreadCount}
+              {selectedAccountId}
+              {selectedFolderId}
+              {selectionSource}
+              onSelectUnified={handleUnifiedInboxSelect}
+              onSelectAccountInbox={handleAccountInboxSelect}
+            />
+            <Separator class="my-2" />
+          {/if}
 
-      {#each accountStore.accounts as accWithFolders (accWithFolders.account.id)}
-        <AccountSection
-          account={accWithFolders.account}
-          folders={accWithFolders.folders}
-          loading={accWithFolders.loading}
-          syncing={accWithFolders.syncing}
-          error={accWithFolders.error}
-          selectedFolderId={accountStore.selectedFolder?.folderId ?? ''}
-          {selectionSource}
-          isHeaderFocused={focusedAccountId === accWithFolders.account.id}
-          isExpanded={expandedAccounts[accWithFolders.account.id] ?? true}
-          syncError={accountStore.getSyncError(accWithFolders.account.id)}
-          {collapsedFolders}
-          {onMessagesMoved}
-          onFolderSelect={handleFolderSelect}
-          onToggleExpanded={() => toggleAccountExpanded(accWithFolders.account.id)}
-          onToggleFolderCollapse={toggleFolderCollapsed}
-          onEdit={() => openEditAccount(accWithFolders.account)}
-          onDelete={() => openDeleteAccount(accWithFolders.account)}
-          onSync={() => {
-            // Clear any sync error before retrying
-            accountStore.clearSyncError(accWithFolders.account.id)
-            accountStore.syncAccount(accWithFolders.account.id)
-          }}
-        />
-      {/each}
+          {#each accountStore.accounts as accWithFolders (accWithFolders.account.id)}
+            <AccountSection
+              account={accWithFolders.account}
+              folders={accWithFolders.folders}
+              loading={accWithFolders.loading}
+              syncing={accWithFolders.syncing}
+              error={accWithFolders.error}
+              selectedFolderId={accountStore.selectedFolder?.folderId ?? ''}
+              {selectionSource}
+              isHeaderFocused={focusedAccountId === accWithFolders.account.id}
+              isExpanded={expandedAccounts[accWithFolders.account.id] ?? true}
+              syncError={accountStore.getSyncError(accWithFolders.account.id)}
+              {collapsedFolders}
+              {onMessagesMoved}
+              onFolderSelect={handleFolderSelect}
+              onToggleExpanded={() => toggleAccountExpanded(accWithFolders.account.id)}
+              onToggleFolderCollapse={toggleFolderCollapsed}
+              onEdit={() => openEditAccount(accWithFolders.account)}
+              onDelete={() => openDeleteAccount(accWithFolders.account)}
+              onSync={() => {
+                // Clear any sync error before retrying
+                accountStore.clearSyncError(accWithFolders.account.id)
+                accountStore.syncAccount(accWithFolders.account.id)
+              }}
+            />
+          {/each}
 
-      <!-- Add Account Button -->
-      <div class="px-3 py-2">
-        <button
-          class="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
-          onclick={openAddAccount}
-        >
-          <Icon icon="mdi:plus" class="w-4 h-4" />
-          <span>{$_('sidebar.addAccount')}</span>
-        </button>
+          <Button variant="ghost" size="sm" class="mt-2 justify-start gap-2" onclick={openAddAccount}>
+            <Icon icon="mdi:plus" class="size-4" data-icon="inline-start" />
+            {$_('sidebar.addAccount')}
+          </Button>
+        {/if}
+      </SidebarUI.Group>
+    </ScrollArea>
+  </SidebarUI.Content>
+
+  <Separator />
+  <SidebarUI.Footer class="relative min-h-[52px] justify-center px-3 text-xs text-muted-foreground">
+    {#if syncStatus.percentage !== null}
+      <div class="absolute inset-x-0 top-0 h-1 bg-muted">
+        <div class="h-full bg-primary transition-all duration-300" style:width="{syncStatus.percentage}%"></div>
       </div>
     {/if}
-  </div>
-
-  <!-- Footer: Sync Status + Settings. Chrome (padding/border/min-height)
-       lives in kit `SidebarFooter` so mail, calendar, and contacts all
-       render the same strip height. Mail's progress bar overlay + 2-line
-       leading content (account name + status label) pass through
-       SidebarFooter's overlay/leading snippets unchanged. -->
-  <SidebarFooter>
-    {#snippet overlay()}
-      {#if syncStatus.percentage !== null}
-        <div class="absolute top-0 left-0 right-0 h-1 bg-muted overflow-hidden">
-          <div
-            class="h-full bg-primary transition-all duration-300 ease-out"
-            style="width: {syncStatus.percentage}%"
-          ></div>
-        </div>
-      {/if}
-    {/snippet}
-    {#snippet leading()}
-      <button
-        class="flex-1 min-w-0 flex items-end gap-2 hover:text-foreground transition-colors text-left"
-        onclick={accountStore.isAnySyncing ? cancelSync : syncAllAccounts}
-        title={$_(accountStore.isAnySyncing ? 'sidebar.clickToCancel' : 'sidebar.syncAllAccounts')}
-      >
-        <Icon
-          icon="mdi:sync"
-          class="w-4 h-4 flex-shrink-0 {accountStore.isAnySyncing ? 'animate-spin' : ''}"
-        />
-        <div class="flex-1 min-w-0">
-          {#if syncStatus.accountName}
-            <div class="truncate text-foreground font-medium leading-tight mb-0.5">{syncStatus.accountName}</div>
-          {/if}
-          <span class="block leading-tight">{syncStatus.label}</span>
-        </div>
-      </button>
-    {/snippet}
-    {#snippet trailing()}
-      <button
-        class="p-1 hover:text-foreground hover:bg-muted rounded transition-colors relative"
-        onclick={() => showSettingsDialog = true}
-        title={$_('sidebar.settings')}
-      >
-        <Icon icon="mdi:cog" class="w-4 h-4" />
-        {#if contactSourcesStore.hasErrors}
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-destructive rounded-full border border-background"></span>
+    <Button
+      variant="ghost"
+      size="sm"
+      class="h-auto min-w-0 justify-start gap-2 px-1 py-1.5 text-left"
+      onclick={toggleSync}
+      title={$_(accountStore.isAnySyncing ? 'sidebar.clickToCancel' : 'sidebar.syncAllAccounts')}
+    >
+      <Icon icon="mdi:sync" class={cn('size-4 shrink-0', accountStore.isAnySyncing && 'animate-spin')} />
+      <span class="min-w-0 text-xs font-normal">
+        {#if syncStatus.accountName}
+          <span class="block truncate font-medium text-foreground">{syncStatus.accountName}</span>
         {/if}
-      </button>
-    {/snippet}
-  </SidebarFooter>
-</div>
+        <span class="block truncate">{syncStatus.label}</span>
+      </span>
+    </Button>
+  </SidebarUI.Footer>
+</SidebarUI.Root>
 
 <!-- Account Dialog -->
 <AccountDialog
@@ -697,15 +668,6 @@
   onClose={() => {
     showDeleteDialog = false
     deletingAccount = null
-    setFocusedPane('messageList')
-  }}
-/>
-
-<!-- Settings Dialog -->
-<SettingsDialog
-  bind:open={showSettingsDialog}
-  onClose={() => {
-    showSettingsDialog = false
     setFocusedPane('messageList')
   }}
 />

@@ -7,6 +7,11 @@
   import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
   import { EventsOn } from '$lib/desktop'
   import { message as messageModels } from '$lib/models'
+  import Avatar from '$lib/components/kit/Avatar.svelte'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
+  import { Badge } from '$lib/components/ui/badge'
+  import { Button } from '$lib/components/ui/button'
+  import { Separator } from '$lib/components/ui/separator'
   import AttachmentList from './AttachmentList.svelte'
   import EmailBody from './EmailBody.svelte'
   import { toasts } from '$lib/stores/toast'
@@ -707,24 +712,6 @@
     return `${date.toLocaleDateString('en')} at ${date.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`
   }
 
-  function getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  function getAvatarColor(email: string): string {
-    // Returns a theme-driven avatar class (.avatar-1 .. .avatar-14, defined in themes.css).
-    let hash = 0
-    for (let i = 0; i < email.length; i++) {
-      hash = email.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return `avatar-${(Math.abs(hash) % 14) + 1}`
-  }
-
   // Parse recipient list (JSON array format from backend)
   function parseRecipients(recipientStr: string | undefined): Array<{ name: string; email: string }> {
     if (!recipientStr) return []
@@ -1325,145 +1312,83 @@
       <Icon icon="mdi:alert-circle-outline" class="w-12 h-12 text-destructive mb-3" />
       <p class="text-destructive mb-2">{$_('viewer.failedToLoad')}</p>
       <p class="text-sm text-muted-foreground">{error}</p>
-      <button
-        class="mt-4 text-sm text-primary hover:underline"
-        onclick={() => loadConversation(threadId!, folderId!)}
-      >
+      <Button variant="link" class="mt-4" onclick={() => loadConversation(threadId!, folderId!)}>
         {$_('viewer.tryAgain')}
-      </button>
+      </Button>
     </div>
   {:else if conversation}
     <div class="conversation-viewer-content flex flex-col h-full">
-    <!-- Header with Actions -->
-    <div class="flex items-center justify-between px-4 py-3 border-b border-border">
-      <div class="flex items-center gap-2">
+    <div class="flex min-h-[52px] shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2">
+      <div class="flex flex-wrap items-center gap-0.5">
         {#if showBackButton}
-          <button
-            class="p-2 rounded-md hover:bg-muted transition-colors mr-1"
-            title={$_('responsive.back')}
-            aria-label={$_('aria.backToList')}
-            onclick={onBack}
-          >
-            <Icon icon="mdi:arrow-left" class="w-5 h-5 text-muted-foreground" />
-          </button>
-          <div class="w-px h-5 bg-border mx-1"></div>
+          <ToolbarButton icon="mdi:arrow-left" label={$_('aria.backToList')} onclick={onBack} />
+          <Separator orientation="vertical" class="mx-1 h-5" />
         {/if}
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('viewer.reply')}
-          onclick={handleReply}
-        >
-          <Icon icon="mdi:reply" class="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('viewer.replyAll')}
-          onclick={handleReplyAll}
-        >
-          <Icon icon="mdi:reply-all" class="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('viewer.forward')}
-          onclick={handleForward}
-        >
-          <Icon icon="mdi:share" class="w-5 h-5 text-muted-foreground" />
-        </button>
+        <ToolbarButton icon="mdi:reply" label={$_('viewer.reply')} onclick={handleReply} />
+        <ToolbarButton icon="mdi:reply-all" label={$_('viewer.replyAll')} onclick={handleReplyAll} />
+        <ToolbarButton icon="mdi:share" label={$_('viewer.forward')} onclick={handleForward} />
 
-        <div class="w-px h-5 bg-border mx-1"></div>
+        <Separator orientation="vertical" class="mx-1 h-5" />
 
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('viewer.archive')}
-          onclick={handleArchive}
-        >
-          <Icon icon="mdi:archive-outline" class="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_(isTrashFolder ? 'viewer.deletePermanently' : 'viewer.delete')}
+        <ToolbarButton icon="mdi:archive-outline" label={$_('viewer.archive')} onclick={handleArchive} />
+        <ToolbarButton
+          icon={isTrashFolder ? 'mdi:delete-forever' : 'mdi:delete-outline'}
+          label={$_(isTrashFolder ? 'viewer.deletePermanently' : 'viewer.delete')}
           onclick={handleDelete}
-        >
-          <Icon icon={isTrashFolder ? 'mdi:delete-forever' : 'mdi:delete-outline'} class="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_(isSpamFolder ? 'viewer.markAsNotSpam' : 'viewer.markAsSpam')}
+        />
+        <ToolbarButton
+          icon={isSpamFolder ? 'mdi:email-check-outline' : 'mdi:alert-octagon-outline'}
+          label={$_(isSpamFolder ? 'viewer.markAsNotSpam' : 'viewer.markAsSpam')}
           onclick={handleSpam}
-        >
-          <Icon icon={isSpamFolder ? 'mdi:email-check-outline' : 'mdi:alert-octagon-outline'} class="w-5 h-5 text-muted-foreground" />
-        </button>
+        />
 
-        <div class="w-px h-5 bg-border mx-1"></div>
+        <Separator orientation="vertical" class="mx-1 h-5" />
 
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_(allStarred ? 'viewer.removeStar' : 'viewer.star')}
+        <ToolbarButton
+          icon={allStarred ? 'mdi:star' : 'mdi:star-outline'}
+          iconClass={allStarred ? 'text-starred' : undefined}
+          label={$_(allStarred ? 'viewer.removeStar' : 'viewer.star')}
           onclick={handleStar}
-        >
-          <Icon icon={allStarred ? 'mdi:star' : 'mdi:star-outline'} class="w-5 h-5 {allStarred ? 'text-yellow-500' : 'text-muted-foreground'}" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_(allRead ? 'viewer.markAsUnread' : 'viewer.markAsRead')}
+        />
+        <ToolbarButton
+          icon={allRead ? 'mdi:email-open-outline' : 'mdi:email-outline'}
+          label={$_(allRead ? 'viewer.markAsUnread' : 'viewer.markAsRead')}
           onclick={handleMarkRead}
-        >
-          <Icon icon={allRead ? 'mdi:email-open-outline' : 'mdi:email-outline'} class="w-5 h-5 text-muted-foreground" />
-        </button>
+        />
       </div>
-
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-0.5">
         {#if conversation.messages && conversation.messages.length > 1}
-          <button
-            class="p-2 rounded-md hover:bg-muted transition-colors"
-            title={$_('viewer.expandAll')}
-            onclick={expandAll}
-          >
-            <Icon icon="mdi:unfold-more-horizontal" class="w-5 h-5 text-muted-foreground" />
-          </button>
-          <button
-            class="p-2 rounded-md hover:bg-muted transition-colors"
-            title={$_('viewer.collapseAll')}
-            onclick={collapseAll}
-          >
-            <Icon icon="mdi:unfold-less-horizontal" class="w-5 h-5 text-muted-foreground" />
-          </button>
+          <ToolbarButton icon="mdi:unfold-more-horizontal" label={$_('viewer.expandAll')} onclick={expandAll} />
+          <ToolbarButton icon="mdi:unfold-less-horizontal" label={$_('viewer.collapseAll')} onclick={collapseAll} />
         {/if}
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={inFocusMode && focusModeKind === 'thread' ? $_('viewer.exitFocus') : $_('viewer.focusThread')}
+        <ToolbarButton
+          icon={inFocusMode && focusModeKind === 'thread' ? 'mdi:fullscreen-exit' : 'mdi:fullscreen'}
+          label={inFocusMode && focusModeKind === 'thread' ? $_('viewer.exitFocus') : $_('viewer.focusThread')}
           onclick={onToggleThreadFocus}
-        >
-          <Icon icon={inFocusMode && focusModeKind === 'thread' ? 'mdi:fullscreen-exit' : 'mdi:fullscreen'} class="w-5 h-5 text-muted-foreground" />
-        </button>
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('viewer.print')}
-          onclick={handlePrint}
-        >
-          <Icon icon="mdi:printer-outline" class="w-5 h-5 text-muted-foreground" />
-        </button>
+        />
+        <ToolbarButton icon="mdi:printer-outline" label={$_('viewer.print')} onclick={handlePrint} />
       </div>
     </div>
+    <Separator />
 
     <!-- Conversation Content -->
     <div bind:this={contentContainerRef} class="flex-1 min-h-0 overflow-y-auto scrollbar-thin" onfocusin={() => setFocusedPane('viewer')}>
-      <div class="p-6">
+      <div class="p-4 lg:p-5">
         <!-- Subject -->
-        <h1 class="text-xl font-semibold text-foreground mb-4">
+        <h1 class="mb-3 break-words text-xl font-semibold text-foreground">
           {conversation.subject || $_('viewer.noSubject')}
         </h1>
 
         <!-- Message Count Badge -->
         {#if conversation.messages && conversation.messages.length > 1}
-          <div class="mb-4 text-sm text-muted-foreground">
+          <Badge variant="secondary" class="mb-4 max-w-full whitespace-normal">
             {$_('viewer.messagesInConversation', { values: { count: conversation.messages.length } })}
-          </div>
+          </Badge>
         {/if}
 
         <!-- Stacked Messages -->
         {#if conversation.messages}
-          <div class="space-y-4">
+          <div class="flex flex-col gap-3">
             {#each visibleMessages as msg, _index (msg.id)}
               {@const isExpanded = expandedMessages.has(msg.id)}
               {@const isFocusedMsg = inFocusMode && focusModeKind === 'message' && focusedMessageIdInFocus === msg.id}
@@ -1505,11 +1430,7 @@
                 >
                   <!-- Sender circle (colored, with initials) -->
                   {#if getShowViewerCircles()}
-                    <div
-                      class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-sm font-medium {getAvatarColor(msg.fromEmail)}"
-                    >
-                      {getInitials(msg.fromName || msg.fromEmail)}
-                    </div>
+                    <Avatar email={msg.fromEmail} name={msg.fromName} size={40} />
                   {/if}
 
                   <!-- Header Info -->
@@ -1816,7 +1737,8 @@
 
                       <!-- Attachments -->
                       {#if msg.hasAttachments || (pgpResults[msg.id]?.attachments?.length ?? 0) > 0 || (smimeResults[msg.id]?.attachments?.length ?? 0) > 0}
-                        <div class="border-t border-border pt-4 mt-4">
+                        <div class="mt-4">
+                          <Separator class="mb-4" />
                           <h3 class="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
                             <Icon icon="mdi:paperclip" class="w-4 h-4" />
                             {$_('viewer.attachments')}

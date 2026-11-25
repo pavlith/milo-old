@@ -1,7 +1,10 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import type { account, folder } from '$lib/models'
-  import { isUnifiedInboxExpanded, setUnifiedInboxExpanded } from '$lib/stores/uiState.svelte'
+  import { getUIStateVersion, isUnifiedInboxExpanded, setUnifiedInboxExpanded } from '$lib/stores/uiState.svelte'
+  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { Badge } from '$lib/components/ui/badge'
+  import { Button } from '$lib/components/ui/button'
   import FolderContextMenu from './FolderContextMenu.svelte'
   import { _ } from '$lib/i18n'
 
@@ -32,6 +35,10 @@
 
   // Initialize from persisted state (defaults to true)
   let expanded = $state(isUnifiedInboxExpanded())
+  $effect(() => {
+    getUIStateVersion()
+    expanded = isUnifiedInboxExpanded()
+  })
 
   // Check if unified inbox is selected (All Inboxes)
   const isUnifiedSelected = $derived(selectedAccountId === 'unified' && selectedFolderId === 'inbox')
@@ -65,78 +72,56 @@
   }
 </script>
 
-<div class="px-2 py-1">
-  <!-- Unified Inbox Header -->
-  <div
-    class="w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-colors cursor-pointer {isUnifiedSelected
-      ? 'bg-primary/10 text-primary'
-      : 'hover:bg-muted/50'}"
-    data-sidebar-item="unified"
-  >
-    <!-- Expand/Collapse Toggle -->
-    <button
-      class="p-0.5 -ml-0.5 hover:bg-muted rounded transition-colors"
-      onclick={(e) => { e.stopPropagation(); toggleExpanded() }}
-    >
-      <Icon
-        icon={expanded ? 'mdi:chevron-down' : 'mdi:chevron-right'}
-        class="w-4 h-4 text-muted-foreground"
-      />
-    </button>
-
-    <!-- Clickable area for selecting unified inbox -->
-    <button
-      class="flex-1 flex items-center gap-2"
+<Sidebar.Group class="p-0">
+  <div class="relative">
+    <Sidebar.MenuButton
+      isActive={isUnifiedSelected}
+      aria-current={isUnifiedSelected ? 'true' : undefined}
+      class="pr-8 focus-visible:ring-inset"
+      data-sidebar-item="unified"
       onclick={handleUnifiedClick}
     >
-      <!-- Inbox Icon -->
-      <Icon icon="mdi:inbox-multiple" class="w-4 h-4 flex-shrink-0" />
-
-      <!-- Label -->
-      <span class="flex-1 text-left text-sm font-medium truncate">{$_('sidebar.allInboxes')}</span>
-
-      <!-- Unread Badge -->
+      <Icon icon="mdi:inbox-multiple" />
+      <span class="min-w-0 flex-1 truncate">{$_('sidebar.allInboxes')}</span>
       {#if unifiedUnreadCount > 0}
-        <span class="px-1.5 py-0.5 text-xs font-medium bg-primary text-primary-foreground rounded-full">
-          {unifiedUnreadCount}
-        </span>
+        <Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{unifiedUnreadCount}</Badge>
       {/if}
-    </button>
+    </Sidebar.MenuButton>
+    <Button
+      variant="ghost"
+      size="icon"
+      class="absolute right-1 top-1/2 size-6 -translate-y-1/2"
+      aria-label={$_('sidebar.allInboxes')}
+      aria-expanded={expanded}
+      onclick={toggleExpanded}
+    >
+      <Icon icon={expanded ? 'mdi:chevron-down' : 'mdi:chevron-right'} class="size-4" />
+    </Button>
   </div>
 
-  <!-- Individual Account Inboxes -->
   {#if expanded}
-    <div class="ml-4 mt-0.5 space-y-0.5">
+    <div class="ml-3 border-l border-sidebar-border pl-1">
       {#each accounts as acc (acc.account.id)}
         {#if acc.inbox}
+          {@const selected = isAccountInboxSelected(acc.account.id, acc.inbox.id)}
           <FolderContextMenu folderId={acc.inbox.id}>
-            <button
-              class="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors {isAccountInboxSelected(acc.account.id, acc.inbox.id)
-                ? 'bg-primary/10 text-primary'
-                : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'}"
+            <Sidebar.MenuButton
+              isActive={selected}
+              aria-current={selected ? 'true' : undefined}
+              class="focus-visible:ring-inset"
               data-sidebar-item="unified-account"
               data-folder-id={acc.inbox.id}
               onclick={() => handleAccountInboxClick(acc)}
             >
-              <!-- Account Color Dot -->
-              <span
-                class="w-2 h-2 rounded-full flex-shrink-0"
-                style="background-color: {getAccountColor(acc.account)}"
-              ></span>
-
-              <!-- Account Name -->
-              <span class="flex-1 text-left truncate">{acc.account.name}</span>
-
-              <!-- Unread Badge -->
+              <span class="size-2 shrink-0 rounded-full" style:background-color={getAccountColor(acc.account)}></span>
+              <span class="min-w-0 flex-1 truncate">{acc.account.name}</span>
               {#if acc.inbox.unreadCount > 0}
-                <span class="px-1.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-                  {acc.inbox.unreadCount}
-                </span>
+                <Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{acc.inbox.unreadCount}</Badge>
               {/if}
-            </button>
+            </Sidebar.MenuButton>
           </FolderContextMenu>
         {/if}
       {/each}
     </div>
   {/if}
-</div>
+</Sidebar.Group>

@@ -1,5 +1,9 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
+  import AccountTextField from './AccountTextField.svelte'
+  import type { AccountFormAdapter } from './accountFormAdapter.svelte'
+  import { FieldGroup } from '$lib/components/ui/field'
+  import { Separator } from '$lib/components/ui/separator'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
   import * as Select from '$lib/components/ui/select'
@@ -28,8 +32,8 @@
      *  whether to hint about the separate SMTP credentials UI on the
      *  Server tab). */
     isGenericProvider: boolean
-    /** Validation errors */
-    errors: Record<string, string>
+    form: AccountFormAdapter
+    passwordError?: string
     /** Whether re-authorization is in progress */
     reauthorizing?: boolean
     /** Whether re-authorization succeeded */
@@ -55,7 +59,8 @@
     syncPeriodDays = $bindable(),
     authType,
     isGenericProvider,
-    errors,
+    form,
+    passwordError,
     reauthorizing = false,
     reauthorizeSuccess = false,
     onNameChange,
@@ -82,69 +87,48 @@
       {$_('account.accountIdentification')}
     </h3>
 
-    <div class="space-y-2">
-      <Label for="name">{$_('account.accountName')}</Label>
-      <div class="flex items-center gap-3">
-        <ColorPicker value={color} onchange={(c) => { color = c; onColorChange(c) }} />
-        <Input
-          id="name"
-          type="text"
-          placeholder={$_('account.accountNamePlaceholder')}
-          bind:value={name}
-          oninput={(e) => onNameChange((e.target as HTMLInputElement).value)}
-          class={errors.name ? 'border-destructive' : ''}
-        />
-      </div>
-      <p class="text-xs text-muted-foreground">
-        {$_('account.colorHelp')}
-      </p>
-      {#if errors.name}
-        <p class="text-sm text-destructive">{errors.name}</p>
-      {/if}
-    </div>
-
-    <div class="space-y-2">
-      <Label for="displayName">{$_('account.displayName')}</Label>
-      <Input
-        id="displayName"
-        type="text"
+    <FieldGroup class="gap-4">
+      <AccountTextField
+        {form}
+        name="name"
+        label={$_('account.accountName')}
+        placeholder={$_('account.accountNamePlaceholder')}
+        description={$_('account.colorHelp')}
+        bind:value={name}
+        onValueChange={onNameChange}
+      >
+        {#snippet leading()}
+          <ColorPicker value={color} onchange={(c) => { color = c; onColorChange(c) }} />
+        {/snippet}
+      </AccountTextField>
+      <AccountTextField
+        {form}
+        name="displayName"
+        label={$_('account.displayName')}
         placeholder={$_('account.displayNamePlaceholder')}
+        description={$_('account.displayNameHelp')}
         bind:value={displayName}
-        oninput={(e) => onDisplayNameChange((e.target as HTMLInputElement).value)}
-        class={errors.displayName ? 'border-destructive' : ''}
+        onValueChange={onDisplayNameChange}
       />
-      <p class="text-xs text-muted-foreground">
-        {$_('account.displayNameHelp')}
-      </p>
-      {#if errors.displayName}
-        <p class="text-sm text-destructive">{errors.displayName}</p>
-      {/if}
-    </div>
+    </FieldGroup>
   </div>
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
-  <!-- Credentials -->
   <div class="space-y-4">
-    <h3 class="text-sm font-medium flex items-center gap-2">
-      <Icon icon="mdi:key-outline" class="w-4 h-4" />
+    <h3 class="flex items-center gap-2 text-sm font-medium">
+      <Icon icon="mdi:key-outline" class="size-4" />
       {$_('account.credentials')}
     </h3>
 
-    <div class="space-y-2">
-      <Label for="email">{$_('account.emailAddress')}</Label>
-      <Input
-        id="email"
-        type="email"
-        value={email}
-        disabled
-        class="bg-muted"
-      />
-      <p class="text-xs text-muted-foreground">
-        {$_('account.emailReadOnly')}
-      </p>
-    </div>
+    <AccountTextField
+      {form}
+      name="email"
+      label={$_('account.emailAddress')}
+      description={$_('account.emailReadOnly')}
+      value={email}
+      disabled
+    />
 
     <div class="space-y-2">
       <Label for="username">{$_('account.username')}</Label>
@@ -220,10 +204,10 @@
           placeholder={$_('account.leaveEmptyToKeep')}
           bind:value={password}
           oninput={(e) => onPasswordChange((e.target as HTMLInputElement).value)}
-          class={errors.password ? 'border-destructive' : ''}
+          class={passwordError ? 'border-destructive' : ''}
         />
-        {#if errors.password}
-          <p class="text-sm text-destructive">{errors.password}</p>
+        {#if passwordError}
+          <p class="text-sm text-destructive">{passwordError}</p>
         {/if}
       </div>
 

@@ -1,7 +1,9 @@
-import { definedEntries } from '$lib/bindingValues'
 // UI State persistence store
 // Handles saving and loading UI state across app sessions
 
+import { untrack } from 'svelte'
+import { useDebounce } from 'runed'
+import { definedEntries } from '$lib/bindingValues'
 import { GetUIState, SaveUIState } from '$bindings/github.com/hkdb/aerion/app/app'
 import { appstate } from '$lib/models'
 
@@ -103,8 +105,26 @@ export function getUIStateVersion(): number {
   return uiStateLoadedVersion
 }
 
-// Debounced save
-let saveTimer: ReturnType<typeof setTimeout> | null = null
+let inFlightSave = Promise.resolve()
+const scheduleSave = useDebounce(() => {
+  inFlightSave = inFlightSave.then(async () => {
+    const backendState: appstate.UIState = {
+      ...currentState,
+      selectedAccountId: currentState.selectedAccountId || '',
+      selectedFolderId: currentState.selectedFolderId || '',
+      selectedFolderType: currentState.selectedFolderType || '',
+      selectedThreadId: currentState.selectedThreadId || '',
+      selectedConversationAccountId: currentState.selectedConversationAccountId || '',
+      selectedConversationFolderId: currentState.selectedConversationFolderId || '',
+    }
+    try {
+      await SaveUIState(backendState)
+    } catch (err) {
+      console.error('Failed to save UI state:', err)
+    }
+  })
+  return inFlightSave
+}, 1000)
 
 export function saveUIState(updates: Partial<UIState>): void {
   // Merge updates into current state
@@ -118,31 +138,7 @@ export function saveUIState(updates: Partial<UIState>): void {
     currentState.listWidth = clamp(updates.listWidth, LIST_MIN, LIST_MAX)
   }
 
-  // Debounce: save at most once per second
-  if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(async () => {
-    try {
-      // Convert to backend model format
-      const backendState: appstate.UIState = {
-        selectedAccountId: currentState.selectedAccountId || '',
-        selectedFolderId: currentState.selectedFolderId || '',
-        selectedFolderName: currentState.selectedFolderName,
-        selectedFolderType: currentState.selectedFolderType || '',
-        selectedThreadId: currentState.selectedThreadId || '',
-        selectedConversationAccountId: currentState.selectedConversationAccountId || '',
-        selectedConversationFolderId: currentState.selectedConversationFolderId || '',
-        sidebarWidth: currentState.sidebarWidth,
-        listWidth: currentState.listWidth,
-        expandedAccounts: currentState.expandedAccounts,
-        unifiedInboxExpanded: currentState.unifiedInboxExpanded,
-        collapsedFolders: currentState.collapsedFolders,
-        activeExtension: currentState.activeExtension,
-      }
-      await SaveUIState(backendState)
-    } catch (err) {
-      console.error('Failed to save UI state:', err)
-    }
-  }, 1000)
+  void untrack(scheduleSave)
 }
 
 // Helper to check if an account is expanded (defaults to true if not set)

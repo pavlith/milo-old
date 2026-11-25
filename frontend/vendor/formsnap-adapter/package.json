@@ -1,0 +1,7 @@
+{
+  "name": "aerion-formsnap-adapter",
+  "version": "2.19.0",
+  "private": true,
+  "type": "module",
+  "types": "./index.d.ts"
+}

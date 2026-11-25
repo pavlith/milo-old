@@ -929,6 +929,7 @@
     "maximizeWindow": "Развернуть окно",
     "restoreWindow": "Восстановить размер окна",
     "closeWindow": "Закрыть окно",
+    "selectConversation": "Выбрать цепочку писем",
     "resizeSidebar": "Изменить ширину боковой панели",
     "resizeMessageList": "Изменить ширину списка писем",
     "emailComposer": "Редактор писем",

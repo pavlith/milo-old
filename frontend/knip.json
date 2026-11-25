@@ -9,6 +9,10 @@
   "includeEntryExports": false,
   "ignoreDependencies": ["tw-animate-css"],
   "ignoreIssues": {
-    "src/lib/components/ui/popover/index.ts": ["exports"]
+    "src/lib/components/ui/popover/index.ts": ["exports"],
+    "src/lib/components/ui/avatar/index.ts": ["exports"],
+    "src/lib/components/ui/resizable/index.ts": ["exports"],
+    "src/lib/components/ui/sidebar/index.ts": ["exports"],
+    "src/lib/components/ui/tooltip/index.ts": ["exports"]
   }
 }

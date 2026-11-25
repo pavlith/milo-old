@@ -1,4 +1,5 @@
 import './app.css'
+import { initializeDarkMode } from '$lib/stores/theme.svelte'
 import { initI18n } from './lib/i18n'
 import App from './App.svelte'
 import { mount } from 'svelte'
@@ -8,6 +9,7 @@ import { WindowShow } from '$lib/desktop'
 
 // The HTML splash stays visible until the backend and saved appearance are ready.
 async function bootstrap(): Promise<void> {
+  initializeDarkMode()
   await WindowShow()
   await WaitForReady()
   await Promise.all([

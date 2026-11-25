@@ -5,6 +5,7 @@
   import * as Tabs from '$lib/components/ui/tabs'
   import { Button } from '$lib/components/ui/button'
   import AccountForm, { type OAuthCredentials } from './AccountForm.svelte'
+  import { createAccountFormAdapter } from './account/accountFormAdapter.svelte'
   import AccountGeneralTab from './account/AccountGeneralTab.svelte'
   import AccountIdentityTab from './account/AccountIdentityTab.svelte'
   import AccountServerTab from './account/AccountServerTab.svelte'
@@ -195,6 +196,8 @@
   const availableIdentityGroups = $derived(
     allIdentityGroups.filter(g => g.account?.id !== editAccount?.id && !g.account?.noOutgoingServer)
   )
+
+  const accountFields = createAccountFormAdapter(() => ({ name, displayName, email }), () => errors, true)
 
   function validate(): boolean {
     errors = {}
@@ -442,7 +445,8 @@
               bind:syncPeriodDays
               {authType}
               {isGenericProvider}
-              {errors}
+              form={accountFields}
+              passwordError={errors.password}
               {reauthorizing}
               {reauthorizeSuccess}
               onNameChange={(v) => name = v}

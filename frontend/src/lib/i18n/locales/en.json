@@ -929,6 +929,7 @@
     "maximizeWindow": "Maximize window",
     "restoreWindow": "Restore window",
     "closeWindow": "Close window",
+    "selectConversation": "Select conversation",
     "resizeSidebar": "Resize sidebar",
     "resizeMessageList": "Resize message list",
     "emailComposer": "Email composer",

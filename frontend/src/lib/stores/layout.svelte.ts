@@ -1,3 +1,5 @@
+import { useEventListener } from 'runed'
+
 // Responsive layout store for tiled/narrow windows
 // Three modes: full (>1024px), medium (768-1024px), narrow (<768px)
 
@@ -7,34 +9,18 @@ export type ResponsiveView = 'default' | 'viewer' | 'sidebar'
 let layoutMode = $state<LayoutMode>('full')
 let responsiveView = $state<ResponsiveView>('default')
 
-let narrowMql: MediaQueryList | null = null
-let mediumMql: MediaQueryList | null = null
-
-function updateMode() {
-  if (!narrowMql || !mediumMql) return
-
-  if (narrowMql.matches) {
-    layoutMode = 'narrow'
-  } else if (mediumMql.matches) {
-    layoutMode = 'medium'
-  } else {
-    layoutMode = 'full'
-  }
-
-  // Reset overlays when entering full mode
-  if (layoutMode === 'full') {
-    responsiveView = 'default'
-  }
-}
-
 export function initLayout() {
-  narrowMql = window.matchMedia('(max-width: 767px)')
-  mediumMql = window.matchMedia('(max-width: 1024px)')
+  const narrow = window.matchMedia('(max-width: 767px)')
+  const medium = window.matchMedia('(max-width: 1024px)')
+
+  function updateMode() {
+    layoutMode = narrow.matches ? 'narrow' : medium.matches ? 'medium' : 'full'
+    if (layoutMode === 'full') responsiveView = 'default'
+  }
 
   updateMode()
-
-  narrowMql.addEventListener('change', updateMode)
-  mediumMql.addEventListener('change', updateMode)
+  useEventListener(narrow, 'change', updateMode)
+  useEventListener(medium, 'change', updateMode)
 }
 
 export function getLayoutMode(): LayoutMode {

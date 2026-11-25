@@ -17,6 +17,10 @@
   import { message } from '$lib/models'
   import { Star, Unstar } from '$bindings/github.com/hkdb/aerion/app/app'
   import MessageContextMenu from '$lib/components/common/MessageContextMenu.svelte'
+  import { Badge } from '$lib/components/ui/badge'
+  import { Checkbox } from '$lib/components/ui/checkbox'
+  import { Button } from '$lib/components/ui/button'
+  import { cn } from '$lib/utils'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import { toasts } from '$lib/stores/toast'
   import { getAccentBarUnread, getAccentUnreadStyle, getShowMessageListCircles, getShowMessageListProfilePics, getAlwaysShowMessageCheckbox } from '$lib/stores/settings.svelte'
@@ -112,12 +116,6 @@
       standard: 'pl-[1.375rem] pr-5 py-4 gap-4',
       large: 'pl-[1.625rem] pr-6 py-5 gap-5',
     },
-    avatar: {
-      micro: 'w-8 h-8 text-xs',
-      compact: 'w-10 h-10 text-sm',
-      standard: 'w-12 h-12 text-base',
-      large: 'w-14 h-14 text-lg',
-    },
     senderText: {
       micro: 'text-xs',
       compact: 'text-sm',
@@ -166,10 +164,10 @@
     // No opacity states — the checkbox is always fully opaque; visibility is
     // purely the width clip (overflow-hidden). The slide IS the reveal.
     checkboxHidden: {
-      micro: 'w-0 h-4 -mr-2 group-hover:w-4 group-hover:mr-0',
-      compact: 'w-0 h-5 -mr-3 group-hover:w-5 group-hover:mr-0',
-      standard: 'w-0 h-6 -mr-4 group-hover:w-6 group-hover:mr-0',
-      large: 'w-0 h-7 -mr-5 group-hover:w-7 group-hover:mr-0',
+      micro: 'w-0 h-4 -mr-2 group-hover:w-4 group-hover:mr-0 group-focus-within:w-4 group-focus-within:mr-0',
+      compact: 'w-0 h-5 -mr-3 group-hover:w-5 group-hover:mr-0 group-focus-within:w-5 group-focus-within:mr-0',
+      standard: 'w-0 h-6 -mr-4 group-hover:w-6 group-hover:mr-0 group-focus-within:w-6 group-focus-within:mr-0',
+      large: 'w-0 h-7 -mr-5 group-hover:w-7 group-hover:mr-0 group-focus-within:w-7 group-focus-within:mr-0',
     },
     // Legacy always-reserved column ("Always show checkbox" setting ON):
     // opacity fade instead of width reveal — invisible until hover on
@@ -181,16 +179,10 @@
       standard: 'w-5 h-5',
       large: 'w-6 h-6',
     },
-    checkIcon: {
-      micro: 'w-2 h-2',
-      compact: 'w-3 h-3',
-      standard: 'w-4 h-4',
-      large: 'w-5 h-5',
-    },
+
   }
 
-  // Pixel sizes matching densityClasses.avatar (w-8/10/12/14) so the photo
-  // avatar keeps the exact footprint of the colored circle it replaces.
+  // Keep the same footprint for contact photos and colored initials.
   const AVATAR_PX = { micro: 32, compact: 40, standard: 48, large: 56 } as const
 
   // Participants arrive latest-first from the backend (#169): primary is
@@ -208,30 +200,6 @@
       overflow: Math.max(0, names.length - 3),
     }
   })
-
-  function getInitials(conv: message.Conversation): string {
-    if (!conv.participants || conv.participants.length === 0) {
-      return '?'
-    }
-    const first = conv.participants[0]
-    const name = first.name || first.email
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  function getAvatarColor(conv: message.Conversation): string {
-    // Returns a theme-driven avatar class (.avatar-1 .. .avatar-14, defined in themes.css).
-    const email = conv.participants?.[0]?.email || conv.threadId
-    let hash = 0
-    for (let i = 0; i < email.length; i++) {
-      hash = email.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return `avatar-${(Math.abs(hash) % 14) + 1}`
-  }
 
   async function handleStarClick(e: MouseEvent) {
     e.stopPropagation()
@@ -459,11 +427,23 @@
   <div
     data-conversation-row
     draggable={getLayoutMode() !== 'narrow'}
-    class="group relative w-full flex items-start touch-pan-y {densityClasses.row[density]} text-left border-b border-border transition-colors duration-300 cursor-pointer outline-hidden {selected
-      ? 'bg-primary/20'
-      : 'hover:bg-muted/50'} {getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' ? 'border-l-2 border-l-primary' : ''} {swipeAnim === 'select' ? 'swipe-select-anim' : ''} {swipeAnim === 'delete' ? 'swipe-delete-anim' : ''}"
+    class={cn(
+      'group relative flex w-full touch-pan-y cursor-pointer items-start rounded-lg border bg-card text-left transition-colors hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+      densityClasses.row[density],
+      selected && 'border-primary/50 bg-muted',
+      checked && 'bg-accent',
+      getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' && 'border-l-2 border-l-primary',
+      swipeAnim === 'select' && 'swipe-select-anim',
+      swipeAnim === 'delete' && 'swipe-delete-anim',
+    )}
+    aria-current={selected ? 'true' : undefined}
     onclick={handleRowClick}
-    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect() }}}
+    onkeydown={(e) => {
+      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault()
+        onSelect()
+      }
+    }}
     ondragstart={handleDragStart}
     ontouchstart={handleTouchStart}
     ontouchmove={handleTouchMove}
@@ -511,39 +491,25 @@
         ? `${densityClasses.checkbox[density]} transition-opacity duration-200 ${checked ? 'opacity-100' : densityClasses.checkboxAlways}`
         : `overflow-hidden transition-all duration-200 ${checked ? densityClasses.checkbox[density] : densityClasses.checkboxHidden[density]}`}"
     >
-      <button
-        class="{densityClasses.checkboxInner[density]} rounded border {checked
-          ? 'bg-primary border-primary'
-          : 'border-muted-foreground hover:border-primary'} flex items-center justify-center transition-colors duration-200"
+      <Checkbox
+        {checked}
+        class={densityClasses.checkboxInner[density]}
+        aria-label={$_('aria.selectConversation')}
         onclick={handleCheckboxClick}
-      >
-        {#if checked}
-          <Icon icon="mdi:check" class="{densityClasses.checkIcon[density]} text-primary-foreground" />
-        {/if}
-      </button>
+      />
     </div>
 
-    <!-- Sender avatar: colored circle, or the contact's photo when enabled
-         (falling back to the colored circle when the contact has no photo) -->
     {#if getShowMessageListCircles()}
-      {#if getShowMessageListProfilePics()}
-        {@const avatarPhoto = contactPhotos.get(conversation.participants?.[0]?.email ?? '')}
-        <Avatar
-          email={conversation.participants?.[0]?.email || conversation.threadId}
-          name={conversation.participants?.[0]?.name}
-          size={AVATAR_PX[density]}
-          photoData={avatarPhoto?.data}
-          photoMediaType={avatarPhoto?.mediaType}
-        />
-      {:else}
-        <div
-          class="{densityClasses.avatar[density]} rounded-full flex-shrink-0 flex items-center justify-center font-medium {getAvatarColor(
-            conversation
-          )}"
-        >
-          {getInitials(conversation)}
-        </div>
-      {/if}
+      {@const sender = conversation.participants?.[0]}
+      {@const avatarPhoto = getShowMessageListProfilePics() ? contactPhotos.get(sender?.email ?? '') : undefined}
+      <Avatar
+        email={sender?.email ?? ''}
+        name={sender?.name}
+        colorSeed={sender?.email || conversation.threadId}
+        size={AVATAR_PX[density]}
+        photoData={avatarPhoto?.data}
+        photoMediaType={avatarPhoto?.mediaType}
+      />
     {/if}
 
     <!-- Content -->
@@ -575,24 +541,21 @@
           {/if}
         {/if}
 
-        <!-- Message Count Badge -->
         {#if conversation.messageCount > 1}
-          <span
-            class="flex-shrink-0 {densityClasses.badge[density]} rounded-full bg-muted text-muted-foreground"
-          >
+          <Badge variant="secondary" class={cn('h-auto tabular-nums', densityClasses.badge[density])}>
             {conversation.messageCount}
-          </span>
+          </Badge>
         {/if}
 
-        <!-- Folder Badge (for search results) -->
         {#if isSearchResult && searchFolderName}
-          <span
-            class="flex-shrink-0 {densityClasses.badge[density]} rounded bg-muted/50 text-muted-foreground flex items-center gap-1"
+          <Badge
+            variant="outline"
+            class={cn('h-auto max-w-1/3', densityClasses.badge[density])}
             title={$_('messageList.foundIn', { values: { folder: searchFolderName } })}
           >
-            <Icon icon="mdi:folder-outline" class="w-3 h-3" />
-            {searchFolderName}
-          </span>
+            <Icon icon="mdi:folder-outline" data-icon="inline-start" />
+            <span class="truncate">{searchFolderName}</span>
+          </Badge>
         {/if}
 
         <!-- Indicators -->
@@ -650,16 +613,19 @@
       {/if}
     </div>
 
-    <!-- Star -->
-    <button
-      class="flex-shrink-0 p-1 -mr-1 rounded hover:bg-muted transition-colors duration-200"
+    <Button
+      variant="ghost"
+      size="icon"
+      class="-mr-1 size-7"
+      aria-label={$_(conversation.isStarred ? 'viewer.removeStar' : 'viewer.star')}
+      aria-pressed={conversation.isStarred}
       onclick={handleStarClick}
     >
       <Icon
         icon={conversation.isStarred ? 'mdi:star' : 'mdi:star-outline'}
-        class="{densityClasses.starIcon[density]} {conversation.isStarred ? 'text-yellow-500' : 'text-muted-foreground'}"
+        class={cn(densityClasses.starIcon[density], conversation.isStarred ? 'text-starred' : 'text-muted-foreground')}
       />
-    </button>
+    </Button>
   </div>
 </MessageContextMenu>
 

@@ -3,6 +3,9 @@
   import { account, folder } from '$lib/models'
   import FolderTreeItem from './FolderTreeItem.svelte'
   import { _ } from '$lib/i18n'
+  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { buttonVariants } from '$lib/components/ui/button'
+  import { cn } from '$lib/utils'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
 
   interface Props {
@@ -57,11 +60,13 @@
   }
 </script>
 
-<div class="mb-2">
+<Sidebar.Group class="p-0">
   <!-- Account Header -->
   <div class="relative group">
-    <button
-      class="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/50 transition-colors {isHeaderFocused ? 'bg-muted ring-1 ring-primary/50' : ''}"
+    <Sidebar.MenuButton
+      isActive={isHeaderFocused}
+      class="pr-8 font-medium focus-visible:ring-inset"
+      aria-expanded={isExpanded}
       data-sidebar-item="account-header"
       data-account-id={acc.id}
       onclick={toggleExpanded}
@@ -80,11 +85,12 @@
           <Icon icon="mdi:alert-circle" class="w-4 h-4 text-destructive" />
         </span>
       {/if}
-    </button>
+    </Sidebar.MenuButton>
 
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
-        class="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 opacity-0 transition-opacity hover:bg-muted focus:opacity-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring group-hover:opacity-100 data-[state=open]:opacity-100"
+        class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }),
+          'absolute right-1 top-1/2 size-6 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus:opacity-100 data-[state=open]:opacity-100')}
         aria-label={`${acc.name}: ${$_('aria.accountActions')}`}
       >
         <Icon icon="mdi:dots-vertical" class="size-4" aria-hidden="true" />
@@ -119,7 +125,7 @@
 
   <!-- Folder List -->
   {#if isExpanded}
-    <div class="ml-4">
+    <div class="ml-3 border-l border-sidebar-border pl-1">
       {#if loading}
         <div class="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
           <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
@@ -145,4 +151,4 @@
       {/if}
     </div>
   {/if}
-</div>
+</Sidebar.Group>

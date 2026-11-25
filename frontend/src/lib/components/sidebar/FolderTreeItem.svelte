@@ -4,6 +4,10 @@
   import { folder } from '$lib/models'
   import { MoveToFolder, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
   import FolderContextMenu from './FolderContextMenu.svelte'
+  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { Badge } from '$lib/components/ui/badge'
+  import { Button } from '$lib/components/ui/button'
+  import { cn } from '$lib/utils'
   import Self from './FolderTreeItem.svelte'
   import { toasts } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
@@ -123,55 +127,44 @@
 </script>
 
 {#if tree.folder}
-  <FolderContextMenu folderId={tree.folder.id}>
-    <button
-      class="w-full flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors {isFolderSelected(tree.folder.id)
-        ? 'bg-primary/10 text-primary font-medium'
-        : 'text-foreground hover:bg-muted/50'} {isDragOver ? 'ring-2 ring-primary ring-inset' : ''}"
-      data-sidebar-item="folder"
-      data-folder-id={tree.folder.id}
-      data-has-children={hasChildren ? 'true' : undefined}
-      onclick={() => onFolderSelect?.(tree.folder!)}
-      ondragenter={handleDragEnter}
-      ondragover={handleDragOver}
-      ondragleave={handleDragLeave}
-      ondrop={handleDrop}
-    >
-      <Icon
-        icon={getFolderIcon(tree.folder.type)}
-        class="w-4 h-4 flex-shrink-0"
-      />
-      <span class="truncate text-left">{tree.folder.name}</span>
-      {#if hasChildren}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <span
-          class="flex-shrink-0 p-0.5 rounded hover:bg-muted"
-          role="button"
-          tabindex="-1"
-          onclick={(e: MouseEvent) => {
-            e.stopPropagation()
-            onToggleCollapse?.(tree.folder!.id)
-          }}
-        >
-          <Icon
-            icon={isCollapsed ? 'mdi:chevron-right' : 'mdi:chevron-down'}
-            class="w-4 h-4 text-muted-foreground"
-          />
-        </span>
-      {/if}
-      <span class="flex-1"></span>
-      {#if tree.folder.unreadCount > 0}
-        <span
-          class="px-1.5 py-0.5 text-xs font-medium rounded-full bg-primary text-primary-foreground"
-        >
-          {tree.folder.unreadCount}
-        </span>
-      {/if}
-    </button>
-  </FolderContextMenu>
+  <div class="relative">
+    <FolderContextMenu folderId={tree.folder.id}>
+      <Sidebar.MenuButton
+        class={cn('focus-visible:ring-inset', hasChildren && 'pr-8', isDragOver && 'ring-2 ring-primary ring-inset')}
+        isActive={isFolderSelected(tree.folder.id)}
+        aria-current={isFolderSelected(tree.folder.id) ? 'true' : undefined}
+        data-sidebar-item="folder"
+        data-folder-id={tree.folder.id}
+        data-has-children={hasChildren ? 'true' : undefined}
+        onclick={() => onFolderSelect?.(tree.folder!)}
+        ondragenter={handleDragEnter}
+        ondragover={handleDragOver}
+        ondragleave={handleDragLeave}
+        ondrop={handleDrop}
+      >
+        <Icon icon={getFolderIcon(tree.folder.type)} />
+        <span class="min-w-0 flex-1 truncate">{tree.folder.name}</span>
+        {#if tree.folder.unreadCount > 0}
+          <Badge variant="secondary" class="h-4 px-1.5 tabular-nums">{tree.folder.unreadCount}</Badge>
+        {/if}
+      </Sidebar.MenuButton>
+    </FolderContextMenu>
+    {#if hasChildren}
+      <Button
+        variant="ghost"
+        size="icon"
+        class="absolute right-1 top-1/2 size-6 -translate-y-1/2"
+        aria-label={tree.folder.name}
+        aria-expanded={!isCollapsed}
+        onclick={() => onToggleCollapse?.(tree.folder!.id)}
+      >
+        <Icon icon={isCollapsed ? 'mdi:chevron-right' : 'mdi:chevron-down'} class="size-4" />
+      </Button>
+    {/if}
+  </div>
 
   {#if hasChildren && !isCollapsed}
-    <div class="ml-4">
+    <div class="ml-3 border-l border-sidebar-border pl-1">
       {#each present(tree.children) as childTree (childTree.folder?.id ?? 'unknown')}
         <Self
           tree={childTree}

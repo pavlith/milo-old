@@ -1,39 +1,54 @@
 <script lang="ts">
   import { _ } from '$lib/i18n'
+  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { Separator } from '$lib/components/ui/separator'
   import RailButton from './RailButton.svelte'
-  import { getRailTabs, isRailVisible } from '$lib/stores/extensionRegistry.svelte'
+  import { getRailTabs } from '$lib/stores/extensionRegistry.svelte'
+  import { accountStore } from '$lib/stores/accounts.svelte'
+  import { contactSourcesStore } from '$lib/stores/contactSources.svelte'
   import { getActiveExtension, setActiveExtension } from '$lib/stores/uiState.svelte'
 
-  // Mail is always present and always first; extensions follow in their
-  // registered Order. Rail renders only when at least one extension is enabled
-  // (so there's something to switch between).
-  let active = $derived(getActiveExtension())
-  let visible = $derived(isRailVisible())
-  let tabs = $derived(getRailTabs())
-
-  function select(name: string) {
-    setActiveExtension(name)
-  }
+  const { onSettings, onSync }: { onSettings: () => void; onSync: () => void } = $props()
+  const active = $derived(getActiveExtension())
+  const tabs = $derived(getRailTabs())
 </script>
 
-{#if visible}
-  <nav
-    class="flex flex-col items-stretch w-12 flex-shrink-0 bg-muted/30 border-r border-border pt-2"
-    aria-label={$_('settings.activeExtension')}
-  >
-    <RailButton
-      icon="mdi:email"
-      label={$_('settings.mail')}
-      active={active === 'mail'}
-      onclick={() => select('mail')}
-    />
-    {#each tabs as tab (tab.extensionId)}
-      <RailButton
-        icon={tab.icon || 'mdi:puzzle'}
-        label={$_(`${tab.extensionId}.manifest.name`, { default: tab.label })}
-        active={active === tab.extensionId}
-        onclick={() => select(tab.extensionId)}
-      />
-    {/each}
+<Sidebar.Root collapsible="none" class="w-(--sidebar-width-icon) shrink-0 border-r border-sidebar-border">
+  <nav data-extension-rail class="flex min-h-0 flex-1 flex-col" aria-label={$_('settings.activeExtension')}>
+    <Sidebar.Content>
+      <Sidebar.Group class="p-1.5">
+        <Sidebar.GroupContent>
+          <Sidebar.Menu class="gap-1.5">
+            <RailButton
+              icon="mdi:email-outline"
+              label={$_('settings.mail')}
+              active={active === 'mail'}
+              onclick={() => setActiveExtension('mail')}
+            />
+            {#each tabs as tab (tab.extensionId)}
+              <RailButton
+                icon={tab.icon || 'mdi:puzzle'}
+                label={$_(`${tab.extensionId}.manifest.name`, { default: tab.label })}
+                active={active === tab.extensionId}
+                onclick={() => setActiveExtension(tab.extensionId)}
+              />
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    </Sidebar.Content>
+    <Sidebar.Footer class="p-1.5">
+      <Separator />
+      <Sidebar.Menu class="gap-1.5">
+        <RailButton
+          icon="mdi:sync"
+          spinning={accountStore.isAnySyncing}
+          label={$_(accountStore.isAnySyncing ? 'sidebar.clickToCancel' : 'sidebar.syncAllAccounts')}
+          disabled={accountStore.accounts.length === 0}
+          onclick={onSync}
+        />
+        <RailButton icon="mdi:cog" label={$_('sidebar.settings')} attention={contactSourcesStore.hasErrors} onclick={onSettings} />
+      </Sidebar.Menu>
+    </Sidebar.Footer>
   </nav>
-{/if}
+</Sidebar.Root>

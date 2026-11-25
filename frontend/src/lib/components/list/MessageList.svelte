@@ -12,11 +12,18 @@
 
 <script lang="ts">
   import { present } from '$lib/bindingValues'
-  import { onMount, onDestroy } from 'svelte'
+  import { onMount, onDestroy, tick, untrack } from 'svelte'
+  import { useDebounce } from 'runed'
   import Icon from '@iconify/svelte'
+  import VirtualRows from './VirtualRows.svelte'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
+  import { Input } from '$lib/components/ui/input'
+  import { Badge } from '$lib/components/ui/badge'
+  import { Separator } from '$lib/components/ui/separator'
+  import { cn } from '$lib/utils'
   import ConversationRow from './ConversationRow.svelte'
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu'
-  import { Button } from '$lib/components/ui/button'
+  import { Button, buttonVariants } from '$lib/components/ui/button'
   import { GetConversations, GetConversationCount, SyncFolder, ForceSyncFolder, CancelFolderSync, SetMessageListSortOrder, GetUnifiedInboxConversations, GetUnifiedInboxCount, SearchConversations, SearchUnifiedInbox, GetSearchCount, GetSearchCountUnifiedInbox, GetFTSIndexStatus, IsFTSIndexing, Trash, DeletePermanently, EmptyTrash, EmptySpam, Undo, IMAPSearchFolder, FetchServerMessage } from '$bindings/github.com/hkdb/aerion/app/app'
   import { toasts } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'
@@ -113,7 +120,14 @@
   let searchTotalCount = $state(0)
   let searchOffset = $state(0)
   let isSearching = $state(false)
-  let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+  let searchRequest = 0
+  const scheduleSearch = useDebounce(performSearch, 300)
+
+  function cancelScheduledSearch() {
+    untrack(() => {
+      if (scheduleSearch.pending) void scheduleSearch.cancel()
+    })
+  }
 
   // Filter state
   let filterMode = $state<string>('')  // '' | 'unread' | 'starred' | 'attachments'
@@ -140,6 +154,7 @@
   let serverSearchCount = $state(0)
   let serverSearchTotalCount = $state(0)  // Total matching UIDs on server (may exceed serverSearchCount when limited)
   let isServerSearching = $state(false)
+  let serverSearchRequest = 0
   let lastServerQuery = $state('')
   const SERVER_SEARCH_LIMIT = 200
 
@@ -289,7 +304,7 @@
     EventsOff('fts:indexing')
     if (reloadTimer) clearTimeout(reloadTimer)
     if (syncReloadTimer) clearTimeout(syncReloadTimer)
-    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    cancelScheduledSearch()
     if (dialogGuardInterval) clearInterval(dialogGuardInterval)
   })
 
@@ -351,6 +366,9 @@
     checkedThreadIds = new Set()
     lastClickedIndex = null
     // Clear search state when folder changes
+    cancelScheduledSearch()
+    searchRequest++
+    isSearching = false
     showSearch = false
     searchQuery = ''
     searchResults = []
@@ -361,6 +379,8 @@
     serverSearchCount = 0
     serverSearchTotalCount = 0
     lastServerQuery = ''
+    serverSearchRequest++
+    isServerSearching = false
     // Restore this folder's session state: reload the previously-paginated
     // window and put the scroll back where the user left it.
     const remembered = sessionListState.get(`${currentAccount}:${currentFolder}`)
@@ -584,9 +604,10 @@
 
   // Handle search input with debounce
   function handleSearchInput() {
-    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
-
     if (!searchQuery.trim()) {
+      cancelScheduledSearch()
+      searchRequest++
+      isSearching = false
       // Clear search immediately if query is empty
       searchResults = []
       searchTotalCount = 0
@@ -594,15 +615,20 @@
       serverSearchCount = 0
       serverSearchTotalCount = 0
       serverSearchMode = false
+      serverSearchRequest++
+      isServerSearching = false
       return
     }
 
     // In server mode, don't auto-search locally — user will press Shift+Enter
-    if (serverSearchMode) return
+    if (serverSearchMode) {
+      cancelScheduledSearch()
+      return
+    }
 
-    searchDebounceTimer = setTimeout(() => {
-      performSearch()
-    }, 300)
+    void scheduleSearch().catch(err => {
+      if (err !== 'Cancelled') console.error('Scheduled search failed:', err)
+    })
   }
 
   // Perform the actual search
@@ -615,9 +641,8 @@
       return
     }
 
-    // Don't start a new search if one is already in progress
-    if (isSearching) return
-
+    const request = ++searchRequest
+    const matches = () => request === searchRequest && query === searchQuery.trim()
     isSearching = true
     error = null
     searchOffset = 0  // Reset offset for new search
@@ -638,6 +663,7 @@
         ])
       }
 
+      if (!matches()) return
       searchResults = results || []
       searchTotalCount = count
       // Auto-select first search result for keyboard navigation
@@ -645,10 +671,11 @@
         selectedThreadId = searchResults[0].threadId
       }
     } catch (err) {
+      if (!matches()) return
       console.error('Search failed:', err)
       error = $_('viewer.failedToLoadMessages')
     } finally {
-      isSearching = false
+      if (request === searchRequest) isSearching = false
     }
   }
 
@@ -658,11 +685,10 @@
     if (!query || isSearching) return
 
     // Cancel any pending search debounce to prevent race conditions
-    if (searchDebounceTimer) {
-      clearTimeout(searchDebounceTimer)
-      searchDebounceTimer = null
-    }
+    cancelScheduledSearch()
 
+    const request = ++searchRequest
+    const matches = () => request === searchRequest && query === searchQuery.trim()
     isSearching = true
     const newOffset = searchOffset + PAGE_SIZE
 
@@ -674,20 +700,23 @@
         results = await SearchConversations(accountId, folderId, query, newOffset, PAGE_SIZE, filterMode)
       }
 
-      if (results && results.length > 0) {
+      if (matches() && results?.length) {
         searchResults = [...searchResults, ...results]
         searchOffset = newOffset
       }
     } catch (err) {
+      if (!matches()) return
       console.error('Load more search results failed:', err)
       error = $_('viewer.failedToLoadMessages')
     } finally {
-      isSearching = false
+      if (request === searchRequest) isSearching = false
     }
   }
 
   // Clear search and return to normal view
   function clearSearch() {
+    searchRequest++
+    isSearching = false
     searchQuery = ''
     searchResults = []
     searchTotalCount = 0
@@ -698,8 +727,9 @@
     serverSearchCount = 0
     serverSearchTotalCount = 0
     lastServerQuery = ''
+    serverSearchRequest++
     isServerSearching = false
-    if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
+    cancelScheduledSearch()
   }
 
   // Handle keyboard events in search input
@@ -748,10 +778,16 @@
     const query = searchQuery.trim()
     if (!query || !accountId || !folderId || isUnifiedView) return
 
+    cancelScheduledSearch()
+    searchRequest++
+    isSearching = false
+    const request = ++serverSearchRequest
+    const isCurrent = () => request === serverSearchRequest && serverSearchMode
     isServerSearching = true
     error = null
     try {
       const response = await IMAPSearchFolder(accountId, folderId, query, limit)
+      if (!isCurrent()) return
       const items = (response?.results || []).map(adaptServerResult)
       serverSearchResults = items
       serverSearchCount = items.length
@@ -760,10 +796,11 @@
         selectedThreadId = items[0].threadId
       }
     } catch (err) {
+      if (!isCurrent()) return
       console.error('Server search failed:', err)
       error = $_('viewer.failedToLoadMessages')
     } finally {
-      isServerSearching = false
+      if (request === serverSearchRequest) isServerSearching = false
     }
   }
 
@@ -812,6 +849,16 @@
       ? (serverSearchMode ? serverSearchTotalCount : searchTotalCount)
       : totalCount
   )
+
+  const rowDensity = $derived(getMessageListDensity())
+  const estimatedRowHeight = $derived({ micro: 60, compact: 76, standard: 96, large: 116 }[rowDensity])
+  const rowKeys = $derived(activeList.map((conversation, index) =>
+    isSearchMode
+      ? `${conversation.threadId}-${index}`
+      : `${conversation.threadId}-${conversation.accountId || accountId || ''}`
+  ))
+  const selectedIndex = $derived(activeList.findIndex(c => c.threadId === selectedThreadId))
+  let virtualRows = $state<VirtualRows | null>(null)
 
   // Opt-in contact photos: batch-prefetch the visible rows' avatar emails in one
   // Wails call (never per-row). Debounced (~150ms, cancelled via effect cleanup)
@@ -1280,12 +1327,13 @@
   }
 
   // Open context menu for the currently selected conversation row
-  export function openContextMenu() {
+  export async function openContextMenu() {
     if (!selectedThreadId || !listContainerRef) return
     const index = activeList.findIndex(c => c.threadId === selectedThreadId)
     if (index < 0) return
-    const rows = listContainerRef.querySelectorAll('[data-conversation-row]')
-    const row = rows[index] as HTMLElement | undefined
+    virtualRows?.scrollToIndex(index)
+    await tick()
+    const row = listContainerRef?.querySelector<HTMLElement>(`[data-index="${index}"] [data-conversation-row]`)
     if (!row) return
     const rect = row.getBoundingClientRect()
     row.dispatchEvent(new MouseEvent('contextmenu', {
@@ -1408,171 +1456,131 @@
   }
 
   // Scroll to a specific index in the list
-  function scrollToIndex(index: number) {
-    if (!listContainerRef) return
-
-    const rows = listContainerRef.querySelectorAll('[data-conversation-row]')
-    const row = rows[index] as HTMLElement | undefined
-    if (row) {
-      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-    }
+  async function scrollToIndex(index: number) {
+    if (index < 0) return
+    await tick()
+    virtualRows?.scrollToIndex(index)
   }
 </script>
 
 <div class="flex flex-col h-full {isFlashing ? 'pane-focus-flash' : ''}">
-  <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 border-b border-border">
-    <div class="flex items-center gap-2">
+  <div class="flex min-h-[52px] shrink-0 items-center justify-between gap-2 px-3 py-2">
+    <div class="flex min-w-0 items-center gap-2">
       {#if showFolderToggle}
-        <button
-          class="p-1.5 -ml-1 rounded-md hover:bg-muted transition-colors"
-          title={$_('responsive.folders')}
-          aria-label={$_('aria.toggleSidebar')}
-          onclick={onToggleSidebar}
-        >
-          <Icon icon="mdi:dock-left" class="w-5 h-5 text-muted-foreground" />
-        </button>
+        <ToolbarButton icon="mdi:dock-left" label={$_('aria.toggleSidebar')} onclick={onToggleSidebar} />
       {/if}
-      {#if showSearch}
-        <!-- Search input -->
-        <div class="flex items-center gap-1 bg-muted rounded-md px-2 flex-1">
-          <Icon icon="mdi:magnify" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          <input
-            bind:this={searchInputRef}
-            type="text"
-            placeholder={$_('messageList.searchMessages')}
-            class="bg-transparent border-none outline-hidden text-sm py-1.5 w-full min-w-[200px]"
-            bind:value={searchQuery}
-            oninput={handleSearchInput}
-            onkeydown={handleSearchKeydown}
-          />
-          {#if serverSearchMode}
-            <button
-              onclick={() => { serverSearchMode = false }}
-              class="px-1.5 py-0.5 text-[10px] font-medium bg-primary/20 text-primary rounded-full flex-shrink-0 hover:bg-primary/30 transition-colors"
-              title={$_('search.localSearch')}
-            >
-              {$_('search.server')}
-            </button>
-          {/if}
-          {#if searchQuery || isSearching || isServerSearching}
-            <button
-              onclick={clearSearch}
-              class="p-0.5 hover:bg-muted-foreground/20 rounded"
-              title={$_('messageList.clearSearch')}
-            >
-              {#if isSearching || isServerSearching}
-                <Icon icon="mdi:loading" class="w-4 h-4 animate-spin text-muted-foreground" />
-              {:else}
-                <Icon icon="mdi:close" class="w-4 h-4 text-muted-foreground" />
-              {/if}
-            </button>
-          {/if}
-        </div>
-      {:else}
-        <h2 class="font-semibold text-foreground">{folderName}</h2>
-        <span class="text-sm text-muted-foreground">
+      <div class="min-w-0">
+        <h2 class="truncate text-base font-semibold leading-tight" title={folderName}>{folderName}</h2>
+        <p class="truncate text-xs text-muted-foreground">
           {$_('messageList.unread', { values: { count: unreadCount } })}
-        </span>
-      {/if}
+        </p>
+      </div>
     </div>
-    <div class="flex items-center gap-1">
+    <div class="flex shrink-0 items-center gap-0.5">
       {#if syncing}
-        <!-- While syncing, show spinning icon that cancels on click -->
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={syncProgress ? `${$_('sidebar.syncing')} ${syncProgress.phase}: ${syncProgress.percentage}% - ${$_('sidebar.clickToCancel')}` : `${$_('sidebar.syncing')} ${$_('sidebar.clickToCancel')}`}
+        <ToolbarButton
+          icon="mdi:refresh"
+          iconClass="animate-spin"
+          label={syncProgress ? `${$_('sidebar.syncing')} ${syncProgress.phase}: ${syncProgress.percentage}% - ${$_('sidebar.clickToCancel')}` : $_('sidebar.clickToCancel')}
           onclick={cancelFolderSync}
-        >
-          <Icon
-            icon="mdi:refresh"
-            class="w-5 h-5 text-muted-foreground animate-spin"
-          />
-        </button>
+        />
       {:else}
-        <!-- Dropdown menu for sync options -->
         <DropdownMenu.Root>
           <DropdownMenu.Trigger
-            class="p-2 rounded-md hover:bg-muted transition-colors disabled:opacity-50"
+            class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8')}
+            aria-label={$_('messageList.syncFolder')}
             disabled={loading || isUnifiedView}
           >
-            <Icon
-              icon="mdi:refresh"
-              class="w-5 h-5 text-muted-foreground"
-            />
+            <Icon icon="mdi:refresh" class="size-4" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end" class="min-w-45">
-            <DropdownMenu.Item
-              onSelect={syncFolder}
-            >
-              <Icon icon="mdi:refresh" class="w-4 h-4 mr-2" />
+            <DropdownMenu.Item onSelect={syncFolder}>
+              <Icon icon="mdi:refresh" class="mr-2 size-4" />
               {$_('messageList.syncFolder')}
             </DropdownMenu.Item>
             <DropdownMenu.Separator />
-            <DropdownMenu.Item
-              onSelect={forceSyncFolder}
-            >
-              <Icon icon="mdi:refresh-auto" class="w-4 h-4 mr-2" />
+            <DropdownMenu.Item onSelect={forceSyncFolder}>
+              <Icon icon="mdi:refresh-auto" class="mr-2 size-4" />
               {$_('messageList.forceResync')}
             </DropdownMenu.Item>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
       {/if}
-      <button
-        class="p-2 rounded-md hover:bg-muted transition-colors {showSearch ? 'bg-muted' : ''}"
-        title={showSearch ? $_('common.close') : $_('common.search')}
+      <ToolbarButton
+        icon="mdi:magnify"
+        label={$_('common.search')}
+        aria-pressed={showSearch}
+        class={showSearch ? 'bg-accent text-accent-foreground' : undefined}
         onclick={toggleSearch}
-      >
-        <Icon icon={showSearch ? 'mdi:close' : 'mdi:magnify'} class="w-5 h-5 text-muted-foreground" />
-      </button>
+      />
       <DropdownMenu.Root>
         <DropdownMenu.Trigger
-          class="p-2 rounded-md hover:bg-muted transition-colors {filterMode ? 'bg-muted' : ''}"
-          title={$_('messageList.filter')}
+          class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8', filterMode && 'bg-accent text-accent-foreground')}
+          aria-label={$_('messageList.filter')}
         >
-          <Icon
-            icon={filterMode ? 'mdi:filter' : 'mdi:filter-outline'}
-            class="w-5 h-5 {filterMode ? 'text-primary' : 'text-muted-foreground'}"
-          />
+          <Icon icon={filterMode ? 'mdi:filter' : 'mdi:filter-outline'} class="size-4" />
         </DropdownMenu.Trigger>
         <DropdownMenu.Content align="end" class="min-w-45">
-          {#each filterOptions as opt (opt.value ?? opt.label)}
-            {#if opt.separator}
-              <DropdownMenu.Separator />
-            {/if}
-            <DropdownMenu.Item
-              onSelect={() => setFilter(opt.value)}
-            >
-              <Icon icon="mdi:check" class="w-4 h-4 mr-2 {filterMode === opt.value ? '' : 'invisible'}" />
-              {opt.label}
-            </DropdownMenu.Item>
-          {/each}
+          <DropdownMenu.Group>
+            {#each filterOptions as opt (opt.value)}
+              {#if opt.separator}
+                <DropdownMenu.Separator />
+              {/if}
+              <DropdownMenu.Item onSelect={() => setFilter(opt.value)}>
+                <Icon icon="mdi:check" class={cn('mr-2 size-4', filterMode !== opt.value && 'invisible')} />
+                {opt.label}
+              </DropdownMenu.Item>
+            {/each}
+          </DropdownMenu.Group>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
-      <button
-        class="p-2 rounded-md hover:bg-muted transition-colors"
-        title={getMessageListSortOrder() === 'newest' ? $_('messageList.showingNewest') : $_('messageList.showingOldest')}
+      <ToolbarButton
+        icon={getMessageListSortOrder() === 'newest' ? 'mdi:sort-descending' : 'mdi:sort-ascending'}
+        label={$_(getMessageListSortOrder() === 'newest' ? 'messageList.showingNewest' : 'messageList.showingOldest')}
         onclick={toggleSortOrder}
-      >
-        <Icon
-          icon={getMessageListSortOrder() === 'newest' ? 'mdi:sort-descending' : 'mdi:sort-ascending'}
-          class="w-5 h-5 text-muted-foreground"
-        />
-      </button>
+      />
     </div>
   </div>
+  <Separator />
+
+  {#if showSearch}
+    <div class="flex shrink-0 items-center gap-1.5 bg-background px-3 py-2">
+      <div class="relative min-w-0 flex-1">
+        <Icon icon="mdi:magnify" class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          bind:ref={searchInputRef}
+          type="text"
+          aria-label={$_('messageList.searchMessages')}
+          placeholder={$_('messageList.searchMessages')}
+          class="h-8 pl-8"
+          bind:value={searchQuery}
+          oninput={(event) => { searchQuery = event.currentTarget.value; handleSearchInput() }}
+          onkeydown={handleSearchKeydown}
+        />
+      </div>
+      {#if serverSearchMode}
+        <Button variant="secondary" size="sm" class="h-8 px-2" title={$_('search.localSearch')} onclick={() => serverSearchMode = false}>
+          {$_('search.server')}
+        </Button>
+      {/if}
+      <ToolbarButton
+        icon={isSearching || isServerSearching ? 'mdi:loading' : 'mdi:close'}
+        iconClass={isSearching || isServerSearching ? 'animate-spin' : undefined}
+        label={$_('messageList.clearSearch')}
+        onclick={clearSearch}
+      />
+    </div>
+    <Separator />
+  {/if}
 
   <!-- Active filter chip -->
   {#if filterMode}
     <div class="flex items-center gap-2 px-4 py-1.5 border-b border-border bg-muted/30">
       <span class="text-xs text-muted-foreground">{$_('messageList.filterLabel')}:</span>
-      <button
-        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-        onclick={() => setFilter('')}
-      >
+      <Badge variant="secondary" class="pr-0.5">
         {filterLabel}
-        <Icon icon="mdi:close" class="w-3 h-3" />
-      </button>
+        <ToolbarButton icon="mdi:close" class="size-4" iconClass="size-3" label={$_('messageList.filterAll')} onclick={() => setFilter('')} />
+      </Badge>
     </div>
   {/if}
 
@@ -1608,7 +1616,7 @@
   {/if}
 
   <!-- Conversation List -->
-  <div bind:this={listContainerRef} class="flex-1 overflow-y-auto scrollbar-thin">
+  <div bind:this={listContainerRef} class="min-h-0 flex-1 overflow-y-auto scrollbar-thin" tabindex="-1" role="region" aria-label={folderName}>
     {#if loading && conversations.length === 0 && !isSearchMode}
       <div class="flex items-center justify-center h-32">
         <Icon icon="mdi:loading" class="w-6 h-6 animate-spin text-muted-foreground" />
@@ -1646,46 +1654,58 @@
             <p>{$_('messageList.noResults', { values: { query: searchQuery } })}</p>
           </div>
         {:else}
-          <!-- Server results header -->
-          <div class="flex items-center justify-between px-4 py-2 bg-muted/30 border-b border-border text-sm text-muted-foreground">
-            <span>
-              {#if serverSearchCount < serverSearchTotalCount}
-                {$_('search.serverResultsCapped', { values: { shown: serverSearchCount, total: serverSearchTotalCount, query: searchQuery } })}
-              {:else}
-                {$_('search.serverResults', { values: { count: serverSearchCount, query: searchQuery } })}
+          <VirtualRows
+            bind:this={virtualRows}
+            viewport={listContainerRef}
+            keys={rowKeys}
+            {selectedIndex}
+            estimatedHeight={estimatedRowHeight}
+          >
+            {#snippet header()}
+              <div class="flex items-center justify-between px-4 py-2 bg-muted/30 border-b border-border text-sm text-muted-foreground">
+                <span>
+                  {#if serverSearchCount < serverSearchTotalCount}
+                    {$_('search.serverResultsCapped', { values: { shown: serverSearchCount, total: serverSearchTotalCount, query: searchQuery } })}
+                  {:else}
+                    {$_('search.serverResults', { values: { count: serverSearchCount, query: searchQuery } })}
+                  {/if}
+                </span>
+                <button
+                  class="text-xs text-primary hover:underline"
+                  onclick={() => { serverSearchMode = false }}
+                >
+                  {$_('search.localSearch')}
+                </button>
+              </div>
+            {/snippet}
+            {#snippet row(index)}
+              {@const result = serverSearchResults[index]}
+              {#if result}
+                {@const resultAccountId = result.accountId || accountId}
+                {@const resultFolderId = result.folderId || folderId}
+                <ConversationRow
+                  bind:this={rowRefs[result.threadId]}
+                  conversation={result}
+                  density={rowDensity}
+                  selected={selectedThreadId === result.threadId}
+                  checked={checkedThreadIds.has(result.threadId)}
+                  accountId={resultAccountId}
+                  folderId={resultFolderId}
+                  {folderType}
+                  {selectedMessageIds}
+                  selectedIsStarred={!selectedHasUnstarred}
+                  selectedIsRead={!selectedHasUnread}
+                  isNonLocal={result._isLocal === false}
+                  onSelect={(e) => selectConversation(result.threadId, index, e)}
+                  onCheck={(checked, e) => handleCheck(result.threadId, checked, index, e)}
+                  onClearSelection={clearSelection}
+                  onActionComplete={handleActionComplete}
+                  {onReply}
+                  onDelete={(ids) => requestDelete(ids)}
+                />
               {/if}
-            </span>
-            <button
-              class="text-xs text-primary hover:underline"
-              onclick={() => { serverSearchMode = false }}
-            >
-              {$_('search.localSearch')}
-            </button>
-          </div>
-          {#each serverSearchResults as result, index (result.threadId + '-' + index)}
-            {@const resultAccountId = result.accountId || accountId}
-            {@const resultFolderId = result.folderId || folderId}
-            <ConversationRow
-              bind:this={rowRefs[result.threadId]}
-              conversation={result}
-              density={getMessageListDensity()}
-              selected={selectedThreadId === result.threadId}
-              checked={checkedThreadIds.has(result.threadId)}
-              accountId={resultAccountId}
-              folderId={resultFolderId}
-              {folderType}
-              {selectedMessageIds}
-              selectedIsStarred={!selectedHasUnstarred}
-              selectedIsRead={!selectedHasUnread}
-              isNonLocal={result._isLocal === false}
-              onSelect={(e) => selectConversation(result.threadId, index, e)}
-              onCheck={(checked, e) => handleCheck(result.threadId, checked, index, e)}
-              onClearSelection={clearSelection}
-              onActionComplete={handleActionComplete}
-              {onReply}
-              onDelete={(ids) => requestDelete(ids)}
-            />
-          {/each}
+            {/snippet}
+          </VirtualRows>
 
           <!-- Show all results button (when results are capped) -->
           {#if serverSearchCount < serverSearchTotalCount}
@@ -1718,51 +1738,63 @@
           {/if}
         </div>
       {:else}
-        <!-- Local search results header -->
-        <div class="flex items-center justify-between px-4 py-2 bg-muted/30 border-b border-border text-sm text-muted-foreground">
-          <span>{$_('messageList.foundResults', { values: { count: searchTotalCount, query: searchQuery } })}</span>
-          {#if !isUnifiedView && accountId && folderId}
-            <button
-              class="text-xs text-primary hover:underline"
-              onclick={() => { serverSearchMode = true; lastServerQuery = searchQuery.trim(); performServerSearch() }}
-            >
-              {$_('search.serverSearch')}
-            </button>
-          {/if}
-        </div>
-        {#each searchResults as result, index (result.threadId + '-' + index)}
-          {@const resultAccountId = result.accountId || accountId}
-          {@const resultFolderId = result.folderId || folderId}
-          {@const resultAccountColor = result.accountColor || ''}
-          {@const resultAccountName = result.accountName || ''}
-          <ConversationRow
-            bind:this={rowRefs[result.threadId]}
-            conversation={result}
-            density={getMessageListDensity()}
-            selected={selectedThreadId === result.threadId}
-            checked={checkedThreadIds.has(result.threadId)}
-            accountId={isUnifiedView ? resultAccountId : accountId!}
-            folderId={isUnifiedView ? resultFolderId : folderId!}
-            {folderType}
-            {selectedMessageIds}
-            selectedIsStarred={!selectedHasUnstarred}
-            selectedIsRead={!selectedHasUnread}
-            showAccountIndicator={isUnifiedView}
-            accountColor={resultAccountColor}
-            accountName={resultAccountName}
-            highlightedSubject={result.highlightedSubject}
-            highlightedSnippet={result.highlightedSnippet}
-            highlightedFromName={result.highlightedFromName}
-            searchFolderName={result.folderName}
-            searchFolderType={result.folderType}
-            onSelect={(e) => selectConversation(result.threadId, index, e)}
-            onCheck={(checked, e) => handleCheck(result.threadId, checked, index, e)}
-            onClearSelection={clearSelection}
-            onActionComplete={handleActionComplete}
-            {onReply}
-            onDelete={(ids) => requestDelete(ids)}
-          />
-        {/each}
+        <VirtualRows
+          bind:this={virtualRows}
+          viewport={listContainerRef}
+          keys={rowKeys}
+          {selectedIndex}
+          estimatedHeight={estimatedRowHeight}
+        >
+          {#snippet header()}
+            <div class="flex items-center justify-between px-4 py-2 bg-muted/30 border-b border-border text-sm text-muted-foreground">
+              <span>{$_('messageList.foundResults', { values: { count: searchTotalCount, query: searchQuery } })}</span>
+              {#if !isUnifiedView && accountId && folderId}
+                <button
+                  class="text-xs text-primary hover:underline"
+                  onclick={() => { serverSearchMode = true; lastServerQuery = searchQuery.trim(); performServerSearch() }}
+                >
+                  {$_('search.serverSearch')}
+                </button>
+              {/if}
+            </div>
+          {/snippet}
+          {#snippet row(index)}
+            {@const result = searchResults[index]}
+            {#if result}
+              {@const resultAccountId = result.accountId || accountId}
+              {@const resultFolderId = result.folderId || folderId}
+              {@const resultAccountColor = result.accountColor || ''}
+              {@const resultAccountName = result.accountName || ''}
+              <ConversationRow
+                bind:this={rowRefs[result.threadId]}
+                conversation={result}
+                density={rowDensity}
+                selected={selectedThreadId === result.threadId}
+                checked={checkedThreadIds.has(result.threadId)}
+                accountId={isUnifiedView ? resultAccountId : accountId!}
+                folderId={isUnifiedView ? resultFolderId : folderId!}
+                {folderType}
+                {selectedMessageIds}
+                selectedIsStarred={!selectedHasUnstarred}
+                selectedIsRead={!selectedHasUnread}
+                showAccountIndicator={isUnifiedView}
+                accountColor={resultAccountColor}
+                accountName={resultAccountName}
+                highlightedSubject={result.highlightedSubject}
+                highlightedSnippet={result.highlightedSnippet}
+                highlightedFromName={result.highlightedFromName}
+                searchFolderName={result.folderName}
+                searchFolderType={result.folderType}
+                onSelect={(e) => selectConversation(result.threadId, index, e)}
+                onCheck={(checked, e) => handleCheck(result.threadId, checked, index, e)}
+                onClearSelection={clearSelection}
+                onActionComplete={handleActionComplete}
+                {onReply}
+                onDelete={(ids) => requestDelete(ids)}
+              />
+            {/if}
+          {/snippet}
+        </VirtualRows>
 
         <!-- Load more search results -->
         {#if searchResults.length < searchTotalCount}
@@ -1808,34 +1840,45 @@
         </button>
       </div>
     {:else}
-      {#each conversations as conv, index (conv.threadId + '-' + (conv.accountId || accountId || ''))}
-        {@const convAccountId = (conv as any).accountId || accountId}
-        {@const convFolderId = (conv as any).folderId || folderId}
-        {@const convAccountColor = (conv as any).accountColor || ''}
-        {@const convAccountName = (conv as any).accountName || ''}
-        <ConversationRow
-          bind:this={rowRefs[conv.threadId]}
-          conversation={conv}
-          density={getMessageListDensity()}
-          selected={selectedThreadId === conv.threadId}
-          checked={checkedThreadIds.has(conv.threadId)}
-          accountId={isUnifiedView ? convAccountId : accountId!}
-          folderId={isUnifiedView ? convFolderId : folderId!}
-          {folderType}
-          {selectedMessageIds}
-          selectedIsStarred={!selectedHasUnstarred}
-          selectedIsRead={!selectedHasUnread}
-          showAccountIndicator={isUnifiedView}
-          accountColor={convAccountColor}
-          accountName={convAccountName}
-          onSelect={(e) => selectConversation(conv.threadId, index, e)}
-          onCheck={(checked, e) => handleCheck(conv.threadId, checked, index, e)}
-          onClearSelection={clearSelection}
-          onActionComplete={handleActionComplete}
-          {onReply}
-          onDelete={(ids) => requestDelete(ids)}
-        />
-      {/each}
+      <VirtualRows
+        bind:this={virtualRows}
+        viewport={listContainerRef}
+        keys={rowKeys}
+        {selectedIndex}
+        estimatedHeight={estimatedRowHeight}
+      >
+        {#snippet row(index)}
+          {@const conv = conversations[index]}
+          {#if conv}
+            {@const convAccountId = (conv as any).accountId || accountId}
+            {@const convFolderId = (conv as any).folderId || folderId}
+            {@const convAccountColor = (conv as any).accountColor || ''}
+            {@const convAccountName = (conv as any).accountName || ''}
+            <ConversationRow
+              bind:this={rowRefs[conv.threadId]}
+              conversation={conv}
+              density={rowDensity}
+              selected={selectedThreadId === conv.threadId}
+              checked={checkedThreadIds.has(conv.threadId)}
+              accountId={isUnifiedView ? convAccountId : accountId!}
+              folderId={isUnifiedView ? convFolderId : folderId!}
+              {folderType}
+              {selectedMessageIds}
+              selectedIsStarred={!selectedHasUnstarred}
+              selectedIsRead={!selectedHasUnread}
+              showAccountIndicator={isUnifiedView}
+              accountColor={convAccountColor}
+              accountName={convAccountName}
+              onSelect={(e) => selectConversation(conv.threadId, index, e)}
+              onCheck={(checked, e) => handleCheck(conv.threadId, checked, index, e)}
+              onClearSelection={clearSelection}
+              onActionComplete={handleActionComplete}
+              {onReply}
+              onDelete={(ids) => requestDelete(ids)}
+            />
+          {/if}
+        {/snippet}
+      </VirtualRows>
 
       <!-- Load more button for pagination -->
       {#if conversations.length < totalCount}

@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-25. Stage 4 is complete and reviewed on the Linux Wails 3 baseline. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-25. Stage 5 is complete and validated on Linux with Wails 3. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -13,7 +13,7 @@ Updated 2026-11-25. Stage 4 is complete and reviewed on the Linux Wails 3 baseli
 | Pre-v1 cleanup and localization | Complete | Removed system-theme compatibility and unused archives. Mail, Contacts and Calendar ship English and Russian. |
 | Wails 3 on Linux | Complete | Clean-copy builds and development startup, Go and frontend checks, and the Linux multi-window smoke test passed. See [WAILS3_MIGRATION.md](WAILS3_MIGRATION.md). |
 | Stage 4: shadcn-svelte | Complete | Official registry configured, shared components standardized, and Linux builds and WebKitGTK smoke checks passed. |
-| Stage 5: Application UI | Not started | Follow §8; preserve both windows and extensions. |
+| Stage 5: Application UI | Complete | The [mail layout and ecosystem integrations](#stage-5-mail-layout) passed frontend, native Linux build and WebKitGTK smoke checks covering both windows and extensions. |
 | Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
 | Stage 7: Validation | Not started | Follow §§10–12; preparation checks are not migration acceptance. |
 
@@ -89,6 +89,14 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - **C** — Local barrel aliases and spacing conventions remain supported. **D** — Retained the single-value Select wrapper, Iconify, custom toast behavior, dialog guard, `preventScroll={false}`, overlay layering and focus callbacks. The 20 semantic tokens resolve in both palettes. Both built HTML entries share the CSS bundle with the Calendar and Contacts classes.
 - `npm run check` reported 0 errors and 0 warnings. Lint, production build and Linux `make build` passed with existing build warnings. Knip exited 1 with output identical to the Stage 4 baseline. Isolated Linux Wails/Xvfb and WebKitGTK checks covered the startup dialog sequence, nested confirmation focus, menus and long Select scrolling, both palettes and locales, Calendar keyboard activation and focus, Contacts, virtualized mail and iframe isolation, and two detached TipTap composers.
 
+## Stage 5 mail layout
+
+- Generated sidebar-09 and the shared UI components with shadcn-svelte CLI 1.8.1 in a temporary copy using the existing `components.json`. The fixed 48 px rail uses Sidebar menus and tooltips for Mail, registered extensions, global sync and Settings. Folder trees and unread counts continue through the existing account and extension stores. The mail layout adapts the upstream examples. [Sidebar-09 block](https://github.com/huntabyte/shadcn-svelte/tree/bc58063f60b0944a7f9e08af29ffe1e3bfe5756d/docs/src/lib/registry/blocks/sidebar-09), [historical Mail Example](https://github.com/huntabyte/shadcn-svelte/tree/8d679ec9/apps/www/src/routes/examples/mail).
+- PaneForge 1.0.2 drives the two shadcn Resizable separators. Full mode saves pixel widths through the existing Wails UI state. Medium and narrow use the existing breakpoints and overlays. The mail tree stays mounted across mode and extension changes. TanStack Virtual now windows the folder rows and both sets of search results, keeping the selected row available for keyboard actions. The viewer keeps its existing thread, iframe and attachment paths.
+- Added Mode Watcher 1.1.0 for the fixed dark color scheme in both windows. The backend and Wails theme event still select Nord or Dracula through `data-theme`. Formsnap 2.1.0 connects the account name, display name and email fields to their labels, descriptions and validation messages. npm resolves the Superforms peer name to the local type-only adapter under `frontend/vendor/formsnap-adapter`. The adapter reads the existing account form state and adds no SvelteKit runtime. Runed 0.38.0 debounces local search and UI state writes and owns the breakpoint listener cleanup.
+- Clean `npm ci`, frontend check (0 errors and 0 warnings), lint and production build passed. Vite retains its chunk and dynamic-import warnings. Knip reports the baseline findings minus the unused TanStack dependency. Its targeted export exceptions cover the namespace members used in Svelte templates. Linux Wails binding generation and native production build passed using the GTK4/WebKitGTK sysroot, as did `go test ./...` and `go vet ./...`.
+- Native Linux Wails with WebKitGTK 2.52.6 under Xvfb verified mouse and keyboard resizing, pixel limits and restart persistence, the narrow folder and viewer overlays, two accounts and Unified Inbox badges, virtual rows, local search, multi-select, context menus, attachments and HTML iframe isolation. The test also covered Calendar and Contacts switching, account edit validation and ARIA, detached TipTap, theme preview isolation, and theme propagation after save. Live OAuth, IMAP and SMTP were outside the local fixture.
+
 ## Next action
 
-Stage 5 remains pending. Apply the shared components to application UI according to §§8 and 11 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md), starting with settings, forms and menus. Verify both native windows and extension consumers as that work proceeds.
+Use Stage 6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) to review remaining legacy UI primitives and their consumers.

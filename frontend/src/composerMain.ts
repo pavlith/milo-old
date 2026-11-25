@@ -1,4 +1,5 @@
 import './app.css'
+import { initializeDarkMode } from '$lib/stores/theme.svelte'
 import { initI18n, isSupportedLocale, setLocale } from './lib/i18n'
 import ComposerApp from './ComposerApp.svelte'
 import { mount } from 'svelte'
@@ -6,6 +7,7 @@ import { GetLanguage } from '$bindings/github.com/hkdb/aerion/app/app'
 import { EventsOn } from '$lib/desktop'
 
 async function bootstrap() {
+  initializeDarkMode()
   // A change may arrive while the settings read or initial catalog is in flight.
   let pendingLocale = ''
   let initialized = false

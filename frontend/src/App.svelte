@@ -6,6 +6,9 @@
   import { onMount, untrack } from 'svelte'
   import TitleBar from './lib/components/common/TitleBar.svelte'
   import Sidebar from './lib/components/sidebar/Sidebar.svelte'
+  import MailLayout from '$lib/components/list/MailLayout.svelte'
+  import * as SidebarUI from '$lib/components/ui/sidebar'
+  import SettingsDialog from '$lib/components/settings/SettingsDialog.svelte'
   import MessageList from './lib/components/list/MessageList.svelte'
   import ConversationViewer from './lib/components/viewer/ConversationViewer.svelte'
   import Composer from './lib/components/composer/Composer.svelte'
@@ -25,7 +28,7 @@
   import { addToast } from '$lib/stores/toast'
   import { loadSettings, getShowTitleBar, getNativeTitleBar, getComposerMode, getMailtoMode } from '$lib/stores/settings.svelte'
   import { loadImageAllowlist } from '$lib/stores/imageAllowlist.svelte'
-  import { loadUIState, saveUIState, paneConstraints, getActiveExtension, setActiveExtension } from '$lib/stores/uiState.svelte'
+  import { loadUIState, saveUIState, getActiveExtension, setActiveExtension } from '$lib/stores/uiState.svelte'
   import { setPendingDeepLink } from '$lib/stores/extensionDeepLink.svelte'
   import {
     type FocusablePane,
@@ -46,6 +49,8 @@
   import { WindowShow, WindowHide, EventsOn } from '$lib/desktop'
   import { _ } from '$lib/i18n'
   import { logger } from '$lib/logger' // TEMP: keypress-gate audit — remove in the fix commit
+
+  initLayout()
 
   // Component refs for keyboard navigation. Plain `let` (not $state) is
   // intentional: svelte-check warns "Changing its value will not correctly
@@ -69,6 +74,8 @@
   let selectedThreadId = $state<string | null>(null)
   let selectedConversationFolderId = $state<string | null>(null)
   let selectedConversationAccountId = $state<string | null>(null)
+
+  let showSettingsDialog = $state(false)
 
   // Composer state
   let showComposer = $state(false)
@@ -429,10 +436,6 @@
     // render synchronously when the layout mounts.
     await refreshExtensionRegistry()
 
-    // Restore pane widths (already validated/clamped by loadUIState)
-    sidebarWidth = uiState.sidebarWidth
-    listWidth = uiState.listWidth
-
     // Restore folder selection if valid
     if (uiState.selectedAccountId && uiState.selectedFolderId) {
       // Validate account still exists (unless unified inbox)
@@ -483,9 +486,6 @@
     // so KDE/Plasma sees the placeholder → real window handoff cleanly (#154).
     // Fired unconditionally so the indicator clears even when starting hidden.
     NotifyStartupComplete()
-
-    // Initialize responsive layout breakpoint listeners
-    initLayout()
 
     // Check for pending mailto: URL from command line
     try {
@@ -755,43 +755,6 @@
     composerInitialMessage = null
   }
 
-  // Pane sizing state
-  let sidebarWidth = $state(240)
-  let listWidth = $state(420)
-
-  // Resizing state
-  let isResizingSidebar = $state(false)
-  let isResizingList = $state(false)
-
-  function startResizeSidebar(e: MouseEvent) {
-    if (isResponsive()) return
-    isResizingSidebar = true
-    e.preventDefault()
-  }
-
-  function startResizeList(e: MouseEvent) {
-    if (isResponsive()) return
-    isResizingList = true
-    e.preventDefault()
-  }
-
-  function handleMouseMove(e: MouseEvent) {
-    if (isResizingSidebar) {
-      sidebarWidth = Math.max(paneConstraints.sidebar.min, Math.min(paneConstraints.sidebar.max, e.clientX))
-    } else if (isResizingList) {
-      listWidth = Math.max(paneConstraints.list.min, Math.min(paneConstraints.list.max, e.clientX - sidebarWidth))
-    }
-  }
-
-  function handleMouseUp() {
-    // Save pane widths if we were resizing
-    if (isResizingSidebar || isResizingList) {
-      saveUIState({ sidebarWidth, listWidth })
-    }
-    isResizingSidebar = false
-    isResizingList = false
-  }
-
   // After a synthetic contextmenu event, bits-ui mounts the portal asynchronously.
   // Poll until [role="menu"] appears, then focus the first menuitem.
   function focusContextMenu() {
@@ -821,6 +784,8 @@
 
   // Global keyboard shortcut handler
   function handleGlobalKeyDown(e: KeyboardEvent) {
+    if (e.target instanceof Element && e.target.closest('[data-pane-resizer]')) return
+
     // Track Left Alt press
     if (e.code === 'AltLeft') {
       leftAltHeld = true
@@ -1297,6 +1262,14 @@
       return
     }
 
+    if (e.key === 'Enter' || e.key === ' ') {
+      const button = document.activeElement
+      if (button instanceof HTMLButtonElement && (
+        button.closest('[data-extension-rail]') ||
+        (button.matches(':focus-visible') && button.closest('[data-slot="sidebar"], [data-pane="messageList"], [data-pane="viewer"]'))
+      )) return
+    }
+
     // Enter and Space — domain-specific button-vs-pane disambiguation logic
     // stays as inline switch (kit components handle their own Enter/Space
     // locally so they don't depend on this dispatch).
@@ -1538,7 +1511,7 @@
   }
 </script>
 
-<svelte:window onmousemove={handleMouseMove} onmouseup={handleMouseUp} onkeydown={handleGlobalKeyDown} onkeyup={handleGlobalKeyUp} />
+<svelte:window onkeydown={handleGlobalKeyDown} onkeyup={handleGlobalKeyUp} />
 
 <div class="flex flex-col h-full w-full overflow-hidden bg-background">
   <!-- Custom Title Bar -->
@@ -1546,9 +1519,8 @@
     <TitleBar onClose={handleClose} />
   {/if}
 
-  <!-- Main Content -->
-  <div class="flex flex-1 min-h-0 overflow-hidden relative">
-    <ExtensionRail />
+  <SidebarUI.Provider class="relative min-h-0 flex-1 overflow-hidden">
+    <ExtensionRail onSettings={() => showSettingsDialog = true} onSync={() => sidebarRef?.toggleSync()} />
 
     {#if getActiveExtension() === 'contacts'}
       <ContactsPane />
@@ -1558,134 +1530,99 @@
       <CalendarPane />
     {/if}
 
-    <!-- Mail layout is ALWAYS mounted; only its visibility is toggled when an
-         extension takes over the pane. Unmounting+remounting the mail tree on
-         every extension switch was leaking state (zombie listeners) and pinning
-         the main thread on the second mount. display:contents keeps the flex
-         children as direct flex items so the layout doesn't shift. -->
-    <div style:display={getActiveExtension() === 'mail' ? 'contents' : 'none'}>
-    <!-- Sidebar (Folder List) -->
-    <aside
-      class="{getLayoutMode() === 'narrow' ? `responsive-sidebar-overlay w-72 border-r border-border bg-background ${getResponsiveView() === 'sidebar' ? 'responsive-sidebar-visible' : ''}` : 'flex-shrink-0 border-r border-border bg-muted/30'}"
-      style="{getLayoutMode() === 'full' ? `width: ${sidebarWidth}px` : ''}"
-      role="presentation"
-      onclick={() => handlePaneClick('sidebar')}
-    >
-      <Sidebar
-        bind:this={sidebarRef}
-        onFolderSelect={handleFolderSelect}
-        onUnifiedFolderSelect={handleUnifiedFolderSelect}
-        onCompose={handleCompose}
-        onUnifiedInboxSelect={handleUnifiedInboxSelect}
-        onMessagesMoved={() => messageListRef?.handleActionComplete(false)}
-        selectedAccountId={selectedAccountId}
-        selectedFolderId={selectedFolderId}
-        selectionSource={selectionSource}
-        isFocused={getFocusedPane() === 'sidebar'}
-        isFlashing={isPaneFlashing('sidebar')}
-        showBackButton={getLayoutMode() === 'narrow'}
-        onBack={hideSidebar}
-      />
-    </aside>
-
-    <!-- Scrim for narrow sidebar overlay -->
-    {#if getLayoutMode() === 'narrow'}
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <div
-        role="button"
-        tabindex="-1"
-        class="responsive-scrim {getResponsiveView() === 'sidebar' ? 'responsive-scrim-visible' : ''}"
-        onclick={hideSidebar}
-        aria-label={$_('aria.closeSidebar')}
-      ></div>
-    {/if}
-
-    <!-- Sidebar Resize Handle -->
-    {#if getLayoutMode() === 'full'}
-    <button
-      type="button"
-      class="w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors border-0 p-0 {isResizingSidebar
-        ? 'bg-primary/40'
-        : ''}"
-      onmousedown={startResizeSidebar}
-      aria-label={$_('aria.resizeSidebar')}
-    ></button>
-    {/if}
-
-    <!-- Message List -->
-    <section
-      bind:this={messageListContainerRef}
-      class="{isResponsive() ? 'flex-1 min-w-0 border-r border-border bg-background' : 'flex-shrink-0 border-r border-border bg-background'}"
-      style="{getLayoutMode() === 'full' ? `width: ${listWidth}px` : ''}"
-      role="presentation"
-      data-pane="messageList"
-      tabindex="-1"
-      onclick={() => handlePaneClick('messageList')}
-    >
-      <MessageList
-        bind:this={messageListRef}
-        accountId={selectedAccountId}
-        folderId={selectedFolderId}
-        folderName={selectedFolderName}
-        folderType={selectedFolderType || 'inbox'}
-        onConversationSelect={handleConversationSelect}
-        onReply={handleReply}
-        onRowActionComplete={() => viewerRef?.refreshFlags()}
-        isFocused={getFocusedPane() === 'messageList'}
-        isFlashing={isPaneFlashing('messageList')}
-        showFolderToggle={getLayoutMode() === 'narrow'}
-        onToggleSidebar={showSidebar}
-      />
-    </section>
-
-    <!-- List Resize Handle -->
-    {#if getLayoutMode() === 'full'}
-    <button
-      type="button"
-      class="w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/40 transition-colors border-0 p-0 {isResizingList
-        ? 'bg-primary/40'
-        : ''}"
-      onmousedown={startResizeList}
-      aria-label={$_('aria.resizeMessageList')}
-    ></button>
-    {/if}
-
-    <!-- Conversation Viewer -->
-    <main
-      class="{viewerIsOverlay ? `responsive-viewer-overlay bg-background ${viewerIsVisible ? 'responsive-viewer-visible' : ''}` : 'flex-1 min-w-0 bg-background'}"
-      role="presentation"
-      data-pane="viewer"
-      onclick={() => handlePaneClick('viewer')}
-    >
-      <ConversationViewer
-        bind:this={viewerRef}
-        threadId={selectedThreadId}
-        folderId={selectedConversationFolderId}
-        folderType={selectedFolderType}
-        accountId={selectedConversationAccountId}
-        onReply={handleReply}
-        onComposeToAddress={handleComposeToAddress}
-        onEditDraft={handleEditDraft}
-        onActionComplete={(autoSelectNext) => messageListRef?.handleActionComplete(autoSelectNext)}
-        isFocused={getFocusedPane() === 'viewer'}
-        isFlashing={isPaneFlashing('viewer')}
-        showBackButton={isResponsive()}
-        onBack={() => { focusMode = 'off'; focusedMessageIdInFocus = null; hideViewer() }}
-        inFocusMode={focusMode !== 'off'}
-        focusModeKind={focusMode === 'off' ? null : focusMode}
-        focusedMessageIdInFocus={focusedMessageIdInFocus}
-        onToggleThreadFocus={toggleThreadFocus}
-        onToggleMessageFocus={toggleMessageFocus}
-      />
-    </main>
+    <!-- Keep the mail components mounted while extensions or responsive overlays are active. -->
+    <div class="min-w-0 flex-1" class:hidden={getActiveExtension() !== 'mail'}>
+      <MailLayout>
+        {#snippet sidebar()}
+          <aside
+            class="h-full"
+            role="presentation"
+            onclick={() => handlePaneClick('sidebar')}
+          >
+            <Sidebar
+              bind:this={sidebarRef}
+              onFolderSelect={handleFolderSelect}
+              onUnifiedFolderSelect={handleUnifiedFolderSelect}
+              onCompose={handleCompose}
+              onUnifiedInboxSelect={handleUnifiedInboxSelect}
+              onMessagesMoved={() => messageListRef?.handleActionComplete(false)}
+              selectedAccountId={selectedAccountId}
+              selectedFolderId={selectedFolderId}
+              selectionSource={selectionSource}
+              isFocused={getFocusedPane() === 'sidebar'}
+              isFlashing={isPaneFlashing('sidebar')}
+              showBackButton={getLayoutMode() === 'narrow'}
+              onBack={hideSidebar}
+            />
+          </aside>
+        {/snippet}
+        {#snippet list()}
+          <section
+            bind:this={messageListContainerRef}
+            class="h-full min-w-0 bg-background"
+            role="presentation"
+            data-pane="messageList"
+            tabindex="-1"
+            onclick={() => handlePaneClick('messageList')}
+          >
+            <MessageList
+              bind:this={messageListRef}
+              accountId={selectedAccountId}
+              folderId={selectedFolderId}
+              folderName={selectedFolderName}
+              folderType={selectedFolderType || 'inbox'}
+              onConversationSelect={handleConversationSelect}
+              onReply={handleReply}
+              onRowActionComplete={() => viewerRef?.refreshFlags()}
+              isFocused={getFocusedPane() === 'messageList'}
+              isFlashing={isPaneFlashing('messageList')}
+              showFolderToggle={getLayoutMode() === 'narrow'}
+              onToggleSidebar={showSidebar}
+            />
+          </section>
+        {/snippet}
+        {#snippet viewer()}
+          <main
+            class="{viewerIsOverlay ? `responsive-viewer-overlay bg-background ${viewerIsVisible ? 'responsive-viewer-visible' : ''}` : 'h-full min-w-0 bg-background'}"
+            inert={viewerIsOverlay && !viewerIsVisible}
+            role="presentation"
+            data-pane="viewer"
+            onclick={() => handlePaneClick('viewer')}
+          >
+            <ConversationViewer
+              bind:this={viewerRef}
+              threadId={selectedThreadId}
+              folderId={selectedConversationFolderId}
+              folderType={selectedFolderType}
+              accountId={selectedConversationAccountId}
+              onReply={handleReply}
+              onComposeToAddress={handleComposeToAddress}
+              onEditDraft={handleEditDraft}
+              onActionComplete={(autoSelectNext) => messageListRef?.handleActionComplete(autoSelectNext)}
+              isFocused={getFocusedPane() === 'viewer'}
+              isFlashing={isPaneFlashing('viewer')}
+              showBackButton={isResponsive()}
+              onBack={() => { focusMode = 'off'; focusedMessageIdInFocus = null; hideViewer() }}
+              inFocusMode={focusMode !== 'off'}
+              focusModeKind={focusMode === 'off' ? null : focusMode}
+              focusedMessageIdInFocus={focusedMessageIdInFocus}
+              onToggleThreadFocus={toggleThreadFocus}
+              onToggleMessageFocus={toggleMessageFocus}
+            />
+          </main>
+        {/snippet}
+      </MailLayout>
     </div>
-  </div>
+  </SidebarUI.Provider>
 </div>
 
-<!-- Resize cursor overlay when dragging -->
-{#if isResizingSidebar || isResizingList}
-  <div class="fixed inset-0 cursor-col-resize z-50"></div>
-{/if}
+<SettingsDialog
+  bind:open={showSettingsDialog}
+  onClose={() => {
+    showSettingsDialog = false
+    setFocusedPane('messageList')
+  }}
+/>
 
 <!-- Toast notifications -->
 <ToastContainer />
