@@ -5,17 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 const (
-	autostartFilename = "io.github.hkdb.Aerion.desktop"
+	autostartFilename = "io.github.pavlith.milo.desktop"
 	desktopEntryTmpl  = `[Desktop Entry]
 Type=Application
-Name=Aerion
-Comment=Aerion Email Client
+Name=Milo
+Comment=Milo Email Client
 Exec=%s
-Icon=io.github.hkdb.Aerion
+Icon=io.github.pavlith.milo
 Terminal=false
 Categories=Network;Email;
 X-GNOME-Autostart-enabled=true
@@ -24,8 +24,35 @@ X-GNOME-Autostart-enabled=true
 
 type linuxAutostartManager struct{}
 
-func NewAutostartManager() AutostartManager {
-	return &linuxAutostartManager{}
+func NewAutostartManager(migrateLegacy bool) AutostartManager {
+	manager := &linuxAutostartManager{}
+	if migrateLegacy {
+		if err := manager.migrateLegacyEntry(); err != nil {
+			log := logging.WithComponent("autostart")
+			log.Warn().Err(err).Msg("Could not migrate the previous login launcher")
+		}
+	}
+	return manager
+}
+
+func (m *linuxAutostartManager) migrateLegacyEntry() error {
+	dir, err := m.autostartDir()
+	if err != nil {
+		return err
+	}
+	legacy := filepath.Join(dir, "io.github.hkdb.Aerion.desktop")
+	if _, err := os.Stat(legacy); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if !m.IsEnabled() {
+		if err := m.Enable(); err != nil {
+			return err
+		}
+	}
+	return os.Remove(legacy)
 }
 
 func (m *linuxAutostartManager) Enable() error {
@@ -99,7 +126,7 @@ func (m *linuxAutostartManager) autostartDir() (string, error) {
 func (m *linuxAutostartManager) execCommand() string {
 	exe, err := os.Executable()
 	if err != nil {
-		return "aerion"
+		return "milo"
 	}
 	return exe
 }

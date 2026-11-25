@@ -8,7 +8,7 @@
   import { toasts } from '$lib/stores/toast'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
-  import { GetCustomOAuthAccounts } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetCustomOAuthAccounts } from '$bindings/github.com/pavlith/milo/app/app'
   import CalendarColorPickStage from './CalendarColorPickStage.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
 

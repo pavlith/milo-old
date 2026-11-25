@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in Aerion
+description: Report a bug in Milo
 labels: ["bug"]
 body:
   - type: dropdown
@@ -59,8 +59,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Aerion Version
-      description: "Find out what version you are running from Aerion at ⚙️ (settings) --> About."
+      label: Milo Version
+      description: "Find out what version you are running from Milo at ⚙️ (settings) --> About."
       placeholder: e.g. v0.1.25
     validations:
       required: true

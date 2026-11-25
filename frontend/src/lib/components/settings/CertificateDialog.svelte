@@ -50,12 +50,12 @@
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Content showCloseButton={false} class="block p-0" overlayClass="bg-black/50" onInteractOutside={preventClose}>
+  <Dialog.Content showCloseButton={false} class="block p-0" overlayClass="bg-overlay/50" onInteractOutside={preventClose}>
     {#if cert}
       <!-- Header -->
       <div class="flex items-center gap-3 px-6 pt-6 pb-4">
-        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-500/10">
-          <Icon icon="mdi:shield-alert-outline" class="w-6 h-6 text-yellow-500" />
+        <div class="flex items-center justify-center w-10 h-10 rounded-full bg-warning-surface">
+          <Icon icon="mdi:shield-alert-outline" class="w-6 h-6 text-warning" />
         </div>
         <div>
           <Dialog.Title>{$_('certificate.title')}</Dialog.Title>
@@ -97,7 +97,7 @@
           {/if}
           <div class="grid grid-cols-[100px_1fr] gap-1">
             <span class="text-muted-foreground">{$_('certificate.reason')}</span>
-            <span class="text-xs text-yellow-600 dark:text-yellow-400">{cert.errorReason}</span>
+            <span class="text-xs text-warning">{cert.errorReason}</span>
           </div>
         </div>
       </div>

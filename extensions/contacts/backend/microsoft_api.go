@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/internal/carddav"
-	"github.com/hkdb/aerion/internal/contact"
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/carddav"
+	"github.com/pavlith/milo/internal/contact"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // microsoft_api.go: Phase 2b.3 Track C. Fills the createMicrosoftContact /
@@ -170,7 +170,7 @@ func (a *API) createMicrosoftContact(input coreapi.ContactCreateInput, email str
 // updateMicrosoftContact PATCHes the existing contact under rec.ID. Sends the
 // full intended record state — Graph treats missing scalar fields as
 // "unchanged" and replaces multi-value arrays wholesale, which matches
-// Aerion's "patch is full state" semantics from applyContactPatchToRecord.
+// Milo's "patch is full state" semantics from applyContactPatchToRecord.
 //
 // No etag gate (Graph contacts don't enforce). Photo handling is a separate
 // PATCH /photo/$value after the main update; photo-step failure is non-fatal.

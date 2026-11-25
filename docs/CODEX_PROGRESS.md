@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-25. Stage 7 completed migration validation for Linux. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-25. Milo rebranding and Carbon appearance passed Linux validation. See the [Milo appearance guide](../frontend/README.md#milo-appearance) and [code map](CODEX_MAP.md).
 
 ## Milestones
 
@@ -15,7 +15,8 @@ Updated 2026-11-25. Stage 7 completed migration validation for Linux. UI migrati
 | Stage 4: shadcn-svelte | Complete | Official registry configured, shared components standardized, and Linux builds and WebKitGTK smoke checks passed. |
 | Stage 5: Application UI | Complete | The [mail layout and ecosystem integrations](#stage-5-mail-layout) passed frontend, native Linux build and WebKitGTK smoke checks covering both windows and extensions. |
 | Stage 6: UI consolidation and cleanup | Complete | [Shared UI and Linux validation](#stage-6-ui-consolidation-and-cleanup). |
-| Stage 7: Validation | Complete (PASS on Linux) | [Final validation and regression coverage](#stage-7-final-validation). |
+| Stage 7: Validation | Complete (PASS on Linux) | [Original migration validation](#stage-7-final-validation). |
+| Stage 7: Milo rebranding and design system | Complete (PASS on Linux) | [Milo validation](#milo-rebranding-and-design-system). |
 
 ## Audit and Tailwind decisions
 
@@ -114,6 +115,13 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Both composer windows, formatting shortcuts, rich and plain text, links, lists, tables, inline images, signatures, offline spellcheck, recipient selection, attachment add/remove and draft save to SQLite passed. Nord and Dracula persisted across restart. Theme and English/Russian updates reached the open detached window. The sampled foreground, muted text and primary action colors exceeded 4.5:1 in both palettes.
 - Knip retains the baseline findings. Vite retains chunk-size and dynamic-import warnings, and Wails retains its binding warning about function types. npm reported 56 audit findings on the unchanged lockfile. Native tests used temporary profiles and local fixtures. Live IMAP, SMTP, OAuth, address book and calendar providers, Wayland, desktop portals, Windows and screen readers were outside the run.
 
+## Milo rebranding and design system
+
+- Renamed the executable, module, generated bindings, desktop entry and application ID. Updated the Windows icon and metadata. Kept the original license, contributor attribution and historical migration records.
+- Both WebViews share the Carbon tokens and local Inter Variable and JetBrains Mono subsets. Mode Watcher applies Light, Dark or System. Saved Nord and Dracula preferences resolve to Dark. New profiles default to System.
+- Existing profiles open in place with their SQLite sidecars, keys and cache. The native Linux smoke test verified saved account and Contacts access, login launcher migration, Latin and Cyrillic Inter, Dark and Light palettes, preview isolation, and theme persistence after restart. It also checked keyboard pane resizing and separate composer startup.
+- The staged Linux source passed Wails production build, generated binding comparison, frontend check and lint, Go tests and vet, desktop entry validation and a staged install. The sampled theme text and surface pairs met 4.5:1 in both modes. Knip still reports unused exports and dependency findings. Live mail services and Windows builds were outside validation.
+
 ## Next action
 
-Use the [Linux build and smoke commands](BUILD.md) as the baseline for future changes to pane, composer or extension behavior.
+Rename the existing GitHub repository to `pavlith/milo` and then update the local remote. The [Linux build and smoke commands](BUILD.md) document the validation baseline.

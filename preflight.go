@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/hkdb/aerion/app"
-	"github.com/hkdb/aerion/internal/platform"
+	"github.com/pavlith/milo/app"
+	"github.com/pavlith/milo/internal/platform"
 )
 
 // runPreflight performs pre-Wails startup checks (paths, DB open, migrations,

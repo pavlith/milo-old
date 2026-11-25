@@ -9,7 +9,7 @@
 // thread and dropping IPC events. Plain functions are the established pattern
 // elsewhere in the codebase (see getActiveExtension in uiState.svelte.ts).
 
-import { ListEnabledExtensions, ListExtensionRailTabs, ListAccountSetupHooksForProvider } from '$bindings/github.com/hkdb/aerion/app/app'
+import { ListEnabledExtensions, ListExtensionRailTabs, ListAccountSetupHooksForProvider } from '$bindings/github.com/pavlith/milo/app/app'
 import type { v1 } from '$lib/models'
 
 let enabledExtensions = $state<string[]>([])

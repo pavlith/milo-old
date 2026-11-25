@@ -12,7 +12,7 @@ import {
   CompleteOAuthAccountSetup,
   CompleteCustomOAuthAccountSetup,
   ReorderAccounts,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import { account, app, folder } from '$lib/models'
 import { EventsOn } from '$lib/desktop'
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   // OAuthCredsSlotEditor — single-slot OAuth credential editor primitive.
-  // Used by Aerion core's "OAuth Credentials (advanced)" section (Settings →
+  // Used by Milo core's "OAuth Credentials (advanced)" section (Settings →
   // Accounts) AND by each extension's settings dialog.
   //
   // Props:
@@ -9,7 +9,7 @@
   //   extensionID         — the manifest id of the consuming extension
   //                         (e.g., "contacts", "calendar"). Omit (or pass "")
   //                         for core/mail's settings UI — then the backend
-  //                         skips the manifest lookup and the "Aerion mail
+  //                         skips the manifest lookup and the "Milo mail
   //                         client" option never appears.
   //   label               — display name (e.g., "Google Mail")
   //   secretRequired      — whether the slot needs a client_secret (true for
@@ -21,11 +21,11 @@
   //   goes through SetOAuthCredsChoice. Possible IDs today:
   //     - "custom"          — user-pasted client_id/secret. Selecting reveals
   //                           the edit form.
-  //     - "aerion-shipped"  — the slot's own shipped client (compiled in via
+  //     - "milo-shipped"  — the slot's own shipped client (compiled in via
   //                           the extension's .env / Makefile ldflags). Labeled
-  //                           by the backend per slot ("Aerion - Google",
-  //                           "Aerion - Microsoft", "Aerion testing", etc.).
-  //     - "aerion-mail"     — reuse the core mail OAuth slot for scopes the
+  //                           by the backend per slot ("Milo - Google",
+  //                           "Milo - Microsoft", "Milo testing", etc.).
+  //     - "milo-mail"     — reuse the core mail OAuth slot for scopes the
   //                           extension manifest declares as core-routable
   //                           (first_party_uses_core_for_scopes).
   //
@@ -43,7 +43,7 @@
   import * as Select from '$lib/components/ui/select'
   import { _ } from '$lib/i18n'
   import { toasts } from '$lib/stores/toast'
-  import { GetOAuthCredsChoices, SetOAuthCreds, SetOAuthCredsChoice, ClearOAuthCreds } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetOAuthCredsChoices, SetOAuthCreds, SetOAuthCredsChoice, ClearOAuthCreds } from '$bindings/github.com/pavlith/milo/app/app'
   import type { app } from '$lib/models'
 
   interface Props {
@@ -73,11 +73,11 @@
 
   // Status badge driven by the currently-selected mode rather than two
   // independent has* booleans. Maps to the same three visual states the
-  // previous version had: Custom / Aerion / Not configured.
-  function statusBadgeKind(): 'custom' | 'aerion' | 'unset' {
+  // previous version had: Custom / Milo / Not configured.
+  function statusBadgeKind(): 'custom' | 'milo' | 'unset' {
     if (loading) return 'unset'
     if (mode === 'custom' && choices?.hasUserOverride) return 'custom'
-    if (mode !== 'custom') return 'aerion'
+    if (mode !== 'custom') return 'milo'
     return 'unset'
   }
 
@@ -209,8 +209,8 @@
           <Icon icon="mdi:loading" class="w-3.5 h-3.5 animate-spin text-muted-foreground" />
         {:else if statusBadgeKind() === 'custom'}
           <span class="text-xs px-2 py-0.5 rounded bg-primary/15 text-primary">{$_('oauth.credentials.custom')}</span>
-        {:else if statusBadgeKind() === 'aerion'}
-          <span class="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Aerion</span>
+        {:else if statusBadgeKind() === 'milo'}
+          <span class="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">Milo</span>
         {:else}
           <span class="text-xs px-2 py-0.5 rounded bg-destructive/15 text-destructive">{$_('oauth.credentials.unset')}</span>
         {/if}
@@ -286,7 +286,7 @@
       </div>
     </div>
   {:else if choices?.hasUserOverride}
-    <!-- Mode is aerion-shipped or aerion-mail, but the user has Custom
+    <!-- Mode is milo-shipped or milo-mail, but the user has Custom
          credentials saved underneath. Surface that explicitly so the
          user knows their data wasn't wiped by the switch and can route
          back to it cheaply. -->

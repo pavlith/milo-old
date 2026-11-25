@@ -30,7 +30,7 @@
   import { oauthStore } from '$lib/stores/oauth.svelte'
   import { toasts } from '$lib/stores/toast'
   import { account, certificate, app } from '$lib/models'
-  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetIdentities, AcceptCertificate, GetAllAccountIdentities, DiscoverOAuthProvider } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetIdentities, AcceptCertificate, GetAllAccountIdentities, DiscoverOAuthProvider } from '$bindings/github.com/pavlith/milo/app/app'
   import CertificateDialog from './CertificateDialog.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { _ } from '$lib/i18n'
@@ -75,7 +75,7 @@
   let oauthInitialized = $state(false)
 
   // Custom ("bring your own app") OAuth — for a generic IMAP account whose OAuth
-  // provider Aerion does not ship. Primary inputs are the issuer URL + client ID;
+  // provider Milo does not ship. Primary inputs are the issuer URL + client ID;
   // OIDC discovery resolves the endpoints. Manual endpoint entry is an advanced
   // fallback. IMAP/SMTP server settings come from the advanced section.
   let customOAuthIssuer = $state('')
@@ -100,7 +100,7 @@
     oauthStore.flowState === 'pending' || oauthStore.flowState === 'success'
   )
   // Loopback redirect the user registers in their OAuth app. The port is assigned
-  // dynamically per RFC 8252 (this is why Aerion's shipped Google/Microsoft flows
+  // dynamically per RFC 8252 (this is why Milo's shipped Google/Microsoft flows
   // also use a dynamic port), so it's shown as a pattern for regex-matching
   // providers; strict-match providers need the fixed-port option instead.
   const customOAuthRedirectURI = 'http://localhost:[0-9]+/callback'
@@ -742,9 +742,9 @@
       {/if}
 
       {#if selectedProvider?.notes}
-        <div class="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-          <Icon icon="mdi:information-outline" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-          <p class="text-sm text-amber-600 dark:text-amber-400">
+        <div class="flex items-start gap-2 p-3 rounded-lg bg-warning-surface border border-warning/30">
+          <Icon icon="mdi:information-outline" class="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+          <p class="text-sm text-warning">
             {selectedProvider.notesKey ? $_(selectedProvider.notesKey) : selectedProvider.notes}
           </p>
         </div>
@@ -849,11 +849,11 @@
               {:else if oauthStore.flowState === 'success'}
                 <!-- OAuth completed successfully -->
                 <div class="flex items-center gap-3 py-2">
-                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                    <Icon icon="mdi:check" class="w-5 h-5 text-green-500" />
+                  <div class="flex-shrink-0 w-10 h-10 rounded-full bg-success-surface flex items-center justify-center">
+                    <Icon icon="mdi:check" class="w-5 h-5 text-success" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-green-600 dark:text-green-400">
+                    <p class="text-sm font-medium text-success">
                       {$_('account.connectedSuccessfully')}
                     </p>
                     <p class="text-xs text-muted-foreground truncate">
@@ -1016,7 +1016,7 @@
                     {#if customOAuthDiscoverError}
                       <p class="text-xs text-destructive">{customOAuthDiscoverError}</p>
                     {:else if customOAuthDiscovered}
-                      <p class="text-xs text-green-600 dark:text-green-400 inline-flex items-center gap-1">
+                      <p class="text-xs text-success inline-flex items-center gap-1">
                         <Icon icon="mdi:check" class="w-3.5 h-3.5" />
                         {$_('account.customOAuthDiscovered')}
                       </p>
@@ -1632,18 +1632,18 @@
       {#if testResult}
         <div
           class="flex items-start gap-2 p-3 rounded-lg {testResult.success
-            ? 'bg-green-500/10 border border-green-500/20'
+            ? 'bg-success-surface border border-success/30'
             : 'bg-destructive/10 border border-destructive/20'}"
         >
           <Icon
             icon={testResult.success ? 'mdi:check-circle' : 'mdi:alert-circle'}
             class="w-5 h-5 flex-shrink-0 mt-0.5 {testResult.success
-              ? 'text-green-500'
+              ? 'text-success'
               : 'text-destructive'}"
           />
           <p
             class="text-sm {testResult.success
-              ? 'text-green-600 dark:text-green-400'
+              ? 'text-success'
               : 'text-destructive'}"
           >
             {testResult.message}

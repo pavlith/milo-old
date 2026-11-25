@@ -13,7 +13,7 @@
   import { Button } from '$lib/components/ui/button'
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
-  import { Calendar_QueryFreeBusy } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_QueryFreeBusy } from '$bindings/github.com/pavlith/milo/app/app'
   import type { backend } from '$lib/models'
 
   interface Props {
@@ -180,7 +180,7 @@
               <button
                 type="button"
                 class={`h-5 rounded-sm border border-transparent hover:border-primary ${
-                  r.source === '' ? 'bg-muted/30' : busy ? 'bg-rose-500/60' : 'bg-emerald-500/30'
+                  r.source === '' ? 'bg-muted/30' : busy ? 'bg-error/40' : 'bg-success-surface'
                 }`}
                 title={slotTitle(r.email, i, busy)}
                 onclick={() => pickSlot(i)}

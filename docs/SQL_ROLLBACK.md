@@ -1,5 +1,7 @@
 # Database Rollback Guide
 
+This historical guide covers upstream schema versions. See the [Linux build guide](BUILD.md#existing-profiles) for Milo profile locations.
+
 This guide walks you through rolling back Aerion's database schema after an upgrade. Schema migrations in Aerion are **forward-only by design** — the running application doesn't downgrade automatically. If you upgrade Aerion to a new version that ran a migration and then want to go back to an older version, you need to manually reshape the database so the older version can read it.
 
 Each section below covers a single released-to-released schema transition with a documented rollback path. Intermediate development schemas (e.g., the v31 that existed mid-cycle but never shipped) don't get their own section — there's no real-world DB at that state to roll back from. Find the section that matches your release-to-release transition.

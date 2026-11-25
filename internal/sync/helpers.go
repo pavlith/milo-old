@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/emersion/go-imap/v2"
-	"github.com/hkdb/aerion/internal/folder"
-	imapPkg "github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/message"
+	"github.com/pavlith/milo/internal/folder"
+	imapPkg "github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/message"
 )
 
 // applyFlagsToMessage sets boolean flag fields on a Message from IMAP flags

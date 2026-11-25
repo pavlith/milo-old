@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/oauth2"
-	"github.com/hkdb/aerion/internal/platform"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/oauth2"
+	"github.com/pavlith/milo/internal/platform"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -257,7 +257,7 @@ func (a *App) CompleteOAuthAccountSetup(provider, email, accountName, displayNam
 
 // StartCustomOAuthFlow initiates an OAuth2 authorization flow for a user-supplied
 // ("bring your own app") provider — used when adding a generic IMAP account with OAuth.
-// Aerion ships no credentials for custom providers, so the caller passes the
+// Milo ships no credentials for custom providers, so the caller passes the
 // authorization + token endpoints, scopes, and client credentials. Emits the same
 // oauth:started / oauth:success / oauth:error events as StartOAuthFlow, so the frontend
 // reuses its existing OAuth UI. On success, CompleteCustomOAuthAccountSetup persists the

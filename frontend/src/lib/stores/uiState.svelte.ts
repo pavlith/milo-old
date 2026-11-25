@@ -4,7 +4,7 @@
 import { untrack } from 'svelte'
 import { useDebounce } from 'runed'
 import { definedEntries } from '$lib/bindingValues'
-import { GetUIState, SaveUIState } from '$bindings/github.com/hkdb/aerion/app/app'
+import { GetUIState, SaveUIState } from '$bindings/github.com/pavlith/milo/app/app'
 import { appstate } from '$lib/models'
 
 export interface UIState {

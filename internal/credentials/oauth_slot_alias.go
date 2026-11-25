@@ -8,7 +8,7 @@ import (
 )
 
 // User-pickable OAuth slot alias (Settings → OAuth Credentials → pick
-// "Aerion mail client"). When the user wants a non-default mapping for one
+// "Milo mail client"). When the user wants a non-default mapping for one
 // of the OAuth slots (e.g., route google-contacts OAuth flows through the
 // google-mail client rather than the shipped contacts client), we store
 // the chosen target slot ID here. oauth2.ClientConfigForID consults this
@@ -18,7 +18,7 @@ import (
 // client_secret pairs); these aliases just redirect lookups between
 // existing slot IDs. Both states are exclusive: either the user picked
 // "Custom" (and we keep credentials in user_oauth_clients) or the user
-// picked an aerion-shipped option (and we keep an alias entry here, or
+// picked an milo-shipped option (and we keep an alias entry here, or
 // neither if the choice is the slot's own default).
 //
 // Storage: OS keyring primary (one entry per source config id, plaintext
@@ -50,7 +50,7 @@ func (s *Store) SetOAuthSlotAlias(configID, targetSlot string) error {
 	}
 
 	if s.keyringEnabled {
-		kerr := gokeyring.Set(serviceName, oauthSlotAliasKeyringPrefix+configID, targetSlot)
+		kerr := gokeyring.Set(s.keyringService, oauthSlotAliasKeyringPrefix+configID, targetSlot)
 		if kerr == nil {
 			s.log.Debug().Str("config_id", configID).Str("target", targetSlot).Msg("OAuth slot alias stored in OS keyring")
 			s.clearSlotAliasDB(configID)
@@ -83,7 +83,7 @@ func (s *Store) GetOAuthSlotAlias(configID string) (string, bool, error) {
 	}
 
 	if s.keyringEnabled {
-		target, kerr := gokeyring.Get(serviceName, oauthSlotAliasKeyringPrefix+configID)
+		target, kerr := gokeyring.Get(s.keyringService, oauthSlotAliasKeyringPrefix+configID)
 		if kerr == nil {
 			return target, true, nil
 		}
@@ -112,7 +112,7 @@ func (s *Store) GetOAuthSlotAlias(configID string) (string, bool, error) {
 // ClearOAuthSlotAlias removes any alias set for configID. Idempotent.
 func (s *Store) ClearOAuthSlotAlias(configID string) error {
 	if s.keyringEnabled {
-		_ = gokeyring.Delete(serviceName, oauthSlotAliasKeyringPrefix+configID)
+		_ = gokeyring.Delete(s.keyringService, oauthSlotAliasKeyringPrefix+configID)
 	}
 	s.clearSlotAliasDB(configID)
 	return nil

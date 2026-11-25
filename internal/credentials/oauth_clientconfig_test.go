@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hkdb/aerion/internal/database"
+	"github.com/pavlith/milo/internal/database"
 )
 
 func newTestStore(t *testing.T) (*Store, *database.DB) {
@@ -20,7 +20,7 @@ func newTestStore(t *testing.T) (*Store, *database.DB) {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	store, err := NewStore(db.DB, tmp)
+	store, err := NewStore(db.DB, tmp, false)
 	if err != nil {
 		t.Fatalf("NewStore: %v", err)
 	}

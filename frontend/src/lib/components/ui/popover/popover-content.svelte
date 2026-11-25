@@ -21,7 +21,7 @@
     {sideOffset}
     {align}
     class={cn(
-      'z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-hidden origin-(--bits-popover-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
+      'z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-sm outline-hidden origin-(--bits-popover-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
       className
     )}
     {...restProps}

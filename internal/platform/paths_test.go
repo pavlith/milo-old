@@ -1,6 +1,8 @@
 package platform
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -25,13 +27,14 @@ func TestGetPaths(t *testing.T) {
 }
 
 func TestDatabasePath(t *testing.T) {
-	paths, err := GetPaths()
+	home := t.TempDir()
+	paths, err := resolvePaths(home, home, home, "")
 	if err != nil {
 		t.Fatalf("GetPaths() returned error: %v", err)
 	}
 	dbPath := paths.DatabasePath()
-	if !strings.HasSuffix(dbPath, "aerion.db") {
-		t.Errorf("DatabasePath() = %q, want suffix 'aerion.db'", dbPath)
+	if !strings.HasSuffix(dbPath, "milo.db") {
+		t.Errorf("DatabasePath() = %q, want suffix 'milo.db'", dbPath)
 	}
 }
 
@@ -66,5 +69,43 @@ func TestKeyringPath(t *testing.T) {
 	keyringPath := paths.KeyringPath()
 	if !strings.HasSuffix(keyringPath, "keys") {
 		t.Errorf("KeyringPath() = %q, want suffix 'keys'", keyringPath)
+	}
+}
+
+func TestResolveLegacyProfile(t *testing.T) {
+	home := t.TempDir()
+	configHome, dataHome, cacheHome := filepath.Join(home, "config"), filepath.Join(home, "data"), filepath.Join(home, "cache")
+	if err := os.MkdirAll(filepath.Join(dataHome, "milo"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	legacyData := filepath.Join(dataHome, "aerion")
+	if err := os.MkdirAll(legacyData, 0700); err != nil {
+		t.Fatal(err)
+	}
+	legacyDB := filepath.Join(legacyData, "aerion.db")
+	if err := os.WriteFile(legacyDB, []byte("fixture"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	paths, err := resolvePaths(configHome, dataHome, cacheHome, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if paths.DatabasePath() != legacyDB || !paths.UsesLegacyProfile() ||
+		paths.Config != filepath.Join(configHome, "aerion") ||
+		paths.Cache != filepath.Join(cacheHome, "aerion") {
+		t.Fatalf("legacy profile resolved to %+v", paths)
+	}
+
+	miloDB := filepath.Join(dataHome, "milo", "milo.db")
+	if err := os.WriteFile(miloDB, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	paths, err = resolvePaths(configHome, dataHome, cacheHome, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if paths.DatabasePath() != miloDB || paths.UsesLegacyProfile() {
+		t.Fatalf("Milo profile resolved to %+v", paths)
 	}
 }

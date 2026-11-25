@@ -1,7 +1,7 @@
 package app
 
 import (
-	extcontactsbe "github.com/hkdb/aerion/extensions/contacts/backend"
+	extcontactsbe "github.com/pavlith/milo/extensions/contacts/backend"
 )
 
 // initContactsExtension wires the Contacts extension's Bridge into App

@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -144,11 +144,11 @@ func (s *Store) searchUnified(query string, limit int) ([]*Contact, error) {
 
 // mapSourceForLegacy maps the unified `source` column values onto the legacy
 // Contact.Source string. The frontend, MergeResults, and a couple of older
-// callers expect "aerion" for local contacts — preserving the mapping keeps
+// callers expect "milo" for local contacts — preserving the mapping keeps
 // those callers unchanged.
 func mapSourceForLegacy(source string) string {
 	if source == "local" {
-		return "aerion"
+		return "milo"
 	}
 	return source
 }
@@ -562,10 +562,10 @@ func MergeResults(sources ...[]*Contact) []*Contact {
 }
 
 // sourcePriority returns the priority of a contact source (higher is better).
-// "aerion" and "local" are equivalent (legacy / new naming for the same thing).
+// Accept the old local-contact marker when merging a legacy result.
 func sourcePriority(source string) int {
 	switch source {
-	case "aerion", "local":
+	case "milo", "aerion", "local":
 		return 4
 	case "vcard":
 		return 3

@@ -15,7 +15,7 @@
   import WriteAccessAccountPicker from '$lib/components/oauth/WriteAccessAccountPicker.svelte'
   import { contactSourcesStore } from '$extensions/contacts/frontend/stores/contactSources.svelte'
   import { toasts } from '$lib/stores/toast'
-  import { SetContactSourceWritable } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { SetContactSourceWritable } from '$bindings/github.com/pavlith/milo/app/app'
   import type { v1 } from '$lib/models'
 
   interface Props {
@@ -64,7 +64,7 @@
   // Disable write access on a source. Pure flag flip via
   // SetContactSourceWritable(id, false) — works for all three external
   // source types. Note: for Google/Microsoft this does NOT revoke the OAuth
-  // token at the provider; it just stops Aerion from using it. If the user
+  // token at the provider; it just stops Milo from using it. If the user
   // re-enables later, the existing token is reused if still valid, so the
   // write-access picker won't need to re-grant. To fully revoke, the user
   // goes to the provider's account settings.

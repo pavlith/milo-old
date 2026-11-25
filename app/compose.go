@@ -11,20 +11,20 @@ import (
 	"time"
 
 	goImap "github.com/emersion/go-imap/v2"
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/contact"
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/draft"
-	"github.com/hkdb/aerion/internal/email"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/oauth2"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/smime"
-	"github.com/hkdb/aerion/internal/smtp"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/certificate"
+	"github.com/pavlith/milo/internal/contact"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/draft"
+	"github.com/pavlith/milo/internal/email"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/oauth2"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/smime"
+	"github.com/pavlith/milo/internal/smtp"
 	"github.com/rs/zerolog"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -157,9 +157,9 @@ func (ops *composeOps) getIMAPCredentials(ctx context.Context, accountID string)
 	config.TLSConfig = certificate.BuildTLSConfig(acc.IMAPHost, ops.certStore)
 	// Identify only to servers that have demanded it (learned flag, #457).
 	config.SendID = acc.IMAPRequireID
-	config.ClientName = "Aerion"
+	config.ClientName = "Milo"
 	config.ClientVersion = Version
-	config.ClientVendor = "github.com/hkdb/aerion"
+	config.ClientVendor = "github.com/pavlith/milo"
 
 	switch acc.AuthType {
 	case account.AuthOAuth2:

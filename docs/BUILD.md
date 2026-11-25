@@ -14,12 +14,12 @@ go install github.com/wailsapp/wails/v3/cmd/wails3@v3.2.0-nightly.20261123
 
 ```sh
 make dev      # Linux application with Vite on 127.0.0.1:5173
-make build    # build/bin/aerion
+make build    # build/bin/milo
 make test     # frontend assets and Go tests
 make generate # refresh TypeScript bindings
 ```
 
-Run `./build/bin/aerion` to launch without installation. `make install` installs the Linux executable, icons and mailto desktop entry under `/usr/local` by default. Override `PREFIX` to choose another location.
+Run `./build/bin/milo` to launch without installation. `make install` installs the Linux executable, icons and mailto desktop entry under `/usr/local` by default. Override `PREFIX` to choose another location.
 
 Built-in OAuth clients need the values documented in `.env.example`. Keep local values in the ignored `.env` file. Password accounts and user-provided OAuth clients remain available with an empty build environment.
 
@@ -34,3 +34,19 @@ python3 tests/linux/ui_smoke.py
 ```
 
 The test starts Wails with temporary XDG directories and a loopback-only fixture. It checks pending Contacts search cleanup, PaneForge keyboard resizing, Ctrl+N from a focused separator, and the saved Plain Text preference in a detached composer. Pass `--binary PATH` to test a specific production build.
+
+## Existing profiles
+
+Fresh Linux profiles use `milo` under the XDG config, data and cache homes.
+The primary database is `$XDG_DATA_HOME/milo/milo.db` (normally
+`~/.local/share/milo/milo.db`). If no Milo database exists, Milo opens an
+existing Petchkin or Aerion database in place, with the matching configuration
+and cache directories. Existing keys, SQLite sidecars, absolute attachment paths
+and keyring entries remain usable. When both legacy profiles exist, Milo prefers
+Petchkin. Profiles stay separate. Close the original application before opening
+its profile with Milo. When start on login is enabled, Milo replaces the old
+Linux login launcher once the new launcher exists.
+
+Previously saved Nord and Dracula preferences open in Dark mode. New profiles
+start in System mode. Change the mode under **Settings → General → Appearance**.
+Use `MILO_DEBUG`, `MILO_LOG_LEVEL` and `MILO_LOG_FILE` for diagnostic logging.

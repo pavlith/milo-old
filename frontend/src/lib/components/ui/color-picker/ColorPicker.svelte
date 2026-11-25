@@ -11,14 +11,14 @@
 
   // Default color presets
   const presets = [
-    '#3B82F6', // blue
-    '#10B981', // green
-    '#F59E0B', // amber
-    '#EF4444', // red
-    '#8B5CF6', // purple
-    '#EC4899', // pink
-    '#06B6D4', // cyan
-    '#F97316', // orange
+    '#0F62FE', // blue
+    '#198038', // green
+    '#F1C21B', // amber
+    '#DA1E28', // red
+    '#8A3FFC', // purple
+    '#D02670', // pink
+    '#0072C3', // cyan
+    '#FF832B', // orange
   ]
 
   let isOpen = $state(false)

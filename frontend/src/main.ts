@@ -1,15 +1,14 @@
-import './app.css'
-import { initializeDarkMode } from '$lib/stores/theme.svelte'
+import { initializeTheme, MAIL_MODE_STORAGE_KEY } from '$lib/stores/theme.svelte'
 import { initI18n } from './lib/i18n'
 import App from './App.svelte'
 import { mount } from 'svelte'
 import { setThemeMode } from '$lib/stores/settings.svelte'
-import { GetLanguage, GetThemeMode, WaitForReady, RestoreWindowPosition } from '$bindings/github.com/hkdb/aerion/app/app'
+import { GetLanguage, GetThemeMode, WaitForReady, RestoreWindowPosition } from '$bindings/github.com/pavlith/milo/app/app'
 import { WindowShow } from '$lib/desktop'
 
 // The HTML splash stays visible until the backend and saved appearance are ready.
 async function bootstrap(): Promise<void> {
-  initializeDarkMode()
+  initializeTheme(MAIL_MODE_STORAGE_KEY)
   await WindowShow()
   await WaitForReady()
   await Promise.all([

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	gomessage "github.com/emersion/go-message"
-	"github.com/hkdb/aerion/internal/email"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/smime"
+	"github.com/pavlith/milo/internal/email"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/smime"
 )
 
 // maxConsecutiveNextPartErrors bounds the skip-and-continue recovery in

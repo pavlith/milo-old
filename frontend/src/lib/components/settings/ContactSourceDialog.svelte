@@ -19,7 +19,7 @@
     AddContactSource,
     UpdateContactSource,
     GetSourceAddressbooks,
-  } from '$bindings/github.com/hkdb/aerion/app/app'
+  } from '$bindings/github.com/pavlith/milo/app/app'
   import { carddav } from '$lib/models'
 
   interface Props {
@@ -744,7 +744,7 @@
                         <div class="text-xs text-muted-foreground truncate">{account.email}</div>
                       </div>
                       {#if !account.hasContactScope}
-                        <span class="text-xs text-amber-500 flex items-center gap-1">
+                        <span class="text-xs text-warning flex items-center gap-1">
                           <Icon icon="mdi:alert" class="w-3 h-3" />
                           {$_('contactSource.reauthNeeded')}
                         </span>
@@ -795,8 +795,8 @@
                   </Button>
                 </div>
               {:else if oauthEmail}
-                <div class="p-3 border border-green-500/30 bg-green-500/10 rounded-lg flex items-center gap-3">
-                  <Icon icon="mdi:check-circle" class="w-5 h-5 text-green-500" />
+                <div class="p-3 border border-success/30 bg-success-surface rounded-lg flex items-center gap-3">
+                  <Icon icon="mdi:check-circle" class="w-5 h-5 text-success" />
                   <div class="flex-1">
                     <div class="text-sm font-medium">{$_('contactSource.signedInAs')}</div>
                     <div class="text-sm text-muted-foreground">{oauthEmail}</div>

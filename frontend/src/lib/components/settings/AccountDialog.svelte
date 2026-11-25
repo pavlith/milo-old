@@ -21,7 +21,7 @@
   import { dialogGuardOpen, dialogGuardClose } from '$lib/stores/dialogGuard'
   import { _ } from '$lib/i18n'
   import { account, app } from '$lib/models'
-  import { GetIdentities, GetAllAccountIdentities } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetIdentities, GetAllAccountIdentities } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     /** Whether the dialog is open */

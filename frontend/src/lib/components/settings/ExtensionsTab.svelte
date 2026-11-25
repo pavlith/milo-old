@@ -5,7 +5,7 @@
   import { addToast } from '$lib/stores/toast'
   import { refreshExtensionRegistry, openExtensionSettings } from '$lib/stores/extensionRegistry.svelte'
   import { _ } from '$lib/i18n'
-  import { ListExtensions, SetExtensionEnabled } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { ListExtensions, SetExtensionEnabled } from '$bindings/github.com/pavlith/milo/app/app'
   import type { app } from '$lib/models'
 
   let extensions = $state<app.ExtensionInfo[]>([])

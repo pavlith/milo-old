@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please review the [translation guide](https://github.com/pavlith/petchkin/blob/dev/docs/LANGUAGE.md) and search [existing translation issues](https://github.com/pavlith/petchkin/issues?q=label%3Atranslate).
+        Please review the [translation guide](https://github.com/pavlith/milo/blob/dev/docs/LANGUAGE.md) and search [existing translation issues](https://github.com/pavlith/milo/issues?q=label%3Atranslate).
   - type: dropdown
     id: language
     attributes:

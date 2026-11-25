@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // LinuxSleepWakeMonitor monitors sleep/wake events on Linux using D-Bus

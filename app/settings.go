@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/settings"
-	"github.com/hkdb/aerion/internal/smtp"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/certificate"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/settings"
+	"github.com/pavlith/milo/internal/smtp"
 )
 
 // ============================================================================
@@ -135,13 +135,13 @@ func (a *App) SetMessageListSortOrder(sortOrder string) error {
 }
 
 // GetThemeMode returns the current theme mode setting
-// Values: "nord-dark", "dracula".
+// Values: "light", "dark", "system".
 func (a *App) GetThemeMode() (string, error) {
 	return a.settingsStore.GetThemeMode()
 }
 
 // SetThemeMode sets the theme mode
-// Valid values: "nord-dark", "dracula".
+// Valid values: "light", "dark", "system".
 func (a *App) SetThemeMode(mode string) error {
 	if err := a.settingsStore.SetThemeMode(mode); err != nil {
 		return err
@@ -172,7 +172,7 @@ func (a *App) SetTermsAccepted(accepted bool) error {
 	return a.settingsStore.SetTermsAccepted(accepted)
 }
 
-// GetLastSeenVersion returns the Aerion version last acknowledged by the user
+// GetLastSeenVersion returns the Milo version last acknowledged by the user
 // in the "What's new in this version" launch dialog. Empty = never acknowledged.
 func (a *App) GetLastSeenVersion() (string, error) {
 	return a.settingsStore.GetLastSeenVersion()
@@ -198,12 +198,12 @@ func (a *App) SetOAuthWarningDisabled(disabled bool) error {
 	return a.settingsStore.SetOAuthWarningDisabled(disabled)
 }
 
-// GetRunBackground returns whether Aerion keeps running when the window is closed
+// GetRunBackground returns whether Milo keeps running when the window is closed
 func (a *App) GetRunBackground() (bool, error) {
 	return a.settingsStore.GetRunBackground()
 }
 
-// SetRunBackground sets whether Aerion keeps running when the window is closed.
+// SetRunBackground sets whether Milo keeps running when the window is closed.
 // Disabling also force-disables start_hidden.
 func (a *App) SetRunBackground(enabled bool) error {
 	if err := a.settingsStore.SetRunBackground(enabled); err != nil {
@@ -215,12 +215,12 @@ func (a *App) SetRunBackground(enabled bool) error {
 	return nil
 }
 
-// GetStartHidden returns whether Aerion starts with the window hidden
+// GetStartHidden returns whether Milo starts with the window hidden
 func (a *App) GetStartHidden() (bool, error) {
 	return a.settingsStore.GetStartHidden()
 }
 
-// SetStartHidden sets whether Aerion starts with the window hidden.
+// SetStartHidden sets whether Milo starts with the window hidden.
 // Enabling also force-enables run_background (start hidden requires background mode).
 func (a *App) SetStartHidden(enabled bool) error {
 	if enabled {
@@ -231,12 +231,12 @@ func (a *App) SetStartHidden(enabled bool) error {
 	return a.settingsStore.SetStartHidden(enabled)
 }
 
-// GetAutostart returns whether Aerion starts on login
+// GetAutostart returns whether Milo starts on login
 func (a *App) GetAutostart() (bool, error) {
 	return a.settingsStore.GetAutostart()
 }
 
-// SetAutostart sets whether Aerion starts on login.
+// SetAutostart sets whether Milo starts on login.
 // Manages the desktop autostart setting.
 func (a *App) SetAutostart(enabled bool) error {
 	// Check current value to avoid unnecessary OS-level changes
@@ -384,7 +384,7 @@ func (a *App) SetAlwaysLoadImages(enabled bool) error {
 }
 
 // GetDarkMailContent returns whether email content should be visually darkened
-// while Aerion is in dark mode.
+// while Milo is in dark mode.
 func (a *App) GetDarkMailContent() (bool, error) {
 	return a.settingsStore.GetDarkMailContent()
 }
@@ -395,7 +395,7 @@ func (a *App) SetDarkMailContent(enabled bool) error {
 }
 
 // GetDarkComposerBody returns whether the composer message body should use a
-// dark background while Aerion is in dark mode.
+// dark background while Milo is in dark mode.
 func (a *App) GetDarkComposerBody() (bool, error) {
 	return a.settingsStore.GetDarkComposerBody()
 }

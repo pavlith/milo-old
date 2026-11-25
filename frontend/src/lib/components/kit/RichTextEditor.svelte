@@ -102,7 +102,7 @@
     list-style: decimal;
   }
   .rte-editor :global(a) {
-    color: hsl(var(--primary));
+    color: var(--primary);
     text-decoration: underline;
   }
   .rte-editor :global(.is-editor-empty:first-child::before) {
@@ -110,6 +110,6 @@
     float: left;
     height: 0;
     pointer-events: none;
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
   }
 </style>

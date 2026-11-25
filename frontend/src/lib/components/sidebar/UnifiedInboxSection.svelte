@@ -68,7 +68,7 @@
   // Get account color with fallback
   function getAccountColor(acc: account.Account): string {
     // @ts-ignore - color field from backend
-    return acc.color || '#6B7280' // Default gray if no color set
+    return acc.color || 'var(--muted-foreground)'
   }
 </script>
 

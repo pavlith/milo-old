@@ -4,7 +4,7 @@
   import { accountStore } from '$lib/stores/accounts.svelte'
   import AccountDialog from './AccountDialog.svelte'
   import DeleteAccountDialog from './DeleteAccountDialog.svelte'
-  import AerionCoreOAuthSection from './AerionCoreOAuthSection.svelte'
+  import MiloCoreOAuthSection from './MiloCoreOAuthSection.svelte'
   import type { account } from '$lib/models'
   import { _ } from '$lib/i18n'
 
@@ -94,7 +94,7 @@
           <!-- Account color dot -->
           <div
             class="w-3 h-3 rounded-full shrink-0"
-            style:background-color={acc.color || '#6b7280'}
+            style:background-color={acc.color || 'var(--muted-foreground)'}
           ></div>
 
           <!-- Account info -->
@@ -159,8 +159,8 @@
     </div>
   {/if}
 
-  <!-- Aerion core OAuth credentials (advanced, collapsed by default) -->
-  <AerionCoreOAuthSection />
+  <!-- Milo core OAuth credentials (advanced, collapsed by default) -->
+  <MiloCoreOAuthSection />
 </div>
 
 <!-- Account Dialog -->

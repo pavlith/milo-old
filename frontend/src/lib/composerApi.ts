@@ -123,143 +123,143 @@ export function createMainWindowApi(): ComposerApi {
   // These will be resolved at runtime based on which entry point is used
   return {
     sendMessage: async (accountId: string, message: smtp.ComposeMessage) => {
-      const { SendMessage } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { SendMessage } = await import('$bindings/github.com/pavlith/milo/app/app')
       return SendMessage(accountId, message)
     },
 
     searchContacts: async (query: string, limit: number) => {
-      const { SearchContacts } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { SearchContacts } = await import('$bindings/github.com/pavlith/milo/app/app')
       return present(await SearchContacts(query, limit))
     },
 
     getIdentities: async (accountId: string) => {
-      const { GetIdentities } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetIdentities } = await import('$bindings/github.com/pavlith/milo/app/app')
       return present(await GetIdentities(accountId))
     },
 
     saveDraft: async (accountId: string, message: smtp.ComposeMessage, draftId: string) => {
-      const { SaveDraft } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { SaveDraft } = await import('$bindings/github.com/pavlith/milo/app/app')
       const result = await SaveDraft(accountId, message, draftId)
       return { id: result?.draft?.id || '', syncStatus: result?.draft?.syncStatus || 'pending' }
     },
 
     deleteDraft: async (draftId: string) => {
-      const { DeleteDraft } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { DeleteDraft } = await import('$bindings/github.com/pavlith/milo/app/app')
       return DeleteDraft(draftId)
     },
 
     pickAttachmentFiles: async () => {
-      const { PickAttachmentFiles } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { PickAttachmentFiles } = await import('$bindings/github.com/pavlith/milo/app/app')
       return PickAttachmentFiles()
     },
 
     getAccount: async (accountId: string) => {
-      const { GetAccount } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetAccount } = await import('$bindings/github.com/pavlith/milo/app/app')
       return required(await GetAccount(accountId), 'account')
     },
 
     getDefaultAddress: async (kind: string, accountId: string) => {
-      const { GetDefaultAddress } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetDefaultAddress } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetDefaultAddress(kind, accountId)
     },
 
     hasSMIMECertificate: async (accountId: string) => {
-      const { HasSMIMECertificate } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { HasSMIMECertificate } = await import('$bindings/github.com/pavlith/milo/app/app')
       return HasSMIMECertificate(accountId)
     },
 
     getSMIMECertificateForEmail: async (accountId: string, email: string) => {
-      const { GetSMIMECertificateForEmail } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetSMIMECertificateForEmail } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetSMIMECertificateForEmail(accountId, email)
     },
 
     getSMIMESignPolicy: async (accountId: string) => {
-      const { GetSMIMESignPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetSMIMESignPolicy } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetSMIMESignPolicy(accountId)
     },
 
     getSMIMEEncryptPolicy: async (accountId: string) => {
-      const { GetSMIMEEncryptPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetSMIMEEncryptPolicy } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetSMIMEEncryptPolicy(accountId)
     },
 
     checkRecipientCerts: async (emails: string[]) => {
-      const { CheckRecipientCerts } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { CheckRecipientCerts } = await import('$bindings/github.com/pavlith/milo/app/app')
       return definedEntries(await CheckRecipientCerts(emails))
     },
 
     pickRecipientCertFile: async () => {
-      const { PickRecipientCertFile } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { PickRecipientCertFile } = await import('$bindings/github.com/pavlith/milo/app/app')
       return PickRecipientCertFile()
     },
 
     importRecipientCert: async (email: string, filePath: string) => {
-      const { ImportRecipientCert } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { ImportRecipientCert } = await import('$bindings/github.com/pavlith/milo/app/app')
       return ImportRecipientCert(email, filePath)
     },
 
     hasPGPKey: async (accountId: string) => {
-      const { HasPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { HasPGPKey } = await import('$bindings/github.com/pavlith/milo/app/app')
       return HasPGPKey(accountId)
     },
 
     getPGPKeyForEmail: async (accountId: string, email: string) => {
-      const { GetPGPKeyForEmail } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetPGPKeyForEmail } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetPGPKeyForEmail(accountId, email)
     },
 
     getPGPSignPolicy: async (accountId: string) => {
-      const { GetPGPSignPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetPGPSignPolicy } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetPGPSignPolicy(accountId)
     },
 
     getPGPEncryptPolicy: async (accountId: string) => {
-      const { GetPGPEncryptPolicy } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetPGPEncryptPolicy } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetPGPEncryptPolicy(accountId)
     },
 
     checkRecipientPGPKeys: async (emails: string[]) => {
-      const { CheckRecipientPGPKeys } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { CheckRecipientPGPKeys } = await import('$bindings/github.com/pavlith/milo/app/app')
       return definedEntries(await CheckRecipientPGPKeys(emails))
     },
 
     pickRecipientPGPKeyFile: async () => {
-      const { PickRecipientPGPKeyFile } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { PickRecipientPGPKeyFile } = await import('$bindings/github.com/pavlith/milo/app/app')
       return PickRecipientPGPKeyFile()
     },
 
     importRecipientPGPKey: async (email: string, filePath: string) => {
-      const { ImportRecipientPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { ImportRecipientPGPKey } = await import('$bindings/github.com/pavlith/milo/app/app')
       return ImportRecipientPGPKey(email, filePath)
     },
 
     lookupWKD: async (email: string) => {
-      const { LookupWKD } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { LookupWKD } = await import('$bindings/github.com/pavlith/milo/app/app')
       return LookupWKD(email)
     },
 
     lookupHKP: async (email: string) => {
-      const { LookupHKP } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { LookupHKP } = await import('$bindings/github.com/pavlith/milo/app/app')
       return LookupHKP(email)
     },
 
     lookupPGPKey: async (email: string) => {
-      const { LookupPGPKey } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { LookupPGPKey } = await import('$bindings/github.com/pavlith/milo/app/app')
       return LookupPGPKey(email)
     },
 
     readFileAsAttachment: async (filePath: string) => {
-      const { ReadFileAsAttachment } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { ReadFileAsAttachment } = await import('$bindings/github.com/pavlith/milo/app/app')
       return ReadFileAsAttachment(filePath)
     },
 
     getAllAccountIdentities: async () => {
-      const { GetAllAccountIdentities } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { GetAllAccountIdentities } = await import('$bindings/github.com/pavlith/milo/app/app')
       return GetAllAccountIdentities()
     },
 
     openComposerWindow: async (accountId: string, mode: string, messageId: string, draftId: string, mailtoURL?: string) => {
-      const { OpenComposerWindow } = await import('$bindings/github.com/hkdb/aerion/app/app')
+      const { OpenComposerWindow } = await import('$bindings/github.com/pavlith/milo/app/app')
       return OpenComposerWindow(accountId, mode, messageId, draftId, mailtoURL || '')
     },
   }

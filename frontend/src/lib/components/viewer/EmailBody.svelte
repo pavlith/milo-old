@@ -3,7 +3,7 @@
   import { definedEntries } from '$lib/bindingValues'
   import Icon from '@iconify/svelte'
   import { BrowserOpenURL } from '$lib/desktop'
-  import { GetInlineAttachments, AddImageAllowlist, OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetInlineAttachments, AddImageAllowlist, OpenURL } from '$bindings/github.com/pavlith/milo/app/app'
   import { getCached, setCache } from '../../stores/inlineAttachmentCache'
   import { isImageAllowedSync, refreshImageAllowlist } from '$lib/stores/imageAllowlist.svelte'
   import { setFocusedPane, focusPreviousPane, focusNextPane } from '$lib/stores/keyboard.svelte'
@@ -11,7 +11,6 @@
   import { _ } from '$lib/i18n'
   import { toasts } from '$lib/stores/toast'
   import { getAlwaysLoadImages } from '$lib/stores/settings.svelte'
-  import { getActiveTheme } from '$lib/stores/theme.svelte'
 
   interface Props {
     messageId: string
@@ -51,13 +50,6 @@
 
   // Derived state
   let hasRemoteImages = $derived(checkForRemoteImages(bodyHtml))
-
-  // Only dark rendering follows the application palette.
-  let iframeOuterBg = $derived.by(() => {
-    if (!darken) return 'white'
-    void getActiveTheme()
-    return getChromeBgHsl()
-  })
 
   // Loading placeholder SVG
   const loadingPlaceholder = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='80' viewBox='0 0 120 80'%3E%3Crect fill='%23f3f4f6' width='120' height='80' rx='4'/%3E%3Cg transform='translate(60,40)'%3E%3Ccircle cx='0' cy='0' r='12' fill='none' stroke='%239ca3af' stroke-width='2' stroke-dasharray='20 10'%3E%3CanimateTransform attributeName='transform' type='rotate' from='0' to='360' dur='1s' repeatCount='indefinite'/%3E%3C/circle%3E%3C/g%3E%3Ctext x='60' y='65' text-anchor='middle' fill='%239ca3af' font-size='9' font-family='sans-serif'%3ELoading...%3C/text%3E%3C/svg%3E`
@@ -111,64 +103,6 @@
     return processed
   }
 
-  // Reads the active theme's chrome lightness so the dark-mail filter can tune
-  // its invert amount — pure black is too dark against most themes' chrome.
-  // For themes whose --background hue carries enough chromaticity that the
-  // partial-invert + hue-rotate composes into visible color shifts, declare
-  // --dark-mail-bg-l (number 0-100) to override with an explicit value.
-  function getChromeBgLightness(): number {
-    const styles = getComputedStyle(document.documentElement)
-    const override = styles.getPropertyValue('--dark-mail-bg-l').trim()
-    if (override) {
-      const n = parseFloat(override)
-      if (!Number.isNaN(n)) return Math.max(0, Math.min(1, n / 100))
-    }
-    const bg = styles.getPropertyValue('--background').trim()
-    const lMatch = bg.match(/(\d+(?:\.\d+)?)%\s*$/)
-    if (lMatch) {
-      const l = parseFloat(lMatch[1])
-      if (!Number.isNaN(l)) return Math.max(0, Math.min(1, l / 100))
-    }
-    return 0
-  }
-
-  // Returns the chrome bg as `hsl(...)` for the iframe element's outer
-  // background, matching the rendered dark-mail surface so the rounded
-  // corner clip has no color seam.
-  function getChromeBgHsl(): string {
-    const styles = getComputedStyle(document.documentElement)
-    const bg = styles.getPropertyValue('--background').trim()
-    return bg ? `hsl(${bg})` : '#000'
-  }
-
-  // Per-theme dark-mail saturation override. <1 desaturates the inverted
-  // email surface to cancel out the warm/red chromatic shift that partial
-  // invert + hue-rotate(180deg) leaves on the residual chromaticity of
-  // most input content. Default 1 (no change).
-  function getChromeBgSaturate(): number {
-    const override = getComputedStyle(document.documentElement)
-      .getPropertyValue('--dark-mail-saturate').trim()
-    if (override) {
-      const n = parseFloat(override)
-      if (!Number.isNaN(n) && n > 0) return n
-    }
-    return 1
-  }
-
-  // Per-theme dark-mail hue rotation override (degrees, signed). Shifts the
-  // residual chromaticity of the inverted email surface toward a specific
-  // hue family — e.g., -20 to cool down a cool-toned theme's surface that
-  // would otherwise read as warm gray. Default 0 (no shift, GPU-skipped).
-  function getChromeBgHueRotate(): number {
-    const override = getComputedStyle(document.documentElement)
-      .getPropertyValue('--dark-mail-hue').trim()
-    if (override) {
-      const n = parseFloat(override)
-      if (!Number.isNaN(n)) return n
-    }
-    return 0
-  }
-
   function buildIframeContent(html: string, applyDarken: boolean): string {
     const processedHtml = processHtml(html, imagesBlocked)
     const imgSrc = imagesBlocked ? "'self' data:" : '* data:'
@@ -177,23 +111,11 @@
     // looking normal while flipping text, backgrounds, and CSS-defined colors.
     // Blocked-image placeholders intentionally skip the re-invert so they end
     // up dark too — they're chrome, not content.
-    // color-scheme: dark switches the UA-default iframe viewport bg to dark so
-    // the rounded-corner edge has no white sliver bleeding through.
-    // Invert amount derived from theme's chrome lightness — pure invert(1)
-    // produces stark black against themes whose chrome isn't pure black.
-    const invertAmount = applyDarken ? 1 - getChromeBgLightness() : 1
-    const saturate = applyDarken ? getChromeBgSaturate() : 1
-    const hueRotate = applyDarken ? getChromeBgHueRotate() : 0
-    // Image filter compensates so photos see net saturate(1) + hue-rotate(0) —
-    // html's saturate(S) hue-rotate(H) composed with image's saturate(1/S)
-    // hue-rotate(-H) approximately cancels for non-grayscale image content.
-    const imageSaturate = 1 / saturate
+    // Inverting white by this amount matches the neutral Gray 100 surface.
     const darkenStyles = applyDarken ? `
-    html { filter: invert(${invertAmount}) hue-rotate(180deg) saturate(${saturate}) hue-rotate(${hueRotate}deg); background: #fff; color-scheme: dark; }
-    img:not([data-blocked-src]), video, iframe, [data-no-invert] { filter: invert(${invertAmount}) hue-rotate(180deg) saturate(${imageSaturate}) hue-rotate(${-hueRotate}deg); }
-` : `
-    html { color-scheme: light; }
-`
+    html { filter: invert(0.914) hue-rotate(180deg); background: #fff; color-scheme: dark; }
+    img:not([data-blocked-src]), video, iframe, [data-no-invert] { filter: invert(0.914) hue-rotate(180deg); }
+` : 'html { color-scheme: light; }'
 
     const iframeScript = `
       function sendHeight() {
@@ -373,7 +295,7 @@
       margin: 0; padding: 0;
       font-family: system-ui, sans-serif;
       font-size: 14px; line-height: 1.5;
-      color: #1a1a0a; background-color: white;
+      color: #161616; background-color: white;
       overflow-x: auto; word-wrap: break-word;
       scrollbar-width: none; /* Firefox */
       -ms-overflow-style: none; /* IE/Edge */
@@ -385,10 +307,10 @@
     p:empty { min-height: 1em; }
     p:has(> br:only-child) { min-height: 1em; }
     img[data-cid] { min-width: 100px; min-height: 60px; }
-    a { color: #2563eb; }
+    a { color: #0f62fe; }
     /* Only apply defaults to elements without inline styles */
-    blockquote:not([style]) { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid #e5e7eb; color: #6b7280; }
-    pre:not([style]) { background: #f3f4f6; padding: 0.5em; border-radius: 4px; overflow-x: auto; }
+    blockquote:not([style]) { margin: 0.5em 0; padding-left: 1em; border-left: 3px solid #e0e0e0; color: #525252; }
+    pre:not([style]) { background: #f4f4f4; padding: 0.5em; border-radius: 4px; overflow-x: auto; }
     /* Remove table/td defaults that conflict with email layouts */
   </sty` + `le>
 </head>
@@ -648,7 +570,6 @@ ${processedHtml}
     const html = bodyHtml
     void imagesBlocked // dependency only
     const applyDarken = darken
-    if (applyDarken) void getActiveTheme()
 
     if (iframeElement && html) {
       const content = buildIframeContent(html, applyDarken)
@@ -747,14 +668,14 @@ ${processedHtml}
 <div class="email-body relative">
   {#if bodyHtml}
     {#if hasRemoteImages && imagesBlocked}
-      <div class="flex items-center gap-2 px-3 py-2 mb-3 rounded-md bg-yellow-500/10 border border-yellow-500/30 text-sm">
-        <Icon icon="mdi:image-off" class="w-4 h-4 text-yellow-600 flex-shrink-0" />
-        <span class="text-yellow-700 dark:text-yellow-400">{$_('viewer.remoteImagesBlocked')}</span>
+      <div class="flex items-center gap-2 px-3 py-2 mb-3 rounded-md bg-warning-surface border border-warning/30 text-sm">
+        <Icon icon="mdi:image-off" class="w-4 h-4 text-warning flex-shrink-0" />
+        <span class="text-warning">{$_('viewer.remoteImagesBlocked')}</span>
 
         <div class="ml-auto flex items-center gap-1">
           <!-- Load Images button -->
           <button
-            class="px-2 py-1 text-xs font-medium rounded bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
+            class="px-2 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary-hover transition-colors"
             onclick={loadImages}
           >
             {$_('viewer.loadImages')}
@@ -764,7 +685,7 @@ ${processedHtml}
           {#if fromEmail}
             <DropdownMenu.Root bind:open={alwaysLoadDropdownOpen}>
               <DropdownMenu.Trigger
-                class="px-2 py-1 text-xs font-medium rounded bg-yellow-600 text-white hover:bg-yellow-700 transition-colors flex items-center gap-1"
+                class="px-2 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary-hover transition-colors flex items-center gap-1"
               >
                 {$_('viewer.alwaysLoad')}
                 <Icon icon="mdi:chevron-down" class="w-3 h-3" />
@@ -790,11 +711,12 @@ ${processedHtml}
       title={$_('aria.emailContent')}
       sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
       class="w-full border-0 rounded-md min-h-[100px]"
-      style="height: 200px; background-color: {iframeOuterBg};"
+      style:background-color={darken ? 'var(--background)' : 'var(--carbon-white)'}
+      style="height: 200px;"
     ></iframe>
   {:else if bodyText}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="whitespace-pre-wrap font-sans text-sm text-foreground bg-muted/30 rounded-md p-4"
+    <div class="whitespace-pre-wrap font-sans text-reading text-foreground bg-surface rounded-md p-4"
       onkeydown={(e) => { if (e.key === 'Enter') { const link = (e.target as HTMLElement).closest('a'); if (link?.href) { e.preventDefault(); handleLinkClick(link.href) } } }}
       onclick={(e) => {
         const link = (e.target as HTMLElement).closest('a')
@@ -813,7 +735,7 @@ ${processedHtml}
   <!-- Link hover tooltip -->
   {#if tooltipVisible && tooltipUrl}
     <div
-      class="fixed z-50 px-3 py-1.5 text-xs bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 rounded shadow-lg max-w-md truncate pointer-events-none border border-gray-700 dark:border-gray-300"
+      class="fixed z-50 px-3 py-1.5 text-xs bg-tooltip text-tooltip-foreground rounded-md shadow-sm max-w-md truncate pointer-events-none border border-border"
       style="left: {tooltipX}px; top: {tooltipY + 5}px;"
     >
       {tooltipUrl}
@@ -823,13 +745,13 @@ ${processedHtml}
   <!-- Context menu (text copy and/or link copy) -->
   {#if ctxMenuVisible}
     <div
-      class="fixed z-50 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[160px]"
+      class="fixed z-50 bg-popover text-popover-foreground rounded-md shadow-sm border border-border py-1 min-w-[160px]"
       style="left: {ctxMenuX}px; top: {ctxMenuY}px;"
       role="menu"
     >
       {#if ctxMenuText}
         <button
-          class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          class="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
           onclick={copyTextToClipboard}
         >
           <Icon icon="mdi:content-copy" class="w-4 h-4" />
@@ -838,7 +760,7 @@ ${processedHtml}
       {/if}
       {#if ctxMenuUrl}
         <button
-          class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+          class="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
           onclick={copyLinkToClipboard}
         >
           <Icon icon="mdi:link-variant" class="w-4 h-4" />
@@ -846,7 +768,7 @@ ${processedHtml}
         </button>
       {/if}
       <button
-        class="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+        class="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
         onclick={selectAllInIframe}
       >
         <Icon icon="mdi:select-all" class="w-4 h-4" />

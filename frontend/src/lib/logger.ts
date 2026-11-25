@@ -21,7 +21,7 @@
  * if needed.
  */
 
-import { LogFrontend } from '$bindings/github.com/hkdb/aerion/app/app'
+import { LogFrontend } from '$bindings/github.com/pavlith/milo/app/app'
 
 function emit(level: string, message: string): void {
   // Fire-and-forget — never await, never throw. Swallow errors so a logger

@@ -21,7 +21,7 @@
     MoveToFolder,
     CopyToFolder,
     Undo,
-  } from '$bindings/github.com/hkdb/aerion/app/app'
+  } from '$bindings/github.com/pavlith/milo/app/app'
   import { account } from '$lib/models'
   import { toasts } from '$lib/stores/toast'
   import { ConfirmDialog } from '$lib/components/ui/confirm-dialog'
@@ -362,7 +362,7 @@
     <ContextMenuItem onSelect={handleToggleStar}>
       <Icon
         icon={isStarred ? 'mdi:star' : 'mdi:star-outline'}
-        class="mr-2 h-4 w-4 {isStarred ? 'text-yellow-500' : ''}"
+        class="mr-2 h-4 w-4 {isStarred ? 'text-warning' : ''}"
       />
       {$_(isStarred ? 'contextMenu.removeStar' : 'contextMenu.star')}
     </ContextMenuItem>

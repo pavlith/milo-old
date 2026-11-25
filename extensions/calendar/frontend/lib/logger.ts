@@ -10,7 +10,7 @@
 //   import { logger } from '$extensions/calendar/frontend/lib/logger'
 //   logger.warn(`failed to read localStorage: ${err}`)
 
-import { Calendar_LogFrontend } from '$bindings/github.com/hkdb/aerion/app/app'
+import { Calendar_LogFrontend } from '$bindings/github.com/pavlith/milo/app/app'
 
 function emit(level: string, message: string): void {
   Calendar_LogFrontend(level, message).catch(() => {})

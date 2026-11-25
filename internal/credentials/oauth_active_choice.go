@@ -10,14 +10,14 @@ import (
 // dialogs). Recorded per slot to decouple "what the user picked" from
 // "what credentials/alias rows happen to exist." Without this marker the
 // picker has to delete rows to make a different option take effect —
-// which means switching from Custom to "Aerion - Microsoft" silently
+// which means switching from Custom to "Milo - Microsoft" silently
 // destroys the user's saved Custom credentials. The marker lets the
 // resolver route by choice instead, so stored values survive picker
 // switches.
 //
 // Stored in the existing `settings` key/value table (no schema
 // migration). Key shape: `oauth_active_choice:<slot_id>`. Value is one
-// of "custom" | "aerion-shipped" | "aerion-mail". Empty / missing means
+// of "custom" | "milo-shipped" | "milo-mail". Empty / missing means
 // "no explicit choice recorded yet" — the resolver falls back to
 // inferring the active choice from row presence, preserving pre-marker
 // behavior for installs upgrading from v0.3.0-build1.
@@ -29,8 +29,8 @@ func oauthActiveChoiceKey(configID string) string {
 }
 
 // SetOAuthActiveChoice records the user's explicit picker selection
-// for the slot. Choice must be one of "custom" / "aerion-shipped" /
-// "aerion-mail" — caller (the Wails-bound SetOAuthCredsChoice handler)
+// for the slot. Choice must be one of "custom" / "milo-shipped" /
+// "milo-mail" — caller (the Wails-bound SetOAuthCredsChoice handler)
 // already validates the value.
 func (s *Store) SetOAuthActiveChoice(configID, choice string) error {
 	if configID == "" {
@@ -66,6 +66,12 @@ func (s *Store) GetOAuthActiveChoice(configID string) (string, error) {
 	}
 	if err != nil {
 		return "", fmt.Errorf("query oauth active choice: %w", err)
+	}
+	switch value {
+	case "aerion-shipped":
+		return "milo-shipped", nil
+	case "aerion-mail":
+		return "milo-mail", nil
 	}
 	return value, nil
 }

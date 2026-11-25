@@ -7,7 +7,7 @@
   // handlers (which vary per site — re-fetch vs reload, toast vs inline error).
   import Icon from '@iconify/svelte'
   import { Button } from '$lib/components/ui/button'
-  import { Calendar_GrantCalendarAccess } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_GrantCalendarAccess } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     provider: 'google' | 'microsoft'

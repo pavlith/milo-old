@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { ModeWatcher } from 'mode-watcher'
+  import { MAIL_MODE_STORAGE_KEY } from '$lib/stores/theme.svelte'
   import { present } from '$lib/bindingValues'
   // Load offline icon data before anything else
   import './lib/iconify-offline'
@@ -44,7 +46,7 @@
   import { isDialogGuardActive } from '$lib/stores/dialogGuard'
   import { dispatchExtensionShortcut } from '$lib/stores/extensionShortcuts.svelte'
   import { initLayout, getLayoutMode, getResponsiveView, showViewer, hideViewer, showSidebar, hideSidebar, isResponsive } from '$lib/stores/layout.svelte'
-  import { PrepareReply, GetPendingMailto, GetDraft, MarkAsRead, MarkAsUnread, Star, Unstar, Archive, MarkAsSpam, MarkAsNotSpam, Undo, GetTermsAccepted, SetTermsAccepted, AcceptCertificate, GetStartHiddenActive, CloseWindow, QuitApp, OpenComposerWindow, NotifyStartupComplete, GetOAuthBuildStatus, GetOAuthWarningDisabled, SetOAuthWarningDisabled, GetLastSeenVersion, SetLastSeenVersion, GetAppInfo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { PrepareReply, GetPendingMailto, GetDraft, MarkAsRead, MarkAsUnread, Star, Unstar, Archive, MarkAsSpam, MarkAsNotSpam, Undo, GetTermsAccepted, SetTermsAccepted, AcceptCertificate, GetStartHiddenActive, CloseWindow, QuitApp, OpenComposerWindow, NotifyStartupComplete, GetOAuthBuildStatus, GetOAuthWarningDisabled, SetOAuthWarningDisabled, GetLastSeenVersion, SetLastSeenVersion, GetAppInfo } from '$bindings/github.com/pavlith/milo/app/app'
   import { smtp, folder, certificate } from '$lib/models'
   import { WindowShow, WindowHide, EventsOn } from '$lib/desktop'
   import { _ } from '$lib/i18n'
@@ -1512,6 +1514,8 @@
   }
 </script>
 
+<ModeWatcher modeStorageKey={MAIL_MODE_STORAGE_KEY} disableHeadScriptInjection synchronousModeChanges />
+
 <svelte:window onkeydown={handleGlobalKeyDown} onkeyup={handleGlobalKeyUp} />
 
 <div class="flex flex-col h-full w-full overflow-hidden bg-background">
@@ -1636,7 +1640,7 @@
 
 <!-- Composer Modal -->
 {#if showComposer && composerAccountId}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
     <div class="{getLayoutMode() === 'narrow' ? 'w-full h-full bg-background overflow-hidden' : 'w-full max-w-3xl h-[80vh] bg-background rounded-lg shadow-xl overflow-hidden'}">
       <Composer
         accountId={composerAccountId}
@@ -1652,8 +1656,8 @@
 
 <!-- Shutdown Overlay -->
 {#if isShuttingDown}
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80">
-    <p class="text-white/90 text-sm font-medium">{$_('window.shuttingDown')}</p>
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-overlay/80">
+    <p class="text-overlay-foreground text-sm font-medium">{$_('window.shuttingDown')}</p>
   </div>
 {/if}
 

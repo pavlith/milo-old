@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/hkdb/aerion/internal/appstate"
+	"github.com/pavlith/milo/internal/appstate"
 )
 
 // ============================================================================
@@ -22,7 +22,7 @@ func (a *App) SaveUIState(state *appstate.UIState) error {
 // App Info API - Exposed to frontend via Wails bindings
 // ============================================================================
 
-// Version is the Aerion release version. Bump on each release; consumed by
+// Version is the Milo release version. Bump on each release; consumed by
 // the About dialog via GetAppInfo() and by the --version CLI flag in main.go.
 // (wails.json, frontend/package.json, and metainfo.xml each carry their own
 // version strings for their respective tooling.)
@@ -40,16 +40,16 @@ type AppInfo struct {
 // GetAppInfo returns application metadata for the About dialog
 func (a *App) GetAppInfo() AppInfo {
 	return AppInfo{
-		Name:        "Aerion",
+		Name:        "Milo",
 		Version:     Version,
-		Description: "An Open Source Lightweight E-Mail Client",
-		Website:     "https://github.com/hkdb/aerion",
+		Description: "A lightweight, Linux-first email client",
+		Website:     "https://github.com/pavlith/milo",
 		License:     "Apache 2.0",
 	}
 }
 
 // GetPendingMailto returns and clears any pending mailto: URL data.
-// This is used when Aerion is launched with a mailto: URL argument.
+// This is used when Milo is launched with a mailto: URL argument.
 func (a *App) GetPendingMailto() *MailtoData {
 	data := a.PendingMailto
 	a.PendingMailto = nil // Clear after reading

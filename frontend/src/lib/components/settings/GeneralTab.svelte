@@ -74,19 +74,20 @@
 
   // Title bar options
   const titleBarOptions = $derived([
-    { value: 'aerion', label: $_('settingsGeneral.titleBarAerion'), description: $_('settingsGeneral.titleBarAerionDesc') },
+    { value: 'milo', label: $_('settingsGeneral.titleBarMilo'), description: $_('settingsGeneral.titleBarMiloDesc') },
     { value: 'native', label: $_('settingsGeneral.titleBarNative'), description: $_('settingsGeneral.titleBarNativeDesc') },
     { value: 'disable', label: $_('settingsGeneral.titleBarDisable'), description: $_('settingsGeneral.titleBarDisableDesc') },
   ])
 
   const titleBarValue = $derived(
-    nativeTitleBar ? 'native' : showTitleBar ? 'aerion' : 'disable'
+    nativeTitleBar ? 'native' : showTitleBar ? 'milo' : 'disable'
   )
 
-  const themeModeOptions = [
-    { value: 'nord-dark', label: 'Nord' },
-    { value: 'dracula', label: 'Dracula' },
-  ] satisfies { value: ThemeMode; label: string }[]
+  const themeModeOptions = $derived([
+    { value: 'light', label: $_('settingsGeneral.themeLight') },
+    { value: 'dark', label: $_('settingsGeneral.themeDark') },
+    { value: 'system', label: $_('settingsGeneral.themeSystem') },
+  ] satisfies { value: ThemeMode; label: string }[])
 
   function getDensityLabel(value: string): string {
     return densityOptions.find(opt => opt.value === value)?.label || value
@@ -103,12 +104,12 @@
   }
 
   function handleThemeChange(value: string) {
-    if (value === 'nord-dark' || value === 'dracula') onThemeChange(value)
+    if (value === 'light' || value === 'dark' || value === 'system') onThemeChange(value)
   }
 
   function handleTitleBarChange(value: string) {
     switch (value) {
-      case 'aerion':
+      case 'milo':
         nativeTitleBar = false
         showTitleBar = true
         break

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check production Wails pane, composer and Contacts behavior in a fresh profile."""
+"""Check Wails appearance, legacy data, panes, Contacts and composer in an isolated profile."""
 
 import argparse
 from contextlib import contextmanager
@@ -97,6 +97,8 @@ def seed_profile(database):
                 "oauth_warning_disabled": "true",
                 "last_seen_version": version,
                 "language": "en",
+                "theme_mode": "nord-dark",
+                "autostart": "true",
                 "composer_mode": "detached",
                 "composer_format": "plain",
                 "extension_contacts_enabled": "true",
@@ -144,6 +146,21 @@ def check_contacts(main):
     main.evaluate(f"{mail}.click()")
 
 
+def check_theme_change(main, composer):
+    main.evaluate("document.querySelector('nav button[aria-label=Settings]').click()")
+    main.check("document.querySelector('#appearance-theme')?.textContent.trim() === 'Dark'",
+               "Appearance should show the migrated Dark setting")
+    main.evaluate("document.querySelector('#appearance-theme').click()")
+    main.check("Array.from(document.querySelectorAll('[role=option]')).some(option => option.textContent.trim() === 'System')",
+               "The appearance picker should offer System mode")
+    main.evaluate("Array.from(document.querySelectorAll('[role=option]')).find(option => option.textContent.trim() === 'Light').dispatchEvent(new PointerEvent('pointerup', {bubbles: true, pointerType: 'mouse'}))")
+    light = "getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)'"
+    main.check(light, "The appearance preview should switch the main window to Carbon White")
+    assert composer.evaluate("document.documentElement.classList.contains('dark')"), "Preview must stay in the main window"
+    main.evaluate("Array.from(document.querySelectorAll('[role=dialog] button')).find(button => button.textContent.trim() === 'Save').click()")
+    composer.check(light, "The detached composer should switch to Light after Save")
+
+
 def check_ui(binary, directory, display):
     library = directory / "webview_probe.so"
     webkit_flags = shlex.split(subprocess.check_output(
@@ -172,17 +189,37 @@ def check_ui(binary, directory, display):
         "GTK_USE_PORTAL": "0",
         "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
         "WEBKIT_DISABLE_COMPOSITING_MODE": "1",
-        "AERION_SMOKE_PROBE_DIR": str(directory),
+        "MILO_SMOKE_PROBE_DIR": str(directory),
         "LD_PRELOAD": str(library),
     }
     with (directory / "native.log").open("w", encoding="utf-8") as log:
         main = WebView(directory)
         with run(binary, env=env, stdout=log, stderr=log):
             main.check("!!document.querySelector('#agree-terms')", "A fresh profile should show Terms")
-        seed_profile(directory / "data/aerion/aerion.db")
+        data_home = directory / "data"
+        database = data_home / "milo/milo.db"
+        seed_profile(database)
+        for file in database.parent.glob("milo.db*"):
+            file.rename(file.with_name(file.name.replace("milo.db", "aerion.db", 1)))
+        database.parent.rename(data_home / "aerion")
+        autostart = directory / "config/autostart"
+        autostart.mkdir(parents=True)
+        legacy_launcher = autostart / "io.github.hkdb.Aerion.desktop"
+        legacy_launcher.write_text("[Desktop Entry]\nName=Aerion\nExec=aerion\n", encoding="utf-8")
 
         with run(binary, env=env, stdout=log, stderr=log):
             check_contacts(main)
+            assert not (data_home / "milo/milo.db").exists(), "Milo must use the existing profile"
+            launcher = autostart / "io.github.pavlith.milo.desktop"
+            wait_for(lambda: launcher.is_file() and not legacy_launcher.exists(),
+                     "The old login launcher should be replaced after creating Milo's launcher")
+            main.check("document.title === 'Milo' && getComputedStyle(document.body).backgroundColor === 'rgb(22, 22, 22)'",
+                       "The old dark preference should open Milo with Carbon Gray 100")
+            main.evaluate("document.fonts.load('400 13px Inter Variable', 'Mail Почта')")
+            main.check("document.fonts.check('400 13px Inter Variable', 'Mail Почта') && "
+                       "getComputedStyle(document.body).fontFamily.includes('Inter Variable') && "
+                       "getComputedStyle(document.body).fontSize === '13px'",
+                       "The UI should load the Latin and Cyrillic Inter faces at 13px")
             handle = "document.querySelector('[aria-label=\"Resize message list\"]')"
             main.check(f"!!{handle} && !document.querySelector('[role=dialog],[role=alertdialog]')",
                        "Mail should open with a keyboard-accessible list separator")
@@ -211,12 +248,19 @@ def check_ui(binary, directory, display):
                 "The detached composer should honor the saved Plain Text format",
             )
 
+            check_theme_change(main, composer)
+
+        with run(binary, env=env, stdout=log, stderr=log):
+            main.check("!!document.querySelector('nav button[aria-label=Settings]') && "
+                       "getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)'",
+                       "The saved Light mode should survive restart")
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--binary", type=Path, default=ROOT / "build/bin/aerion")
+    parser.add_argument("--binary", type=Path, default=ROOT / "build/bin/milo")
     args = parser.parse_args()
-    with TemporaryDirectory(prefix="aerion-smoke-") as profile, virtual_display() as display:
+    with TemporaryDirectory(prefix="milo-smoke-") as profile, virtual_display() as display:
         directory = Path(profile)
         try:
             check_ui(args.binary.resolve(strict=True), directory, display)
@@ -225,7 +269,7 @@ def main():
             if log.is_file():
                 print("\n".join(log.read_text(encoding="utf-8", errors="replace").splitlines()[-20:]), file=sys.stderr)
             raise
-    print("PASS: Contacts debounce cleanup, PaneForge keys, Ctrl+N from a separator, and detached Plain Text preference")
+    print("PASS: Legacy profile, Carbon themes, Inter, Contacts, PaneForge and detached composer")
 
 
 if __name__ == "__main__":

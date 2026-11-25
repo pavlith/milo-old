@@ -13,7 +13,7 @@
   import Icon from '@iconify/svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import { toasts } from '$lib/stores/toast'
-  import { Contacts_ResizeContactPhoto as ResizeContactPhoto } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Contacts_ResizeContactPhoto as ResizeContactPhoto } from '$bindings/github.com/pavlith/milo/app/app'
   import type { PhotoState } from './types'
 
   interface Props {

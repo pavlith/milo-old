@@ -10,23 +10,25 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // linuxSingleInstanceLock uses a Unix socket for single-instance detection.
-// The socket lives alongside the IPC socket at /tmp/aerion-{uid}/instance.sock.
+// The original socket is used when opening a legacy profile.
 type linuxSingleInstanceLock struct {
-	listener   net.Listener
-	socketPath string
-	onShow     func(data string)
-	mu         sync.Mutex
-	done       chan struct{}
+	legacyProfile bool
+	listener      net.Listener
+	socketPath    string
+	onShow        func(data string)
+	mu            sync.Mutex
+	done          chan struct{}
 }
 
 // NewSingleInstanceLock creates a new single-instance lock.
-func NewSingleInstanceLock() SingleInstanceLock {
+func NewSingleInstanceLock(legacyProfile bool) SingleInstanceLock {
 	return &linuxSingleInstanceLock{
-		done: make(chan struct{}),
+		legacyProfile: legacyProfile,
+		done:          make(chan struct{}),
 	}
 }
 
@@ -148,7 +150,11 @@ func (l *linuxSingleInstanceLock) handleConnection(conn net.Conn) {
 // buildSocketPath returns the path for the instance lock socket.
 func (l *linuxSingleInstanceLock) buildSocketPath() (string, error) {
 	uid := os.Getuid()
-	socketDir := filepath.Join(os.TempDir(), fmt.Sprintf("aerion-%d", uid))
+	name := appName
+	if l.legacyProfile {
+		name = legacyAppName
+	}
+	socketDir := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", name, uid))
 
 	if err := os.MkdirAll(socketDir, 0700); err != nil {
 		return "", fmt.Errorf("failed to create socket directory: %w", err)

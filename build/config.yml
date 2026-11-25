@@ -1,10 +1,10 @@
 version: '3'
 
 info:
-  companyName: Aerion
-  productName: Aerion
-  productIdentifier: io.github.hkdb.Aerion
-  description: A modern email client
+  companyName: Milo
+  productName: Milo
+  productIdentifier: io.github.pavlith.milo
+  description: A lightweight, Linux-first email client
   version: 0.3.6
 
 dev_mode:
@@ -24,6 +24,6 @@ dev_mode:
       readiness:
         http: http://127.0.0.1:5173/
         timeout: 60s
-    - cmd: ./build/bin/aerion-dev
+    - cmd: ./build/bin/milo-dev
       type: primary
       exit_policy: shutdown

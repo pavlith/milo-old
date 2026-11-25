@@ -150,7 +150,7 @@ func TestIsUnsafeLoginError(t *testing.T) {
 }
 
 func TestSendID_RequiresConnection(t *testing.T) {
-	c := NewClient(ClientConfig{SendID: true, ClientName: "Aerion"})
+	c := NewClient(ClientConfig{SendID: true, ClientName: "Milo"})
 	if err := c.sendID(); err == nil {
 		t.Fatal("sendID on a disconnected client returned nil error")
 	}

@@ -21,7 +21,7 @@ import {
   Contacts_LinkAccountSource as LinkAccountSource,
   Contacts_SyncSource as SyncSource,
   Contacts_SyncAllSources as SyncAllSources,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import type { v1 } from '$lib/models'
 
 function createContactSourcesStore() {
@@ -82,7 +82,7 @@ function createContactSourcesStore() {
   }
 
   // Synchronous boolean derived from the cached list. Returns false for
-  // unknown ids (the "aerion" local sentinel, OAuth sources not yet
+  // unknown ids (the "milo" local sentinel, OAuth sources not yet
   // writable, etc.) — callers OR with their own local-source check.
   function isSourceWritable(sourceId: string | undefined): boolean {
     if (!sourceId) return false

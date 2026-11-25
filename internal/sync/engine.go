@@ -7,14 +7,14 @@ import (
 	gosync "sync"
 
 	gomessage "github.com/emersion/go-message"
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/email"
-	"github.com/hkdb/aerion/internal/folder"
-	imapPkg "github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/smime"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/email"
+	"github.com/pavlith/milo/internal/folder"
+	imapPkg "github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/smime"
 	"github.com/rs/zerolog"
 )
 

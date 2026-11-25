@@ -1,6 +1,6 @@
 # Svelte + TS + Vite
 
-Aerion uses plain Svelte 5 + Vite inside Wails v3. Follow [AGENTS.md](AGENTS.md) and the root [branch workflow](../CONTRIBUTING.md#repository-branches). The template notes below are background material; they do not authorize adopting SvelteKit.
+Milo uses plain Svelte 5 + Vite inside Wails v3. Follow [AGENTS.md](AGENTS.md) and the root [branch workflow](../CONTRIBUTING.md#repository-branches). The template notes below are background material; they do not authorize adopting SvelteKit.
 
 This template should help get you started developing with Svelte and TypeScript in Vite.
 
@@ -65,3 +65,18 @@ replaced by HMR.
 import { writable } from 'svelte/store'
 export default writable(0)
 ```
+
+## Milo appearance
+
+Both Vite entries use [app.css](src/app.css) for Carbon White and Gray 100
+semantic tokens, Tailwind utilities and the UI font stack. Use the semantic
+utilities for new components. The application preferences store Light, Dark
+and System, and Mode Watcher applies the mode in each WebView. Mail and compose
+body backgrounds are independent settings. The HTML message frame keeps its own
+content styles.
+
+Bundled WOFF2 subsets come from Fontsource's Inter Variable and JetBrains Mono
+Variable packages, both at 5.3.0. The original font licenses ship alongside the
+[bundled licenses](public/licenses/). The canonical application mark is
+[milo.svg](src/assets/images/milo.svg). Update the Linux and Windows icons in
+[`build/`](../build/) when changing the mark.

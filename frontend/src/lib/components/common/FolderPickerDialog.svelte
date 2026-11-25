@@ -5,7 +5,7 @@
   import * as Select from '$lib/components/ui/select'
   import { Button } from '$lib/components/ui/button'
   import { folder, account } from '$lib/models'
-  import { GetFolders } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetFolders } from '$bindings/github.com/pavlith/milo/app/app'
   import { _ } from '$lib/i18n'
 
   interface Props {

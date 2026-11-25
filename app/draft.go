@@ -7,15 +7,15 @@ import (
 	"time"
 
 	goImap "github.com/emersion/go-imap/v2"
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/draft"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/smime"
-	"github.com/hkdb/aerion/internal/smtp"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/draft"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/smime"
+	"github.com/pavlith/milo/internal/smtp"
 )
 
 // draftBodyPayload is used to serialize body fields for encrypted draft storage
@@ -785,7 +785,7 @@ func (a *App) GetDraft(id string) (*smtp.ComposeMessage, error) {
 		return a.draftToComposeMessage(d), nil
 	}
 
-	// No draft found - this might be a draft that was created outside Aerion
+	// No draft found - this might be a draft that was created outside Milo
 	// (e.g., from webmail). Build a ComposeMessage from the message itself.
 	log.Debug().Str("messageID", id).Msg("No local draft found, building from message")
 	return a.messageToComposeMessage(msg), nil

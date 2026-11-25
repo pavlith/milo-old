@@ -6,11 +6,11 @@ import (
 	"time"
 
 	goImap "github.com/emersion/go-imap/v2"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/undo"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/undo"
 )
 
 // withIMAPRetry wraps an IMAP operation with stale-connection retry.
@@ -98,7 +98,7 @@ func (a *App) MarkAllFolderMessagesAsUnread(folderID string) error {
 // GetMarkAllCoverage reports how many messages a whole-folder mark as read
 // (seen=true) or unread (seen=false) would reach beyond the local sync
 // window: the folder's server-side counts (STATUS, whole mailbox) minus the
-// rows Aerion holds locally. Zero means the local-only action already covers
+// rows Milo holds locally. Zero means the local-only action already covers
 // everything; the UI asks before going server-wide otherwise (#458).
 func (a *App) GetMarkAllCoverage(folderID string, seen bool) (int, error) {
 	f, err := a.folderStore.Get(folderID)

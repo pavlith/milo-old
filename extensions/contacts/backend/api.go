@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/extensions/contacts/backend/imaging"
-	"github.com/hkdb/aerion/internal/carddav"
-	"github.com/hkdb/aerion/internal/contact"
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/kit/davutil"
+	"github.com/pavlith/milo/extensions/contacts/backend/imaging"
+	"github.com/pavlith/milo/internal/carddav"
+	"github.com/pavlith/milo/internal/contact"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/kit/davutil"
 )
 
-// Source IDs for Aerion's core local contact store. CardDAV sources use their
+// Source IDs for Milo's core local contact store. CardDAV sources use their
 // own UUIDs (one per configured source).
 //
 // The local source has two sub-categories distinguished by `contacts.kind`:

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/oauth2"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/oauth2"
 )
 
 // bearerRefreshTransport is an http.RoundTripper that injects the current

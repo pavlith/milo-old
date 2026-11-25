@@ -3,7 +3,7 @@ import { present } from '$lib/bindingValues'
 // Eliminates per-message async Wails calls to IsImageAllowed(),
 // which can saturate the WebKit bridge on rapid IDLE syncs.
 
-import { GetImageAllowlist } from '$bindings/github.com/hkdb/aerion/app/app'
+import { GetImageAllowlist } from '$bindings/github.com/pavlith/milo/app/app'
 
 interface AllowlistEntry {
   type: string

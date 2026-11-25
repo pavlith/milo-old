@@ -17,7 +17,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import AddCalendarDefaultsControl from './AddCalendarDefaultsControl.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  import { Calendar_AddLocalSource, Calendar_AddLocalCalendar } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_AddLocalSource, Calendar_AddLocalCalendar } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     open: boolean

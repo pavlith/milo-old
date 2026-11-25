@@ -94,6 +94,7 @@ func deriveKey(salt []byte) []byte {
 	}
 
 	// Combine machine-specific data
+	// Keep the derivation input used by existing encrypted credentials.
 	machineData := fmt.Sprintf("aerion:%s:%s:%d", hostname, username, os.Getuid())
 
 	// Derive key using PBKDF2

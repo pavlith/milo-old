@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hkdb/aerion/internal/database"
+	"github.com/pavlith/milo/internal/database"
 )
 
 func openTestDB(t *testing.T) *database.DB {
@@ -147,12 +147,12 @@ func TestGetThemeMode(t *testing.T) {
 		missing bool
 		want    string
 	}{
-		{name: "fresh installation", missing: true, want: "nord-dark"},
-		{name: "Nord selection", stored: "nord-dark", want: "nord-dark"},
-		{name: "Dracula selection", stored: "dracula", want: "dracula"},
-		{name: "unknown value", stored: "future-theme", want: "nord-dark"},
-		{name: "empty value", stored: "", want: "nord-dark"},
-		{name: "corrupted value", stored: "dracula\x00\xff", want: "nord-dark"},
+		{name: "fresh installation", missing: true, want: "system"},
+		{name: "Nord selection", stored: "nord-dark", want: "dark"},
+		{name: "Dracula selection", stored: "dracula", want: "dark"},
+		{name: "unknown value", stored: "future-theme", want: "system"},
+		{name: "empty value", stored: "", want: "system"},
+		{name: "corrupted value", stored: "dracula\x00\xff", want: "system"},
 	}
 
 	for _, tt := range tests {
@@ -177,8 +177,9 @@ func TestSetThemeMode(t *testing.T) {
 		mode    string
 		wantErr bool
 	}{
-		{mode: "nord-dark"},
-		{mode: "dracula"},
+		{mode: "light"},
+		{mode: "dark"},
+		{mode: "system"},
 		{mode: "unknown", wantErr: true},
 		{mode: "", wantErr: true},
 	}
@@ -190,7 +191,7 @@ func TestSetThemeMode(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			store := NewStore(openTestDB(t))
-			if err := store.SetThemeMode("dracula"); err != nil {
+			if err := store.SetThemeMode("dark"); err != nil {
 				t.Fatal(err)
 			}
 			err := store.SetThemeMode(tt.mode)
@@ -199,7 +200,7 @@ func TestSetThemeMode(t *testing.T) {
 			}
 			want := tt.mode
 			if tt.wantErr {
-				want = "dracula"
+				want = "dark"
 			}
 			if got, err := store.Get(KeyThemeMode); err != nil || got != want {
 				t.Errorf("stored theme = %q, %v; want %q", got, err, want)
@@ -214,8 +215,8 @@ func TestThemeModeAfterReopen(t *testing.T) {
 		save func(*Store) error
 		want string
 	}{
-		{name: "Nord", save: func(s *Store) error { return s.SetThemeMode("nord-dark") }, want: "nord-dark"},
-		{name: "Dracula", save: func(s *Store) error { return s.SetThemeMode("dracula") }, want: "dracula"},
+		{name: "Light", save: func(s *Store) error { return s.SetThemeMode("light") }, want: "light"},
+		{name: "Dark", save: func(s *Store) error { return s.SetThemeMode("dark") }, want: "dark"},
 	}
 
 	for _, tt := range tests {

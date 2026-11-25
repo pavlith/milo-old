@@ -8,10 +8,10 @@ import (
 	gosync "sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/sync"
+	"github.com/pavlith/milo/internal/certificate"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/sync"
 )
 
 // ============================================================================

@@ -42,7 +42,7 @@
     onSpellcheckLanguagesChange,
   }: Props = $props()
 
-  // Dictionaries Aerion ships, with their native display names.
+  // Dictionaries Milo ships, with their native display names.
   const dictLanguages = SPELLCHECK_DICTS.map((code) => ({
     code,
     name: DICT_NAMES[code],

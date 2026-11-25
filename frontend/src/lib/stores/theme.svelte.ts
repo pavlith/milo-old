@@ -1,34 +1,41 @@
-import { mode, setMode, systemPrefersMode } from 'mode-watcher'
+import { flushSync } from 'svelte'
+import { mode, modeStorageKey, setMode, systemPrefersMode } from 'mode-watcher'
 
-// Shared by the main window and detached composer.
-export type ThemeMode = 'nord-dark' | 'dracula'
+export type ThemeMode = 'light' | 'dark' | 'system'
 
-export const DEFAULT_THEME_MODE: ThemeMode = 'nord-dark'
+export const DEFAULT_THEME_MODE: ThemeMode = 'system'
+export const MAIL_MODE_STORAGE_KEY = 'milo-mail-mode'
+export const COMPOSER_MODE_STORAGE_KEY = 'milo-composer-mode'
 
-let activeTheme = $state<ThemeMode>(DEFAULT_THEME_MODE)
-
-export function normalizeThemeMode(mode: unknown): ThemeMode {
-  return mode === 'dracula' ? mode : DEFAULT_THEME_MODE
-}
-
-export function getActiveTheme(): ThemeMode {
-  return activeTheme
+export function normalizeThemeMode(value: unknown): ThemeMode {
+  switch (value) {
+    case 'light':
+    case 'dark':
+    case 'system':
+      return value
+    case 'nord-dark':
+    case 'dracula':
+      return 'dark'
+    default:
+      return DEFAULT_THEME_MODE
+  }
 }
 
 export function getIsDarkActive(): boolean {
   return mode.current === 'dark'
 }
 
-export function initializeDarkMode() {
-  systemPrefersMode.tracking(false)
-  setMode('dark')
-  // Apply Mode Watcher's color scheme before mounting either window.
-  void mode.current
+export function initializeTheme(storageKey: string) {
+  // Separate WebView caches keep the mail window's preview local. The Go
+  // settings store is authoritative and broadcasts changes after Save.
+  modeStorageKey.current = storageKey
+  flushSync()
+  systemPrefersMode.query()
+  applyTheme(DEFAULT_THEME_MODE)
+  document.documentElement.classList.toggle('dark', getIsDarkActive())
 }
 
-export function applyTheme(mode: unknown) {
-  const theme = normalizeThemeMode(mode)
-  const root = document.documentElement
-  root.dataset.theme = theme
-  activeTheme = theme
+export function applyTheme(value: unknown) {
+  setMode(normalizeThemeMode(value))
+  void mode.current
 }

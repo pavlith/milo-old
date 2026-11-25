@@ -3,8 +3,8 @@
   import { definedEntries, present } from '$lib/bindingValues'
   import { onMount, onDestroy, tick } from 'svelte'
   import Icon from '@iconify/svelte'
-  import { GetConversation, GetReadReceiptResponsePolicy, SendReadReceipt, IgnoreReadReceipt, GetMarkAsReadDelay, GetMessageSource, ProcessSMIMEMessage, ProcessPGPMessage, FetchMessageBody } from '$bindings/github.com/hkdb/aerion/app/app'
-  import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetConversation, GetReadReceiptResponsePolicy, SendReadReceipt, IgnoreReadReceipt, GetMarkAsReadDelay, GetMessageSource, ProcessSMIMEMessage, ProcessPGPMessage, FetchMessageBody } from '$bindings/github.com/pavlith/milo/app/app'
+  import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '$bindings/github.com/pavlith/milo/app/app'
   import { EventsOn } from '$lib/desktop'
   import { message as messageModels } from '$lib/models'
   import * as Empty from '$lib/components/ui/empty'
@@ -1320,7 +1320,7 @@
       </Button>
     </div>
   {:else if conversation}
-    <div class="conversation-viewer-content flex flex-col h-full">
+    <div class="flex flex-col h-full">
     <div class="flex min-h-[52px] shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3 py-2">
       <div class="flex flex-wrap items-center gap-0.5">
         {#if showBackButton}
@@ -1581,8 +1581,8 @@
                     <div class="pl-3 border-l-2 border-border">
                       <!-- Read Receipt Banner -->
                       {#if shouldShowReadReceiptBanner(msg) && readReceiptPolicy === 'ask'}
-                        <div class="flex items-center justify-between gap-3 px-3 py-2 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md">
-                          <div class="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                        <div class="flex items-center justify-between gap-3 px-3 py-2 mb-4 bg-info-surface border border-info/30 rounded-md">
+                          <div class="flex items-center gap-2 text-sm text-info">
                             <Icon icon="mdi:email-check-outline" class="w-4 h-4 flex-shrink-0" />
                             <span>{$_('viewer.readReceiptRequested')}</span>
                           </div>
@@ -1590,7 +1590,7 @@
                             <button
                               onclick={() => handleSendReadReceipt(msg.id, msg.accountId)}
                               disabled={sendingReadReceipt.has(msg.id)}
-                              class="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors disabled:opacity-50"
+                              class="px-3 py-1 text-xs font-medium text-primary-foreground bg-primary hover:bg-primary-hover rounded transition-colors disabled:opacity-50"
                             >
                               {#if sendingReadReceipt.has(msg.id)}
                                 <Icon icon="mdi:loading" class="w-3 h-3 animate-spin" />
@@ -1600,14 +1600,14 @@
                             </button>
                             <button
                               onclick={() => handleIgnoreReadReceipt(msg.id, msg.accountId)}
-                              class="px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded transition-colors"
+                              class="px-3 py-1 text-xs font-medium text-info hover:bg-surface-hover rounded transition-colors"
                             >
                               {$_('viewer.ignoreReceipt')}
                             </button>
                           </div>
                         </div>
                       {:else if shouldShowReadReceiptBanner(msg) && readReceiptPolicy === 'always' && sendingReadReceipt.has(msg.id)}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md text-sm text-green-700 dark:text-green-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-success-surface border border-success/30 rounded-md text-sm text-success">
                           <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
                           <span>{$_('viewer.sendingReadReceipt')}</span>
                         </div>
@@ -1623,7 +1623,7 @@
 
                       <!-- S/MIME Encryption Banner -->
                       {#if smimeResults[msg.id]?.smimeEncrypted}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md text-sm text-blue-700 dark:text-blue-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-info-surface border border-info/30 rounded-md text-sm text-info">
                           <Icon icon="mdi:lock-check" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeEncryptedWith')}</span>
                         </div>
@@ -1631,32 +1631,32 @@
 
                       <!-- S/MIME Signature Banner (on-view result for S/MIME messages, cached for non-S/MIME) -->
                       {#if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'signed'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md text-sm text-green-700 dark:text-green-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-success-surface border border-success/30 rounded-md text-sm text-success">
                           <Icon icon="mdi:shield-check" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeSignedBy', { values: { email: (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerEmail : msg.smimeSignerEmail) || (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerSubject : msg.smimeSignerSubject) || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'unknown_signer'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-warning-surface border border-warning/30 rounded-md text-sm text-warning">
                           <Icon icon="mdi:shield-alert" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeUnknownSigner', { values: { email: (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerEmail : msg.smimeSignerEmail) || (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerSubject : msg.smimeSignerSubject) || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'self_signed'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-warning-surface border border-warning/30 rounded-md text-sm text-warning">
                           <Icon icon="mdi:shield-alert" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeSelfSigned', { values: { email: (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerEmail : msg.smimeSignerEmail) || (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerSubject : msg.smimeSignerSubject) || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'expired_cert'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:shield-off" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeExpiredCert', { values: { email: (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerEmail : msg.smimeSignerEmail) || (msg.hasSMIME ? smimeResults[msg.id]?.smimeSignerSubject : msg.smimeSignerSubject) || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'invalid'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:shield-off" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeInvalid')}</span>
                         </div>
                       {:else if (msg.hasSMIME ? smimeResults[msg.id]?.smimeStatus : msg.smimeStatus) === 'decrypt_failed'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:lock-off" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.smimeDecryptFailed')}</span>
                         </div>
@@ -1672,7 +1672,7 @@
 
                       <!-- PGP Encryption Banner -->
                       {#if pgpResults[msg.id]?.pgpEncrypted}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md text-sm text-blue-700 dark:text-blue-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-info-surface border border-info/30 rounded-md text-sm text-info">
                           <Icon icon="mdi:lock-check" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpEncryptedWith')}</span>
                         </div>
@@ -1680,32 +1680,32 @@
 
                       <!-- PGP Signature Banner -->
                       {#if pgpResults[msg.id]?.pgpStatus === 'signed'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-md text-sm text-green-700 dark:text-green-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-success-surface border border-success/30 rounded-md text-sm text-success">
                           <Icon icon="mdi:key-check" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpSignedBy', { values: { email: pgpResults[msg.id]?.pgpSignerEmail || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if pgpResults[msg.id]?.pgpStatus === 'unknown_key'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-warning-surface border border-warning/30 rounded-md text-sm text-warning">
                           <Icon icon="mdi:key-alert" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpUnknownKey', { values: { keyId: pgpResults[msg.id]?.pgpSignerKeyId || '' } })}</span>
                         </div>
                       {:else if pgpResults[msg.id]?.pgpStatus === 'expired_key'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-700 dark:text-amber-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-warning-surface border border-warning/30 rounded-md text-sm text-warning">
                           <Icon icon="mdi:key-alert" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpExpiredKey', { values: { email: pgpResults[msg.id]?.pgpSignerEmail || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if pgpResults[msg.id]?.pgpStatus === 'revoked_key'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:key-remove" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpRevokedKey', { values: { email: pgpResults[msg.id]?.pgpSignerEmail || $_('viewer.unknown').toLowerCase() } })}</span>
                         </div>
                       {:else if pgpResults[msg.id]?.pgpStatus === 'invalid'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:key-remove" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpInvalid')}</span>
                         </div>
                       {:else if pgpResults[msg.id]?.pgpStatus === 'decrypt_failed'}
-                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-sm text-red-700 dark:text-red-300">
+                        <div class="flex items-center gap-2 px-3 py-2 mb-4 bg-error-surface border border-error/30 rounded-md text-sm text-error">
                           <Icon icon="mdi:lock-off" class="w-4 h-4 flex-shrink-0" />
                           <span>{$_('viewer.pgpDecryptFailed')}</span>
                         </div>

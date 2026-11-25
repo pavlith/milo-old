@@ -4,7 +4,7 @@
   import { Badge } from '$lib/components/ui/badge'
   import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
-  import { GetAttachments, SaveAttachmentAs, SaveAllAttachments, OpenAttachment, SaveEncryptedAttachmentAs, OpenEncryptedAttachment, SaveAllEncryptedAttachments, OpenFile, OpenFolder } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAttachments, SaveAttachmentAs, SaveAllAttachments, OpenAttachment, SaveEncryptedAttachmentAs, OpenEncryptedAttachment, SaveAllEncryptedAttachments, OpenFile, OpenFolder } from '$bindings/github.com/pavlith/milo/app/app'
   import { message as messageModels } from '$lib/models'
   import { toasts } from '$lib/stores/toast'
   import { _ } from '$lib/i18n'

@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
 )
 
 // fakeMSAuth — same shape as fakeAuth in provider_google_test.go but
@@ -69,9 +69,9 @@ func newTestMicrosoftProvider(serverURL string) microsoftProvider {
 
 func TestMicrosoftTranslate_NonRecurringTimedRoundTrip(t *testing.T) {
 	src := graphEvent{
-		ICalUID: "evt-uid-1@aerion-microsoft",
-		Subject: "Project sync",
-		Body:    &graphBody{ContentType: "text", Content: "Weekly project status"},
+		ICalUID:  "evt-uid-1@milo-microsoft",
+		Subject:  "Project sync",
+		Body:     &graphBody{ContentType: "text", Content: "Weekly project status"},
 		Location: &graphLocation{DisplayName: "Room 4B"},
 		Start: &graphTimePoint{
 			DateTime: "2026-06-10T21:00:00.0000000",
@@ -86,7 +86,7 @@ func TestMicrosoftTranslate_NonRecurringTimedRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("translateGraphEventToICS: %v", err)
 	}
-	if !strings.Contains(blob, "UID:evt-uid-1@aerion-microsoft") {
+	if !strings.Contains(blob, "UID:evt-uid-1@milo-microsoft") {
 		t.Errorf("blob missing UID:\n%s", blob)
 	}
 	if !strings.Contains(blob, "SUMMARY:Project sync") {
@@ -123,7 +123,7 @@ func TestMicrosoftTranslate_NonRecurringTimedRoundTrip(t *testing.T) {
 func TestMicrosoftTranslate_AllDay(t *testing.T) {
 	allDay := true
 	src := graphEvent{
-		ICalUID:  "alld@aerion-microsoft",
+		ICalUID:  "alld@milo-microsoft",
 		Subject:  "Holiday",
 		Start:    &graphTimePoint{DateTime: "2026-07-04T00:00:00.0000000", TimeZone: "UTC"},
 		End:      &graphTimePoint{DateTime: "2026-07-05T00:00:00.0000000", TimeZone: "UTC"},
@@ -150,7 +150,7 @@ func TestMicrosoftTranslate_RecurringWeeklyWithReminder(t *testing.T) {
 	reminder := 15
 	reminderOn := true
 	src := graphEvent{
-		ICalUID: "rec@aerion-microsoft",
+		ICalUID: "rec@milo-microsoft",
 		Subject: "Standup",
 		Start:   &graphTimePoint{DateTime: "2026-06-08T09:00:00.0000000", TimeZone: "UTC"}, // Monday
 		End:     &graphTimePoint{DateTime: "2026-06-08T09:30:00.0000000", TimeZone: "UTC"},
@@ -199,71 +199,71 @@ func TestMicrosoftTranslate_RecurringWeeklyWithReminder(t *testing.T) {
 
 func TestMicrosoftTranslate_PatternMappings(t *testing.T) {
 	tests := []struct {
-		name        string
-		rrule       string
-		dtstart     time.Time
-		wantType    string
-		wantDays    []string
-		wantDayOfM  int
-		wantMonth   int
+		name          string
+		rrule         string
+		dtstart       time.Time
+		wantType      string
+		wantDays      []string
+		wantDayOfM    int
+		wantMonth     int
 		wantRangeType string
-		wantCount   int
+		wantCount     int
 	}{
 		{
-			name:     "DAILY",
-			rrule:    "FREQ=DAILY",
-			dtstart:  time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
-			wantType: "daily",
+			name:          "DAILY",
+			rrule:         "FREQ=DAILY",
+			dtstart:       time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
+			wantType:      "daily",
 			wantRangeType: "noEnd",
 		},
 		{
-			name:     "WEEKLY with composer default (single day from DTSTART)",
-			rrule:    "FREQ=WEEKLY",
-			dtstart:  time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC), // Wed
-			wantType: "weekly",
-			wantDays: []string{"wednesday"},
+			name:          "WEEKLY with composer default (single day from DTSTART)",
+			rrule:         "FREQ=WEEKLY",
+			dtstart:       time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC), // Wed
+			wantType:      "weekly",
+			wantDays:      []string{"wednesday"},
 			wantRangeType: "noEnd",
 		},
 		{
-			name:     "WEEKLY with BYDAY",
-			rrule:    "FREQ=WEEKLY;BYDAY=MO,WE,FR",
-			dtstart:  time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
-			wantType: "weekly",
-			wantDays: []string{"monday", "wednesday", "friday"},
+			name:          "WEEKLY with BYDAY",
+			rrule:         "FREQ=WEEKLY;BYDAY=MO,WE,FR",
+			dtstart:       time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
+			wantType:      "weekly",
+			wantDays:      []string{"monday", "wednesday", "friday"},
 			wantRangeType: "noEnd",
 		},
 		{
-			name:       "MONTHLY uses DTSTART day",
-			rrule:      "FREQ=MONTHLY",
-			dtstart:    time.Date(2026, 6, 15, 9, 0, 0, 0, time.UTC),
-			wantType:   "absoluteMonthly",
-			wantDayOfM: 15,
+			name:          "MONTHLY uses DTSTART day",
+			rrule:         "FREQ=MONTHLY",
+			dtstart:       time.Date(2026, 6, 15, 9, 0, 0, 0, time.UTC),
+			wantType:      "absoluteMonthly",
+			wantDayOfM:    15,
 			wantRangeType: "noEnd",
 		},
 		{
-			name:       "YEARLY from DTSTART month + day",
-			rrule:      "FREQ=YEARLY",
-			dtstart:    time.Date(2026, 7, 4, 9, 0, 0, 0, time.UTC),
-			wantType:   "absoluteYearly",
-			wantDayOfM: 4,
-			wantMonth:  7,
+			name:          "YEARLY from DTSTART month + day",
+			rrule:         "FREQ=YEARLY",
+			dtstart:       time.Date(2026, 7, 4, 9, 0, 0, 0, time.UTC),
+			wantType:      "absoluteYearly",
+			wantDayOfM:    4,
+			wantMonth:     7,
 			wantRangeType: "noEnd",
 		},
 		{
-			name:     "COUNT",
-			rrule:    "FREQ=WEEKLY;COUNT=10",
-			dtstart:  time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
-			wantType: "weekly",
-			wantDays: []string{"wednesday"},
+			name:          "COUNT",
+			rrule:         "FREQ=WEEKLY;COUNT=10",
+			dtstart:       time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
+			wantType:      "weekly",
+			wantDays:      []string{"wednesday"},
 			wantRangeType: "numbered",
-			wantCount: 10,
+			wantCount:     10,
 		},
 		{
-			name:     "UNTIL",
-			rrule:    "FREQ=WEEKLY;UNTIL=20261231T235959Z",
-			dtstart:  time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
-			wantType: "weekly",
-			wantDays: []string{"wednesday"},
+			name:          "UNTIL",
+			rrule:         "FREQ=WEEKLY;UNTIL=20261231T235959Z",
+			dtstart:       time.Date(2026, 6, 10, 9, 0, 0, 0, time.UTC),
+			wantType:      "weekly",
+			wantDays:      []string{"wednesday"},
 			wantRangeType: "endDate",
 		},
 	}
@@ -311,7 +311,7 @@ func equalStrings(a, b []string) bool {
 
 func TestMicrosoftTranslate_CancelledReturnsSentinel(t *testing.T) {
 	_, err := translateGraphEventToICS(graphEvent{
-		ICalUID: "x@aerion-microsoft",
+		ICalUID: "x@milo-microsoft",
 		Status:  &graphEventStatus{Reason: "deleted"},
 	})
 	if !errors.Is(err, errMicrosoftEventCancelled) {
@@ -383,7 +383,7 @@ func TestMicrosoftProvider_PushEvent_CreateSuccess(t *testing.T) {
 	p := newTestMicrosoftProvider(srv.URL)
 	src := Source{ID: "src-m1", Type: SourceTypeMicrosoft, AccountID: "acct-1"}
 	cal := Calendar{ID: "cal-m1", URL: "calendar-id-abc"}
-	ev := Event{UID: "evt@aerion-microsoft", ICSBlob: msMinimalICSBlob(t, "evt@aerion-microsoft")}
+	ev := Event{UID: "evt@milo-microsoft", ICSBlob: msMinimalICSBlob(t, "evt@milo-microsoft")}
 
 	result, err := p.PushEvent(t.Context(), src, cal, ev)
 	if err != nil {
@@ -436,10 +436,10 @@ func TestMicrosoftProvider_PushEvent_UpdatePATCHWithIfMatch(t *testing.T) {
 	src := Source{ID: "src-m1", Type: SourceTypeMicrosoft, AccountID: "acct-1"}
 	cal := Calendar{ID: "cal-m1", URL: "calendar-id-abc"}
 	ev := Event{
-		UID:             "evt@aerion-microsoft",
+		UID:             "evt@milo-microsoft",
 		ProviderEventID: "existing-id",
 		ETag:            `W/"old-etag"`, // deliberately stale — must be overwritten by GET
-		ICSBlob:         msMinimalICSBlob(t, "evt@aerion-microsoft"),
+		ICSBlob:         msMinimalICSBlob(t, "evt@milo-microsoft"),
 	}
 
 	result, err := p.PushEvent(t.Context(), src, cal, ev)
@@ -471,10 +471,10 @@ func TestMicrosoftProvider_PushEvent_412Conflict(t *testing.T) {
 	src := Source{ID: "src-m1", Type: SourceTypeMicrosoft, AccountID: "acct-1"}
 	cal := Calendar{ID: "cal-m1", URL: "calendar-id-abc"}
 	ev := Event{
-		UID:             "evt@aerion-microsoft",
+		UID:             "evt@milo-microsoft",
 		ProviderEventID: "stale-id",
 		ETag:            `W/"stale-etag"`,
-		ICSBlob:         msMinimalICSBlob(t, "evt@aerion-microsoft"),
+		ICSBlob:         msMinimalICSBlob(t, "evt@milo-microsoft"),
 	}
 	_, err := p.PushEvent(t.Context(), src, cal, ev)
 	if !errors.Is(err, ErrConflict) {
@@ -501,7 +501,7 @@ func TestMicrosoftProvider_PushEvent_429RetryAfterSucceeds(t *testing.T) {
 	p := newTestMicrosoftProvider(srv.URL)
 	src := Source{ID: "src-m1", Type: SourceTypeMicrosoft, AccountID: "acct-1"}
 	cal := Calendar{ID: "cal-m1", URL: "calendar-id-abc"}
-	ev := Event{UID: "evt@aerion-microsoft", ICSBlob: msMinimalICSBlob(t, "evt@aerion-microsoft")}
+	ev := Event{UID: "evt@milo-microsoft", ICSBlob: msMinimalICSBlob(t, "evt@milo-microsoft")}
 
 	result, err := p.PushEvent(t.Context(), src, cal, ev)
 	if err != nil {
@@ -624,13 +624,13 @@ var _ = strconv.Itoa
 // suppresses deletes so a glitchy/empty pull can't wipe the calendar.
 func TestPlanEventSync(t *testing.T) {
 	rows := []graphEvent{
-		{ICalUID: "s1", ETag: "e2new"},                        // single, changed
-		{ICalUID: "x1", SeriesMasterID: "m1"},                 // exception — skip entirely
-		{ICalUID: "n1", ETag: "e3"},                           // new single
-		{ICalUID: "u1", ETag: "eu"},                           // single, unchanged
-		{ICalUID: "mm", ETag: "em", Type: "seriesMaster"},     // master, unchanged etag
-		{ICalUID: ""},                                         // no UID — skip
-		{ICalUID: "s1", ETag: "e2new"},                        // duplicate — dedupe
+		{ICalUID: "s1", ETag: "e2new"},                    // single, changed
+		{ICalUID: "x1", SeriesMasterID: "m1"},             // exception — skip entirely
+		{ICalUID: "n1", ETag: "e3"},                       // new single
+		{ICalUID: "u1", ETag: "eu"},                       // single, unchanged
+		{ICalUID: "mm", ETag: "em", Type: "seriesMaster"}, // master, unchanged etag
+		{ICalUID: ""},                                     // no UID — skip
+		{ICalUID: "s1", ETag: "e2new"},                    // duplicate — dedupe
 	}
 	local := map[string]string{
 		"s1":   "e2old", // changed → processed
@@ -698,9 +698,9 @@ func TestPlanEventSync_EmptyListSuppressesDeletes(t *testing.T) {
 // neither id nor UID stay empty (and are skipped by planEventSync).
 func TestSynthesizeICalUIDs(t *testing.T) {
 	rows := []graphEvent{
-		{ID: "gid1"},                       // synthesized
-		{ID: "gid2", ICalUID: "real-uid"},  // untouched
-		{},                                 // neither — stays empty
+		{ID: "gid1"},                      // synthesized
+		{ID: "gid2", ICalUID: "real-uid"}, // untouched
+		{},                                // neither — stays empty
 	}
 	synthesizeICalUIDs(rows)
 

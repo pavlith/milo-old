@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/hkdb/aerion/internal/carddav"
-	"github.com/hkdb/aerion/internal/contact"
-	"github.com/hkdb/aerion/internal/database"
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/platform"
+	"github.com/pavlith/milo/internal/carddav"
+	"github.com/pavlith/milo/internal/contact"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/database"
+	"github.com/pavlith/milo/internal/platform"
 )
 
 // ContactsBridge is the Wails-bindable surface for the Contacts extension. It's
@@ -30,7 +30,7 @@ import (
 // wrapper are all lazy-constructed inside `ensureInit`, gated by
 // `sync.Once`. The first enabled method call triggers init; subsequent
 // calls are fast. If the user disables the extension after it was
-// initialized, the in-memory state stays until the next Aerion launch
+// initialized, the in-memory state stays until the next Milo launch
 // (acceptable trade — matches VS Code / browser extension behavior).
 type ContactsBridge struct {
 	// Dependencies provided by the host at construction time. None of these
@@ -180,7 +180,7 @@ func (b *ContactsBridge) emitConflict(err error) bool {
 // Every method below uses the `Contacts_` prefix so it can't collide with
 // any other extension's bridge methods after embedding into App. The
 // frontend imports these as e.g. `Contacts_UpdateContact` from
-// $bindings/github.com/hkdb/aerion/app/app.
+// $bindings/github.com/pavlith/milo/app/app.
 // ============================================================================
 
 // Contacts_ListContactsForBrowse returns contacts filtered by sourceID:
@@ -386,15 +386,16 @@ type ResizedContactPhoto struct {
 // dialog `await`s this.
 //
 // Inputs:
-//   sourceID              — the contact source being granted write access
-//   authContextKind       — "mail" or "standalone-contacts"
-//   authContextIdentifier — account_id (for "mail") or source_id (for
-//                           "standalone-contacts"); identifies the
-//                           OAuth identity the new tokens attach to
-//   expectedEmail         — the picked identity's email; enforced on
-//                           OAuth callback (mismatch = reject)
 //
-// Aerion's design forbids creating new accounts from inside the contacts
+//	sourceID              — the contact source being granted write access
+//	authContextKind       — "mail" or "standalone-contacts"
+//	authContextIdentifier — account_id (for "mail") or source_id (for
+//	                        "standalone-contacts"); identifies the
+//	                        OAuth identity the new tokens attach to
+//	expectedEmail         — the picked identity's email; enforced on
+//	                        OAuth callback (mismatch = reject)
+//
+// Milo's design forbids creating new accounts from inside the contacts
 // extension; all auth contexts MUST be one the user already set up in core
 // (Mail account add OR standalone contacts source add).
 func (b *ContactsBridge) Contacts_EnableWriteAccess(sourceID, authContextKind, authContextIdentifier, expectedEmail string) error {

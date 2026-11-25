@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/certificate"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // ============================================================================

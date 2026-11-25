@@ -1,7 +1,7 @@
 <script lang="ts">
   import { present } from '$lib/bindingValues'
   // AddMicrosoftCalendarDialog — minimal three-step picker for attaching an
-  // Outlook / Microsoft 365 calendar source to an existing Aerion mail
+  // Outlook / Microsoft 365 calendar source to an existing Milo mail
   // account. Phase 2 Chunk 4 sibling of AddGoogleCalendarDialog.
   //
   // Flow mirrors the Google variant 1-for-1; the only differences are:
@@ -23,7 +23,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import CalendarColorPickStage from './CalendarColorPickStage.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  import { GetAccounts, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAccounts, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$bindings/github.com/pavlith/milo/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
   import type { account, backend } from '$lib/models'
 
@@ -257,7 +257,7 @@
       </div>
 
       {#if needsConsent}
-        <div class="rounded-md border border-yellow-400/40 bg-yellow-400/10 p-3 text-xs text-yellow-700 dark:text-yellow-300 space-y-2">
+        <div class="rounded-md border border-warning/30 bg-warning-surface p-3 text-xs text-warning space-y-2">
           <div>{$_('calendar.settings.addOutlookConsentNeeded')}</div>
           <GrantCalendarAccessButton
             provider="microsoft"

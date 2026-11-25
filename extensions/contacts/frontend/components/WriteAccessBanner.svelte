@@ -18,7 +18,7 @@
   import { contactsView } from '$extensions/contacts/frontend/stores/contactsView.svelte'
   import { toasts } from '$lib/stores/toast'
   import WriteAccessAccountPicker from '$lib/components/oauth/WriteAccessAccountPicker.svelte'
-  import { SetContactSourceWritable } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { SetContactSourceWritable } from '$bindings/github.com/pavlith/milo/app/app'
   import type { v1 } from '$lib/models'
 
   let pendingEnable = $state<Record<string, boolean>>({})

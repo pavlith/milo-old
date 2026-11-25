@@ -38,7 +38,7 @@
     GetPGPKeyServers,
     AddPGPKeyServer,
     RemovePGPKeyServer,
-  } from '$bindings/github.com/hkdb/aerion/app/app'
+  } from '$bindings/github.com/pavlith/milo/app/app'
   import { pgp } from '$lib/models'
 
   interface Props {
@@ -551,7 +551,7 @@
                   {#if key.isExpired}
                     <Icon icon="mdi:key-remove" class="w-5 h-5 text-destructive" />
                   {:else}
-                    <Icon icon="mdi:key" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <Icon icon="mdi:key" class="w-5 h-5 text-success" />
                   {/if}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -787,7 +787,7 @@
                   {#if cert.isExpired}
                     <Icon icon="mdi:certificate-outline" class="w-5 h-5 text-destructive" />
                   {:else}
-                    <Icon icon="mdi:certificate" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <Icon icon="mdi:certificate" class="w-5 h-5 text-success" />
                   {/if}
                 </div>
                 <div class="flex-1 min-w-0">
@@ -800,7 +800,7 @@
                       <span class="text-[10px] px-1.5 py-0.5 rounded bg-destructive/10 text-destructive font-medium">{$_('security.expiredBadge')}</span>
                     {/if}
                     {#if cert.isSelfSigned}
-                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium">{$_('security.selfSignedBadge')}</span>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-warning-surface text-warning font-medium">{$_('security.selfSignedBadge')}</span>
                     {/if}
                   </div>
                   <p class="text-xs text-muted-foreground truncate mt-0.5">{cert.subject}</p>
@@ -928,7 +928,7 @@
 <!-- Import Dialog -->
 {#if showImportDialog}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div role="button" tabindex="-1" class="absolute inset-0 bg-black/50" onclick={handleCancelImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelImport() }}></div>
+    <div role="button" tabindex="-1" class="absolute inset-0 bg-overlay/50" onclick={handleCancelImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelImport() }}></div>
     <div class="relative bg-background border border-border rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
       <h3 class="text-lg font-semibold mb-4">{$_('security.importCertificateTitle')}</h3>
 
@@ -978,7 +978,7 @@
 <!-- BER Encoding Confirmation Dialog -->
 {#if showBERConfirmDialog}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div role="button" tabindex="-1" class="absolute inset-0 bg-black/50" onclick={() => { showBERConfirmDialog = false }} onkeydown={(e) => { if (e.key === 'Escape') showBERConfirmDialog = false }}></div>
+    <div role="button" tabindex="-1" class="absolute inset-0 bg-overlay/50" onclick={() => { showBERConfirmDialog = false }} onkeydown={(e) => { if (e.key === 'Escape') showBERConfirmDialog = false }}></div>
     <div class="relative bg-background border border-border rounded-lg shadow-lg p-6 w-full max-w-md">
       <h3 class="text-lg font-semibold mb-4">{$_('security.berConversionTitle')}</h3>
       <p class="text-sm text-muted-foreground mb-6">{$_('security.berConversionMessage')}</p>
@@ -1000,7 +1000,7 @@
 <!-- Recipient Cert Import Dialog -->
 {#if showRecipientImportDialog}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div role="button" tabindex="-1" class="absolute inset-0 bg-black/50" onclick={handleCancelRecipientImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelRecipientImport() }}></div>
+    <div role="button" tabindex="-1" class="absolute inset-0 bg-overlay/50" onclick={handleCancelRecipientImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelRecipientImport() }}></div>
     <div class="relative bg-background border border-border rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
       <h3 class="text-lg font-semibold mb-4">{$_('security.importRecipientCertTitle')}</h3>
 
@@ -1050,7 +1050,7 @@
 <!-- PGP Key Import Dialog -->
 {#if showPGPImportDialog}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div role="button" tabindex="-1" class="absolute inset-0 bg-black/50" onclick={handleCancelPGPImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelPGPImport() }}></div>
+    <div role="button" tabindex="-1" class="absolute inset-0 bg-overlay/50" onclick={handleCancelPGPImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelPGPImport() }}></div>
     <div class="relative bg-background border border-border rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
       <h3 class="text-lg font-semibold mb-4">{$_('security.importPGPKeyTitle')}</h3>
 
@@ -1100,7 +1100,7 @@
 <!-- PGP Recipient Key Import Dialog -->
 {#if showPGPRecipientImportDialog}
   <div class="fixed inset-0 z-50 flex items-center justify-center">
-    <div role="button" tabindex="-1" class="absolute inset-0 bg-black/50" onclick={handleCancelPGPRecipientImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelPGPRecipientImport() }}></div>
+    <div role="button" tabindex="-1" class="absolute inset-0 bg-overlay/50" onclick={handleCancelPGPRecipientImport} onkeydown={(e) => { if (e.key === 'Escape') handleCancelPGPRecipientImport() }}></div>
     <div class="relative bg-background border border-border rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
       <h3 class="text-lg font-semibold mb-4">{$_('security.importRecipientPGPKeyTitle')}</h3>
 

@@ -6,7 +6,7 @@
   import RecipientInput from '$lib/components/composer/RecipientInput.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { smtp } from '$lib/models'
-  import { GetDefaultAddress, GetDefaultAddressEnabled, SetDefaultAddress, SetDefaultAddressEnabled } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetDefaultAddress, GetDefaultAddressEnabled, SetDefaultAddress, SetDefaultAddressEnabled } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     /** Backend default-address kind: 'bcc' | 'replyto' */

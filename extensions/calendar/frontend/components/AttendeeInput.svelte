@@ -10,7 +10,7 @@
   import { _ } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
   import Avatar from '$lib/components/kit/Avatar.svelte'
-  import { Calendar_SearchContacts } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_SearchContacts } from '$bindings/github.com/pavlith/milo/app/app'
   import { backend, v1 } from '$lib/models'
 
   interface Props {
@@ -192,11 +192,11 @@
   function partStatBadgeClass(ps: string | undefined): string {
     switch ((ps || 'NEEDS-ACTION').toUpperCase()) {
       case 'ACCEPTED':
-        return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+        return 'bg-success-surface text-success'
       case 'DECLINED':
-        return 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+        return 'bg-error-surface text-error'
       case 'TENTATIVE':
-        return 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+        return 'bg-warning-surface text-warning'
       default:
         return 'bg-muted text-muted-foreground'
     }

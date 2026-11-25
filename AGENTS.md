@@ -1,4 +1,4 @@
-# Aerion: Codex instructions
+# Milo: Codex instructions
 
 - Start with `docs/CODEX_PROGRESS.md`; use `docs/CODEX_MAP.md` to locate relevant code. Read applicable README/manifests and `CONTRIBUTING.md` before edits.
 - `docs/SHADCN_MIGRATION.md` owns migration requirements. Read relevant sections when implementing that work; its implementation directive does not authorize migration during preparation-only tasks.

@@ -10,24 +10,26 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // windowsSingleInstanceLock uses a TCP socket on localhost for single-instance detection.
 // Windows doesn't support Unix sockets reliably, so we use a fixed TCP port on loopback.
-// The port number is stored in a lock file at %APPDATA%\Aerion\instance.port.
+// The address is stored in instance.lock in the application directory.
 type windowsSingleInstanceLock struct {
-	listener net.Listener
-	lockFile string
-	onShow   func(data string)
-	mu       sync.Mutex
-	done     chan struct{}
+	legacyProfile bool
+	listener      net.Listener
+	lockFile      string
+	onShow        func(data string)
+	mu            sync.Mutex
+	done          chan struct{}
 }
 
 // NewSingleInstanceLock creates a new single-instance lock.
-func NewSingleInstanceLock() SingleInstanceLock {
+func NewSingleInstanceLock(legacyProfile bool) SingleInstanceLock {
 	return &windowsSingleInstanceLock{
-		done: make(chan struct{}),
+		legacyProfile: legacyProfile,
+		done:          make(chan struct{}),
 	}
 }
 
@@ -166,7 +168,11 @@ func (l *windowsSingleInstanceLock) buildLockFilePath() (string, error) {
 		appData = filepath.Join(home, "AppData", "Roaming")
 	}
 
-	lockDir := filepath.Join(appData, "Aerion")
+	name := appName
+	if l.legacyProfile {
+		name = legacyAppName
+	}
+	lockDir := filepath.Join(appData, name)
 	if err := os.MkdirAll(lockDir, 0700); err != nil {
 		return "", fmt.Errorf("failed to create lock directory: %w", err)
 	}

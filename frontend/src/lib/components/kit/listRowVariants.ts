@@ -1,7 +1,7 @@
 import { tv } from 'tailwind-variants'
 
 export const listRowVariants = tv({
-  base: 'flex w-full cursor-pointer rounded-lg border bg-card text-left transition-colors hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+  base: 'flex w-full cursor-pointer rounded-lg border bg-card text-left transition-colors hover:bg-surface-hover active:bg-surface-active focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
   variants: {
     density: {
       micro: 'px-3 py-2 gap-2',
@@ -10,7 +10,7 @@ export const listRowVariants = tv({
       large: 'px-6 py-5 gap-5',
     },
     selected: {
-      true: 'border-primary/50 bg-muted',
+      true: 'border-ring/35 bg-selected hover:bg-selected',
     },
   },
   defaultVariants: { density: 'standard' },

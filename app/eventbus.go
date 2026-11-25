@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
 )
 
 // eventBusCoreImpl is the host implementation of coreapi.EventBus. It serves

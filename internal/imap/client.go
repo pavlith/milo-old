@@ -1,4 +1,4 @@
-// Package imap provides IMAP client functionality for Aerion
+// Package imap provides IMAP client functionality for Milo
 package imap
 
 import (
@@ -13,7 +13,7 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 	"github.com/emersion/go-sasl"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -261,7 +261,7 @@ func (c *Client) Login() error {
 
 	// Coremail-based servers (163.com, 126.com, …) reject LOGIN until the
 	// client has identified itself with an IMAP ID command. Privacy rule:
-	// Aerion never sends ID unprompted, so the first login on such a server
+	// Milo never sends ID unprompted, so the first login on such a server
 	// fails once, we identify, retry, and remember (IDRequired → the pool
 	// persists the account flag so later connections send ID up front).
 	if err != nil && !c.config.SendID && isUnsafeLoginError(err) && c.caps.Has(imap.CapID) {

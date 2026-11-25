@@ -13,8 +13,8 @@ import (
 
 	"github.com/emersion/go-webdav"
 
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/kit/davutil"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/kit/davutil"
 )
 
 // ErrCalDAVOrganizerEmailRequired is returned by AddCalDAVSource when the
@@ -27,7 +27,7 @@ import (
 // Probe failures (network / 4xx / parse) are reported as
 // ErrCalDAVOrganizerEmailRequired too, since the practical outcome is
 // the same: we need the user to supply an email.
-var ErrCalDAVOrganizerEmailRequired = errors.New("calendar: organizer email required (server did not publish a calendar user address — please enter the email Aerion should use as the meeting organizer)")
+var ErrCalDAVOrganizerEmailRequired = errors.New("calendar: organizer email required (server did not publish a calendar user address — please enter the email Milo should use as the meeting organizer)")
 
 // emailRegex is the minimal validator used to reject obviously-bad
 // organizer email input. The plan intentionally avoids over-engineering
@@ -426,7 +426,7 @@ func (a *API) AddLocalSource(name string) (string, error) {
 }
 
 // DeleteCalendar removes a calendar. Only local-source calendars are
-// deletable from Aerion — CalDAV calendars belong to the remote server
+// deletable from Milo — CalDAV calendars belong to the remote server
 // and would be re-synced. CASCADE removes all events + overrides + alarms
 // belonging to the calendar.
 func (a *API) DeleteCalendar(calendarID string) error {
@@ -448,7 +448,7 @@ func (a *API) DeleteCalendar(calendarID string) error {
 		return errors.New("calendar: source not found for calendar")
 	}
 	if src.Type != SourceTypeLocal {
-		return fmt.Errorf("calendar: only local calendars can be deleted from Aerion (source type=%q)", src.Type)
+		return fmt.Errorf("calendar: only local calendars can be deleted from Milo (source type=%q)", src.Type)
 	}
 	return a.store.DeleteCalendar(calendarID)
 }
@@ -502,7 +502,7 @@ func (a *API) AddLocalCalendar(sourceID, displayName, color string) (string, err
 
 // --- Google Calendar source setup --------------------------------------------
 //
-// AddGoogleSource creates a calendar_sources row tied to an existing Aerion
+// AddGoogleSource creates a calendar_sources row tied to an existing Milo
 // mail account (AccountID identifies the Gmail account that holds the OAuth
 // grant). The frontend picker calls ListGoogleCalendarsForAccount first to
 // let the user pick which calendars to subscribe; AddGoogleSource then

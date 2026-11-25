@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/database"
-	"github.com/hkdb/aerion/internal/oauth2"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/database"
+	"github.com/pavlith/milo/internal/oauth2"
 )
 
 // newTestBroker spins up a temp DB + credentials store + OAuth manager for
@@ -27,7 +27,7 @@ func newTestBroker(t *testing.T) (*Broker, *credentials.Store, *database.DB) {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	credStore, err := credentials.NewStore(db.DB, tmp)
+	credStore, err := credentials.NewStore(db.DB, tmp, false)
 	if err != nil {
 		t.Fatalf("credentials.NewStore: %v", err)
 	}

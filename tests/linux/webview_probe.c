@@ -19,7 +19,7 @@ static void save_result(GObject *view, GAsyncResult *result, gpointer path) {
 static gboolean read_request(gpointer data) {
     WebKitWebView *view = data;
     guint id = GPOINTER_TO_UINT(g_object_get_data(G_OBJECT(view), "smoke-view-id"));
-    const gchar *dir = g_getenv("AERION_SMOKE_PROBE_DIR");
+    const gchar *dir = g_getenv("MILO_SMOKE_PROBE_DIR");
     gchar *request = g_strdup_printf("%s/%u.js", dir, id);
     gchar *script = NULL;
     if (g_file_get_contents(request, &script, NULL, NULL)) {
@@ -43,7 +43,7 @@ void webkit_web_view_set_background_color(WebKitWebView *view, const GdkRGBA *co
         dlsym(RTLD_NEXT, "webkit_web_view_set_background_color");
     set_color(view, color);
 
-    if (g_getenv("AERION_SMOKE_PROBE_DIR") && !g_object_get_data(G_OBJECT(view), "smoke-view-id")) {
+    if (g_getenv("MILO_SMOKE_PROBE_DIR") && !g_object_get_data(G_OBJECT(view), "smoke-view-id")) {
         g_object_set_data(G_OBJECT(view), "smoke-view-id", GUINT_TO_POINTER(++next_id));
         guint timer = g_timeout_add(30, read_request, view);
         g_object_weak_ref(G_OBJECT(view), stop_polling, GUINT_TO_POINTER(timer));

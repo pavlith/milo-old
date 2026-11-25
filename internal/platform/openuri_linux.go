@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus/v5"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 )
 
 // PortalOpenURI opens a URL using the desktop portal.

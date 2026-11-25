@@ -25,7 +25,7 @@
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { toTzDate, fromTzDate } from '$extensions/calendar/frontend/lib/tzMath'
   import { toasts } from '$lib/stores/toast'
-  import { Calendar_UpdateEvent } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_UpdateEvent } from '$bindings/github.com/pavlith/milo/app/app'
   import SendInvitationsDialog from '$extensions/calendar/frontend/components/SendInvitationsDialog.svelte'
   import type { backend } from '$lib/models'
 

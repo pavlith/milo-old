@@ -1,8 +1,8 @@
 package app
 
 import (
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/settings"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/settings"
 )
 
 // ListEnabledExtensions returns the names of all enabled first-party
@@ -84,14 +84,14 @@ func (a *App) enabledExtensionSet() (map[string]bool, error) {
 // ExtensionInfo is the row shape returned by ListExtensions — manifest fields
 // plus the current enable state. Wails-friendly (all primitive/slice types).
 type ExtensionInfo struct {
-	ID               string   `json:"id"`
-	Name             string   `json:"name"`
-	Version          string   `json:"version"`
-	Description      string   `json:"description"`
-	Author           string   `json:"author"`
-	MinAerionVersion string   `json:"minAerionVersion"`
-	Capabilities     []string `json:"capabilities"`
-	Enabled          bool     `json:"enabled"`
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Version        string   `json:"version"`
+	Description    string   `json:"description"`
+	Author         string   `json:"author"`
+	MinMiloVersion string   `json:"minMiloVersion"`
+	Capabilities   []string `json:"capabilities"`
+	Enabled        bool     `json:"enabled"`
 }
 
 // ListExtensions returns the full extension listing for the Settings UI.
@@ -109,14 +109,14 @@ func (a *App) ListExtensions() ([]ExtensionInfo, error) {
 			return nil, err
 		}
 		out = append(out, ExtensionInfo{
-			ID:               m.ID,
-			Name:             m.Name,
-			Version:          m.Version,
-			Description:      m.Description,
-			Author:           m.Author,
-			MinAerionVersion: m.MinAerionVersion,
-			Capabilities:     m.Capabilities,
-			Enabled:          enabled,
+			ID:             m.ID,
+			Name:           m.Name,
+			Version:        m.Version,
+			Description:    m.Description,
+			Author:         m.Author,
+			MinMiloVersion: m.MinMiloVersion,
+			Capabilities:   m.Capabilities,
+			Enabled:        enabled,
 		})
 	}
 	return out, nil

@@ -1,9 +1,8 @@
-![Logo](frontend/src/assets/images/logo-universal.png)
+# Milo
 
-# Aerion - An Open Source Lightweight E-Mail Client
-Maintained by: @hkdb
+<img src="frontend/src/assets/images/milo.svg" width="80" height="80" alt="Milo">
 
-![screenshot](docs/ss.png)
+Milo is a lightweight, Linux-first desktop email client. It is based on [Aerion](https://github.com/hkdb/aerion), originally maintained by [@hkdb](https://github.com/hkdb).
 
 
 ### ❓ Why?
@@ -65,7 +64,7 @@ Linux is the current build and validation target. Windows platform code and inst
 - Basic Local and IMAP Search
 - Notification that brings focus to the e-mail when clicked
 - Auto-Sync when system wakes from suspend
-- Nord and Dracula themes, with separate dark options for mail content and the composer body
+- Carbon White and Gray 100 themes with Light, Dark and System modes, plus separate dark options for mail content and the composer body
 - PGP & S/MIME support
 - 1st party extension system with the following shipped:
     - Calendar (ALPHA) - Disabled by Default
@@ -83,7 +82,7 @@ Linux is the current build and validation target. Windows platform code and inst
 ### 📖 Documentation
 ---
 
-- [Official Documentation](https://aerion.3df.io/docs/intro)
+- [Upstream Aerion documentation](https://aerion.3df.io/docs/intro) and [historical screenshot](docs/ss.png)
 
 
 ### ⚗️ Tech Stack
@@ -93,10 +92,10 @@ This application was built with [Wails](https://wails.io) + [Svelte](https://sve
 
 Transparency Disclaimer: This project leaveraged Claude models heavily to implement.
 
-Aerion is CASA Tier 2 Certified by Google's preferred [authorized assessor](https://appdefensealliance.dev/casa/casa-assessors): [TAC Security](https://tacsecurity.com/)
+The upstream Aerion project was CASA Tier 2 certified by Google's preferred [authorized assessor](https://appdefensealliance.dev/casa/casa-assessors): [TAC Security](https://tacsecurity.com/)
 
 
-### 🗞 News & Announcments
+### Upstream milestones
 ---
 
 - 2026-03-11 ~ Microsoft Verified
@@ -126,7 +125,7 @@ Potential features in the future:
 [CHANGELOG.md](CHANGELOG.md)
 
 
-### 💰 Sponsorship
+### Upstream sponsorship
 ---
 
 [3DF](https://3df.io) is sponsoring by way of dedicating its cloud infrastructure resources and the team's time to work on this. There's otherwise currently no sponsorship. If you like this project, please feel free to give us a star or buy us a coffee:

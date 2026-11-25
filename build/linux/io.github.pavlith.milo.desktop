@@ -1,0 +1,25 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+Name=Milo
+GenericName=Email
+GenericName[ru]=Электронная почта
+Comment=A lightweight, Linux-first email client
+Comment[ru]=Лёгкий почтовый клиент для Linux
+Keywords=Mail;E-mail;email;IMAP;SMTP;CardDAV;
+Keywords[ru]=Почта;Электронная почта;Письма;IMAP;SMTP;CardDAV;
+Icon=io.github.pavlith.milo
+TryExec=milo
+Exec=milo %U
+Terminal=false
+Categories=Network;Email;
+MimeType=x-scheme-handler/mailto;
+StartupNotify=true
+StartupWMClass=io.github.pavlith.milo
+X-GNOME-UsesNotifications=true
+Actions=compose;
+
+[Desktop Action compose]
+Name=Compose New Email
+Name[ru]=Написать письмо
+Exec=milo mailto:

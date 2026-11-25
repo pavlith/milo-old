@@ -1,10 +1,10 @@
 <script lang="ts">
   import { present } from '$lib/bindingValues'
   // AddGoogleCalendarDialog — minimal three-step picker for attaching a Google
-  // calendar source to an existing Aerion mail account. Phase 2 Chunk 3.
+  // calendar source to an existing Milo mail account. Phase 2 Chunk 3.
   //
   // Flow:
-  //   1. Account select: dropdown of Aerion accounts filtered to Gmail.
+  //   1. Account select: dropdown of Milo accounts filtered to Gmail.
   //   2. Calendar fetch: Calendar_ListGoogleCalendarsForAccount(accountID). If
   //      the broker returns "additional consent required", surface a banner
   //      asking the user to grant calendar access (Chunk 6 will hook this to
@@ -26,7 +26,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import CalendarColorPickStage from './CalendarColorPickStage.svelte'
   import { applyDefaultsAfterAdd } from '$extensions/calendar/frontend/lib/defaultsApply'
-  import { GetAccounts, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAccounts, Calendar_ListGoogleCalendarsForAccount, Calendar_AddGoogleSource } from '$bindings/github.com/pavlith/milo/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
   import type { account, backend } from '$lib/models'
 
@@ -270,7 +270,7 @@
       </div>
 
       {#if needsConsent}
-        <div class="rounded-md border border-yellow-400/40 bg-yellow-400/10 p-3 text-xs text-yellow-700 dark:text-yellow-300 space-y-2">
+        <div class="rounded-md border border-warning/30 bg-warning-surface p-3 text-xs text-warning space-y-2">
           <div>{$_('calendar.settings.addGoogleConsentNeeded')}</div>
           <GrantCalendarAccessButton
             provider="google"

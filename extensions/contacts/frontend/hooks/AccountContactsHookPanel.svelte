@@ -5,7 +5,7 @@
   import { contactSourcesStore } from '$extensions/contacts/frontend/stores/contactSources.svelte'
   import { addToast } from '$lib/stores/toast'
   import { refreshExtensionRegistry } from '$lib/stores/extensionRegistry.svelte'
-  import { SetExtensionEnabled } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { SetExtensionEnabled } from '$bindings/github.com/pavlith/milo/app/app'
   import type { v1 } from '$lib/models'
 
   interface Props {

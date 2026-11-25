@@ -1,6 +1,6 @@
 # Extension Architecture — Hard Rules
 
-This document is the single canonical sanity-check list for the Aerion
+This document is the single canonical sanity-check list for the Milo
 extension system. Every extension-touching change MUST be cross-checked
 against these rules before commit. If a proposed change requires breaking
 one of them, the design is wrong — back up and rethink.
@@ -151,7 +151,7 @@ Companion docs:
   adding a core migration.
 - **R33.** After backend changes that add/remove Wails methods, run
   `make generate` to regenerate frontend bindings
-  (`frontend/bindings/github.com/hkdb/aerion/app/app.ts`). Source of truth is the Go
+  (`frontend/bindings/github.com/pavlith/milo/app/app.ts`). Source of truth is the Go
   method signatures; the JS bindings follow.
 
 ## 9 · The smell checklist (self-correct before committing a design)

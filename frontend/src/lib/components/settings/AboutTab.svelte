@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Icon from '@iconify/svelte'
-  import { GetAppInfo } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAppInfo } from '$bindings/github.com/pavlith/milo/app/app'
   import { BrowserOpenURL } from '$lib/desktop'
-  import logo from '../../../assets/images/logo-universal.png'
+  import logo from '../../../assets/images/milo.svg'
   import { _ } from '$lib/i18n'
 
   interface AppInfo {
@@ -51,9 +51,9 @@
   {:else if appInfo}
     <!-- Logo + App Name & Version -->
     <div class="flex flex-col items-center space-y-2">
-      <img src={logo} alt="{appInfo.name} Logo" class="w-24 h-24" />
+      <img src={logo} alt="" class="size-16" />
       <div class="text-center space-y-1">
-        <h2 class="text-2xl font-bold text-foreground">{appInfo.name}</h2>
+        <h2 class="text-2xl font-semibold text-foreground">milo</h2>
         <p class="text-sm text-muted-foreground">{$_('settingsAbout.version', { values: { version: appInfo.version } })}</p>
       </div>
     </div>

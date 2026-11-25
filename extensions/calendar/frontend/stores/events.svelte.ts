@@ -6,7 +6,7 @@
 //   - via $effect in CalendarPane: changes to
 //     calendarSources.visibleCalendarIDs or calendarView.visibleRange
 
-import { Calendar_ListEventsInRange } from '$bindings/github.com/hkdb/aerion/app/app'
+import { Calendar_ListEventsInRange } from '$bindings/github.com/pavlith/milo/app/app'
 import { EventsOn } from '$lib/desktop'
 import type { backend } from '$lib/models'
 

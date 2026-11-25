@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hkdb/aerion/internal/folder"
-	imapPkg "github.com/hkdb/aerion/internal/imap"
+	"github.com/pavlith/milo/internal/folder"
+	imapPkg "github.com/pavlith/milo/internal/imap"
 )
 
 func TestFolderPathSet(t *testing.T) {

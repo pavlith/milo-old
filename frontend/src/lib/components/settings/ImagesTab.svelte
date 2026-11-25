@@ -13,7 +13,7 @@
   import {
     GetImageAllowlist,
     RemoveImageAllowlist,
-  } from '$bindings/github.com/hkdb/aerion/app/app'
+  } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     alwaysLoadImages: boolean

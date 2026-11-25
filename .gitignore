@@ -2,9 +2,9 @@
 CLAUDE.md
 AGENTS.md
 context
-aerion
-aerion.exe
-aerion-creds
+/milo
+/milo.exe
+/milo-creds
 
 # Wails build artifacts
 build/bin/
@@ -51,7 +51,7 @@ npm-debug.log*
 .env.*.local
 
 # Generated bindings
-!/frontend/bindings/github.com/hkdb/aerion/
+!/frontend/bindings/github.com/pavlith/milo/
 
 # Cache
 .cache/

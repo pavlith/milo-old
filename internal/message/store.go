@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/internal/database"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/database"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -204,8 +204,6 @@ func (s *Store) ListConversationsUnifiedInbox(offset, limit int, sortOrder, filt
 
 	return conversations, nil
 }
-
-
 
 // CountConversationsUnifiedInbox returns the total count of conversations across all inbox folders
 func (s *Store) CountConversationsUnifiedInbox(filter string) (int, error) {
@@ -2677,4 +2675,3 @@ func highlightMatches(text, query string) string {
 
 	return highlighted
 }
-

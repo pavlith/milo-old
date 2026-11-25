@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hkdb/aerion/internal/database"
+	"github.com/pavlith/milo/internal/database"
 )
 
 // newExpandCopiesTestStore opens a migrated temp DB with one account and two

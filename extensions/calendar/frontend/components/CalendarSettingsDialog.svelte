@@ -24,7 +24,7 @@
   import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import AddCalDAVSourceDialog from './AddCalDAVSourceDialog.svelte'
-  import { Calendar_SetSyncInterval, Calendar_DeleteCalendar, Calendar_SetOrganizerIdentity, Calendar_ReprobeCalDAVOrganizerIdentities, Calendar_RenameSource, GetAccounts } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_SetSyncInterval, Calendar_DeleteCalendar, Calendar_SetOrganizerIdentity, Calendar_ReprobeCalDAVOrganizerIdentities, Calendar_RenameSource, GetAccounts } from '$bindings/github.com/pavlith/milo/app/app'
   import GrantCalendarAccessButton from './GrantCalendarAccessButton.svelte'
   import { logger } from '$extensions/calendar/frontend/lib/logger'
   import { Input } from '$lib/components/ui/input'
@@ -778,7 +778,7 @@
       </section>
 
       <!-- OAuth Credentials (advanced) — picker matches Contacts'. Google
-           shows "Aerion testing" as the default since the mail-app's verified
+           shows "Milo testing" as the default since the mail-app's verified
            client carries no Calendar scopes. Microsoft resolves to mail's
            client (consolidated in core_provider.go); Custom is always an
            escape hatch. -->

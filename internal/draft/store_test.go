@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hkdb/aerion/internal/database"
+	"github.com/pavlith/milo/internal/database"
 )
 
 func openTestDB(t *testing.T) *database.DB {

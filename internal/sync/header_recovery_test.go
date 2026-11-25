@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hkdb/aerion/internal/message"
+	"github.com/pavlith/milo/internal/message"
 )
 
 func TestMissingUIDs(t *testing.T) {

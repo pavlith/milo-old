@@ -9,7 +9,7 @@
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { _ } from '$lib/i18n'
   import { account } from '$lib/models'
-  import { GetIdentities, CreateIdentity, UpdateIdentity, DeleteIdentity, SetDefaultIdentity, AddMicrosoftSharedMailbox, GetMicrosoftSharedMailboxes, RemoveAccount } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetIdentities, CreateIdentity, UpdateIdentity, DeleteIdentity, SetDefaultIdentity, AddMicrosoftSharedMailbox, GetMicrosoftSharedMailboxes, RemoveAccount } from '$bindings/github.com/pavlith/milo/app/app'
   import { Input } from '$lib/components/ui/input'
   import { Label } from '$lib/components/ui/label'
   import * as Dialog from '$lib/components/ui/dialog'
@@ -246,7 +246,7 @@
             title={identity.isDefault ? $_('identity.defaultAddress') : $_('identity.setAsDefaultAddress')}
           >
             {#if identity.isDefault}
-              <div class="w-2 h-2 rounded-full bg-white"></div>
+              <div class="w-2 h-2 rounded-full bg-primary-foreground"></div>
             {/if}
           </button>
 

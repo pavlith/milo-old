@@ -15,7 +15,7 @@
   import { formatRelativeDate } from '$lib/utils/date'
   import { _, locale } from '$lib/i18n'
   import { message } from '$lib/models'
-  import { Star, Unstar } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Star, Unstar } from '$bindings/github.com/pavlith/milo/app/app'
   import MessageContextMenu from '$lib/components/common/MessageContextMenu.svelte'
   import { Badge } from '$lib/components/ui/badge'
   import { Checkbox } from '$lib/components/ui/checkbox'
@@ -119,13 +119,13 @@
       micro: 'text-[10px]',
       compact: 'text-xs',
       standard: 'text-sm',
-      large: 'text-base',
+      large: 'text-reading',
     },
     dateText: {
       micro: 'text-[10px]',
       compact: 'text-xs',
-      standard: 'text-sm',
-      large: 'text-base',
+      standard: 'text-xs',
+      large: 'text-sm',
     },
     icon: {
       micro: 'w-3 h-3',
@@ -259,7 +259,7 @@
     const messageIds = checked ? selectedMessageIds : ownMessageIds
     if (messageIds.length === 0) return
     const payload = JSON.stringify({ messageIds, sourceAccountId: accountId })
-    e.dataTransfer.setData('application/x-aerion-messages', payload)
+    e.dataTransfer.setData('application/x-milo-messages', payload)
     e.dataTransfer.effectAllowed = 'move'
   }
 
@@ -422,8 +422,8 @@
     draggable={getLayoutMode() !== 'narrow'}
     class={cn(
       listRowVariants({ density, selected, class: 'group relative touch-pan-y items-start' }),
-      checked && 'bg-accent',
-      getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' && 'border-l-2 border-l-primary',
+      checked && 'bg-selected hover:bg-selected',
+      getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' && 'border-l-2 border-l-unread',
       swipeAnim === 'select' && 'swipe-select-anim',
       swipeAnim === 'delete' && 'swipe-delete-anim',
     )}
@@ -448,8 +448,8 @@
       <!-- Unread accent, dot variants: absolute so it never shifts row content
            (unlike the 2px bar border); glow via inline style — theme primary -->
       <span
-        class="pointer-events-none absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary"
-        style={getAccentUnreadStyle() === 'glowdot' ? 'box-shadow: 0 0 6px 1px hsl(var(--primary) / 0.7)' : ''}
+        class="pointer-events-none absolute -left-0.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-unread"
+        style={getAccentUnreadStyle() === 'glowdot' ? 'box-shadow: 0 0 6px 1px color-mix(in srgb, var(--unread) 45%, transparent)' : ''}
       ></span>
     {/if}
 

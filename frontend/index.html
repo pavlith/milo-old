@@ -1,68 +1,22 @@
 <!DOCTYPE html>
-<html lang="en" class="dark" data-theme="nord-dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <title>Aerion</title>
-    <style>
-      /* Nord background while the shared palette CSS loads. */
-      html {
-        background-color: hsl(var(--background, 220 16% 22%));
-      }
-
-      /* Boot splash. Visible from the moment the window first paints, until
-         the Svelte app is initialized (App.svelte removes this element after
-         its onMount completes). Prevents the "is Aerion crashed?" perception
-         during long startup work like database migrations on first upgrade
-         from a much older version. Inline because it must render BEFORE the
-         JS bundle parses. */
-      #boot-splash {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        background-color: hsl(var(--background, 220 16% 22%));
-        color: hsl(var(--foreground, 219 28% 95%));
-        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-        transition: opacity 200ms ease-out;
-      }
-      #boot-splash[hidden] {
-        opacity: 0;
-        pointer-events: none;
-      }
-      #boot-splash .boot-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        letter-spacing: -0.02em;
-      }
-      #boot-splash .boot-spinner {
-        width: 28px;
-        height: 28px;
-        border: 3px solid currentColor;
-        border-top-color: transparent;
-        border-radius: 50%;
-        opacity: 0.6;
-        animation: boot-spin 0.9s linear infinite;
-      }
-      @keyframes boot-spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
+    <meta name="color-scheme" content="light dark" />
+    <title>Milo</title>
+    <link rel="icon" type="image/svg+xml" href="./src/assets/images/milo.svg" />
+    <link rel="stylesheet" href="./src/app.css" />
+    <script>
+      document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches)
+    </script>
   </head>
   <body>
-    <!--
-      Boot splash sits above #app, visible until removed by App.svelte after
-      initialization. Plain HTML (no Svelte) so it renders the instant the
-      WebView shows the window — before the JS bundle parses, before i18n
-      loads, before any Wails method round-trips.
-    -->
-    <div id="boot-splash" role="status" aria-busy="true" aria-label="Aerion">
-      <div class="boot-title">Aerion</div>
+    <div id="boot-splash" role="status" aria-busy="true" aria-label="Milo">
+      <div class="flex items-center gap-2 text-2xl font-semibold">
+        <img src="./src/assets/images/milo.svg" class="size-8" alt="" />
+        milo
+      </div>
       <div class="boot-spinner" aria-hidden="true"></div>
     </div>
     <div id="app"></div>

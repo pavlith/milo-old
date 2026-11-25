@@ -12,9 +12,9 @@ import (
 
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
-	"github.com/hkdb/aerion/internal/folder"
-	imapPkg "github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/message"
+	"github.com/pavlith/milo/internal/folder"
+	imapPkg "github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/message"
 )
 
 // SyncMessages synchronizes messages for a folder with incremental sync support.

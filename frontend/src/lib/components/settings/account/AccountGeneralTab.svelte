@@ -148,18 +148,18 @@
       <!-- OAuth account -->
       <div class="space-y-2">
         <Label>{$_('account.authentication')}</Label>
-        <div class="rounded-lg border {reauthorizeSuccess ? 'border-green-500 bg-green-500/5' : 'border-border'} p-4 transition-colors">
+        <div class="rounded-lg border {reauthorizeSuccess ? 'border-success/30 bg-success-surface' : 'border-border'} p-4 transition-colors">
           <div class="flex items-center gap-3">
-            <div class="flex-shrink-0 w-10 h-10 rounded-full {reauthorizeSuccess ? 'bg-green-500/20' : 'bg-primary/10'} flex items-center justify-center transition-colors">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full {reauthorizeSuccess ? 'bg-success-surface' : 'bg-primary/10'} flex items-center justify-center transition-colors">
               {#if reauthorizeSuccess}
-                <Icon icon="mdi:check-circle" class="w-5 h-5 text-green-500" />
+                <Icon icon="mdi:check-circle" class="w-5 h-5 text-success" />
               {:else}
                 <Icon icon="mdi:shield-check" class="w-5 h-5 text-primary" />
               {/if}
             </div>
             <div class="flex-1">
               {#if reauthorizeSuccess}
-                <p class="text-sm font-medium text-green-600 dark:text-green-400">{$_('account.oauthReauthorized')}</p>
+                <p class="text-sm font-medium text-success">{$_('account.oauthReauthorized')}</p>
                 <p class="text-xs text-muted-foreground">
                   {$_('account.oauthFreshToken')}
                 </p>

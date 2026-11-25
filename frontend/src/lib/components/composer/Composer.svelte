@@ -21,7 +21,7 @@
 
   // Inline image type - for images pasted/dropped into the editor
   interface InlineImage {
-    cid: string  // Content-ID (e.g., "image1@aerion")
+    cid: string  // Content-ID (e.g., "image1@milo")
     dataUrl: string  // Full data URL for display in editor
     contentType: string
     data: string  // Base64 data only (without data URL prefix)
@@ -322,12 +322,12 @@
   })
   let draftStatusColor = $derived.by(() => {
     if (saveStatus === 'saving') return ''
-    if (saveStatus === 'error') return 'text-red-500'
+    if (saveStatus === 'error') return 'text-error'
     if (saveStatus !== 'saved' || !lastSavedAt) return ''
     switch (syncStatus) {
-      case 'synced': return 'text-green-500'
-      case 'pending': return 'text-blue-500'
-      case 'failed': return 'text-yellow-500'
+      case 'synced': return 'text-success'
+      case 'pending': return 'text-info'
+      case 'failed': return 'text-warning'
       default: return ''
     }
   })
@@ -1566,7 +1566,7 @@
   // Generate a unique Content-ID for inline images
   function generateCID(): string {
     inlineImageCounter++
-    return `image${inlineImageCounter}-${Date.now()}@aerion`
+    return `image${inlineImageCounter}-${Date.now()}@milo`
   }
 
   // Handle an inline image file (from paste or drop)
@@ -1766,7 +1766,7 @@
   // claim them as file drops (which would make the chip's dragend think a
   // successful move happened and remove it from the source field).
   function isRecipientChipDrag(e: DragEvent): boolean {
-    return !!e.dataTransfer?.types.includes('application/x-aerion-recipient')
+    return !!e.dataTransfer?.types.includes('application/x-milo-recipient')
   }
 
   function handleDragOver(e: DragEvent) {
@@ -2280,7 +2280,7 @@
   }
 
   :global(.ProseMirror p.is-editor-empty:first-child::before) {
-    color: #adb5bd;
+    color: var(--muted-foreground);
     content: attr(data-placeholder);
     float: left;
     height: 0;
@@ -2298,7 +2298,7 @@
 
   :global(.composer-editor td),
   :global(.composer-editor th) {
-    border: 1px solid hsl(var(--border));
+    border: 1px solid var(--border);
     box-sizing: border-box;
     min-width: 1em;
     padding: 6px 8px;
@@ -2307,7 +2307,7 @@
   }
 
   :global(.composer-editor th) {
-    background-color: hsl(var(--muted));
+    background-color: var(--muted);
     font-weight: 600;
   }
 </style>

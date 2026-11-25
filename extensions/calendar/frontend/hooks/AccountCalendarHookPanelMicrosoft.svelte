@@ -16,7 +16,7 @@
   import { Label } from '$lib/components/ui/label'
   import { addToast } from '$lib/stores/toast'
   import { refreshExtensionRegistry } from '$lib/stores/extensionRegistry.svelte'
-  import { SetExtensionEnabled, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { SetExtensionEnabled, Calendar_ListMicrosoftCalendarsForAccount, Calendar_AddMicrosoftSource } from '$bindings/github.com/pavlith/milo/app/app'
   import GrantCalendarAccessButton from '../components/GrantCalendarAccessButton.svelte'
   import type { v1, backend } from '$lib/models'
 
@@ -151,7 +151,7 @@
     {/if}
 
     {#if !loading && needsConsent}
-      <div class="rounded-md border border-yellow-400/40 bg-yellow-400/10 p-3 text-xs text-yellow-700 dark:text-yellow-300 mb-3 space-y-2">
+      <div class="rounded-md border border-warning/30 bg-warning-surface p-3 text-xs text-warning mb-3 space-y-2">
         <div>{$_('calendar.hooks.consentNeeded')}</div>
         <GrantCalendarAccessButton
           provider="microsoft"

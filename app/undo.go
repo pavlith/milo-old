@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hkdb/aerion/internal/imap"
+	"github.com/pavlith/milo/internal/imap"
 )
 
 // ============================================================================

@@ -6,12 +6,12 @@ import (
 	goSync "sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/notification"
-	"github.com/hkdb/aerion/internal/platform"
-	"github.com/hkdb/aerion/internal/sync"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/notification"
+	"github.com/pavlith/milo/internal/platform"
+	"github.com/pavlith/milo/internal/sync"
 )
 
 // ============================================================================
@@ -199,7 +199,7 @@ func (a *App) processIdleEvents(ctx context.Context) {
 				// only, matching IDLE's scope.
 				acctID := event.AccountID
 				// Ignore the echo of our OWN flag writes so reading mail in
-				// Aerion doesn't trigger a self-inflicted sync; only other
+				// Milo doesn't trigger a self-inflicted sync; only other
 				// clients' changes re-sync.
 				if a.recentOwnFlagChange(acctID) {
 					log.Debug().Str("accountID", acctID).Msg("Ignoring IDLE flag echo of our own change")
@@ -366,19 +366,19 @@ const idleFlagResyncDebounce = 1 * time.Second
 // deletion reconcile.
 const idleExpungeDebounce = 1 * time.Second
 
-// ownFlagEchoSuppress is how long after Aerion writes a flag change we treat an
+// ownFlagEchoSuppress is how long after Milo writes a flag change we treat an
 // incoming IDLE flag notification as the echo of our own change (and ignore it),
-// so reading mail in Aerion doesn't trigger a self-inflicted re-sync.
+// so reading mail in Milo doesn't trigger a self-inflicted re-sync.
 const ownFlagEchoSuppress = 5 * time.Second
 
-// noteOwnFlagChange records that Aerion just STOREd a flag change for an account.
+// noteOwnFlagChange records that Milo just STOREd a flag change for an account.
 func (a *App) noteOwnFlagChange(accountID string) {
 	a.ownFlagMu.Lock()
 	a.ownFlagChangeAt[accountID] = time.Now()
 	a.ownFlagMu.Unlock()
 }
 
-// recentOwnFlagChange reports whether Aerion wrote a flag change for the account
+// recentOwnFlagChange reports whether Milo wrote a flag change for the account
 // within the suppression window — used to skip the IDLE flag echo of our own change.
 func (a *App) recentOwnFlagChange(accountID string) bool {
 	a.ownFlagMu.Lock()
@@ -387,7 +387,7 @@ func (a *App) recentOwnFlagChange(accountID string) bool {
 	return ok && time.Since(t) < ownFlagEchoSuppress
 }
 
-// ownExpungeEchoSuppress is how long after Aerion runs its own move/delete IMAP
+// ownExpungeEchoSuppress is how long after Milo runs its own move/delete IMAP
 // operation we treat incoming IDLE EXPUNGE/EXISTS notifications as echoes of
 // that operation and DEFER the inbox reconcile they would trigger. During a
 // rapid-delete burst the reconcile's remote UID snapshot can race a still-in-
@@ -398,7 +398,7 @@ func (a *App) recentOwnFlagChange(accountID string) bool {
 // past slow operations.
 const ownExpungeEchoSuppress = 5 * time.Second
 
-// noteOwnExpunge records that Aerion just ran (or is running) a move/delete
+// noteOwnExpunge records that Milo just ran (or is running) a move/delete
 // IMAP operation for an account.
 func (a *App) noteOwnExpunge(accountID string) {
 	a.ownFlagMu.Lock()
@@ -406,7 +406,7 @@ func (a *App) noteOwnExpunge(accountID string) {
 	a.ownFlagMu.Unlock()
 }
 
-// recentOwnExpunge reports whether Aerion ran a move/delete IMAP operation for
+// recentOwnExpunge reports whether Milo ran a move/delete IMAP operation for
 // the account within the suppression window.
 func (a *App) recentOwnExpunge(accountID string) bool {
 	a.ownFlagMu.Lock()
@@ -634,7 +634,7 @@ func (a *App) sendSystemNotification(info sync.NewMailInfo, subject, fromName, f
 func (a *App) initNotifications(ctx context.Context) {
 	log := logging.WithComponent("app.notify")
 
-	a.notifier = notification.New("Aerion", a.useDirectDBus)
+	a.notifier = notification.New("Milo", a.useDirectDBus)
 
 	// Set click handler. Dispatcher routes based on which NotificationData
 	// fields are populated: ExtensionID set → extension click (raise window

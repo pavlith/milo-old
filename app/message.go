@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/smime"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/smime"
 )
 
 // ============================================================================

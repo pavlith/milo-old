@@ -364,7 +364,7 @@
 
 <style>
   :global(.ProseMirror p.is-editor-empty:first-child::before) {
-    color: #adb5bd;
+    color: var(--muted-foreground);
     content: attr(data-placeholder);
     float: left;
     height: 0;
@@ -381,7 +381,7 @@
 
   :global(.ProseMirror td),
   :global(.ProseMirror th) {
-    border: 1px solid hsl(var(--border));
+    border: 1px solid var(--border);
     box-sizing: border-box;
     min-width: 1em;
     padding: 6px 8px;
@@ -390,7 +390,7 @@
   }
 
   :global(.ProseMirror th) {
-    background-color: hsl(var(--muted));
+    background-color: var(--muted);
     font-weight: 600;
   }
 </style>

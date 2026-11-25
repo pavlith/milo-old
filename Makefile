@@ -1,4 +1,4 @@
-# Aerion Email Client - Build System
+# Milo Email Client - Build System
 # 
 # Usage:
 #   make build    - Build production binary
@@ -19,7 +19,7 @@
 export
 
 # Go module path
-MODULE := github.com/hkdb/aerion
+MODULE := github.com/pavlith/milo
 
 # Build flags for injecting OAuth credentials at compile time.
 #
@@ -28,19 +28,19 @@ MODULE := github.com/hkdb/aerion
 #                               manifest declares in
 #                               first_party_uses_core_for_scopes (today:
 #                               contacts.readonly). Surfaced as
-#                               "Aerion - Google" in the picker.
+#                               "Milo - Google" in the picker.
 #   MICROSOFT_CLIENT_ID       — mail's Azure AD app registration. Also
 #                               backs microsoft-contacts and
 #                               microsoft-calendar (Microsoft Graph
 #                               doesn't gate scopes behind verification).
-#                               Surfaced as "Aerion - Microsoft".
+#                               Surfaced as "Milo - Microsoft".
 #   GOOGLE_TESTING_CLIENT_ID/SECRET — shared un-Google-verified test
 #                               project for extensions that need broader
 #                               scopes than the mail project carries
 #                               (contacts.readwrite, full Calendar).
 #                               Single client backs google-contacts AND
 #                               google-calendar slots. Surfaced as
-#                               "Aerion - Google (Testing)".
+#                               "Milo - Google (Testing)".
 LDFLAGS := -X '$(MODULE)/internal/oauth2.GoogleClientID=$(GOOGLE_CLIENT_ID)' \
            -X '$(MODULE)/internal/oauth2.GoogleClientSecret=$(GOOGLE_CLIENT_SECRET)' \
            -X '$(MODULE)/internal/oauth2.MicrosoftClientID=$(MICROSOFT_CLIENT_ID)' \
@@ -56,7 +56,7 @@ all: build
 
 build: frontend-build
 	@mkdir -p build/bin
-	@go build -tags production -ldflags "$(LDFLAGS)" -o build/bin/aerion .
+	@go build -tags production -ldflags "$(LDFLAGS)" -o build/bin/milo .
 
 build-linux: build
 
@@ -66,7 +66,7 @@ dev: frontend-deps
 build-dev: generate
 	@mkdir -p build/bin frontend/dist
 	@touch frontend/dist/.keep
-	@go build -tags dev -ldflags "$(LDFLAGS)" -o build/bin/aerion-dev .
+	@go build -tags dev -ldflags "$(LDFLAGS)" -o build/bin/milo-dev .
 
 generate:
 	$(WAILS3) generate bindings -ts -names -d frontend/bindings
@@ -107,42 +107,40 @@ uninstall: uninstall-linux
 # build/linux/install.sh ICON_SIZES for native installations.
 ICON_SIZES ?= 32 48 64 128 256
 
-# Install Aerion on Linux
+# Install Milo on Linux
 install-linux: build
-	@echo "Installing Aerion to $(DESTDIR)$(PREFIX)..."
-	install -Dm755 build/bin/aerion "$(DESTDIR)$(PREFIX)/bin/aerion"
+	@echo "Installing Milo to $(DESTDIR)$(PREFIX)..."
+	install -Dm755 build/bin/milo "$(DESTDIR)$(PREFIX)/bin/milo"
 	@for sz in $(ICON_SIZES); do \
-		install -Dm644 "build/linux/icons/$${sz}x$${sz}/io.github.hkdb.Aerion.png" \
-			"$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${sz}x$${sz}/apps/io.github.hkdb.Aerion.png"; \
+		install -Dm644 "build/linux/icons/$${sz}x$${sz}/io.github.pavlith.milo.png" \
+			"$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${sz}x$${sz}/apps/io.github.pavlith.milo.png"; \
 	done
-	install -Dm644 build/linux/icons/scalable/io.github.hkdb.Aerion.svg "$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/io.github.hkdb.Aerion.svg"
-	install -Dm644 build/linux/aerion.desktop "$(DESTDIR)$(PREFIX)/share/applications/io.github.hkdb.Aerion.desktop"
+	install -Dm644 build/linux/icons/scalable/io.github.pavlith.milo.svg "$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/io.github.pavlith.milo.svg"
+	install -Dm644 build/linux/io.github.pavlith.milo.desktop "$(DESTDIR)$(PREFIX)/share/applications/io.github.pavlith.milo.desktop"
 	@echo "Updating icon cache..."
 	-gtk-update-icon-cache -f -t "$(DESTDIR)$(PREFIX)/share/icons/hicolor" 2>/dev/null || true
 	@echo ""
 	@echo "Installation complete!"
 	@echo "You may need to log out and back in for the application to appear in your menu."
 	@echo ""
-	@echo "To set Aerion as your default email client:"
-	@echo "  xdg-mime default io.github.hkdb.Aerion.desktop x-scheme-handler/mailto"
+	@echo "To set Milo as your default email client:"
+	@echo "  xdg-mime default io.github.pavlith.milo.desktop x-scheme-handler/mailto"
 
-# Uninstall Aerion from Linux
+# Uninstall Milo from Linux
 uninstall-linux:
-	@echo "Uninstalling Aerion from $(DESTDIR)$(PREFIX)..."
-	rm -f "$(DESTDIR)$(PREFIX)/bin/aerion"
+	@echo "Uninstalling Milo from $(DESTDIR)$(PREFIX)..."
+	rm -f "$(DESTDIR)$(PREFIX)/bin/milo"
 	@for sz in $(ICON_SIZES); do \
-		rm -f "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${sz}x$${sz}/apps/io.github.hkdb.Aerion.png"; \
+		rm -f "$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${sz}x$${sz}/apps/io.github.pavlith.milo.png"; \
 	done
-	rm -f "$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/io.github.hkdb.Aerion.svg"
-	rm -f "$(DESTDIR)$(PREFIX)/share/icons/hicolor/256x256/apps/aerion.png"  # Remove old name if it exists
-	rm -f "$(DESTDIR)$(PREFIX)/share/applications/io.github.hkdb.Aerion.desktop"
-	rm -f "$(DESTDIR)$(PREFIX)/share/applications/aerion.desktop"  # Remove old name if it exists
+	rm -f "$(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/io.github.pavlith.milo.svg"
+	rm -f "$(DESTDIR)$(PREFIX)/share/applications/io.github.pavlith.milo.desktop"
 	-gtk-update-icon-cache -f -t "$(DESTDIR)$(PREFIX)/share/icons/hicolor" 2>/dev/null || true
 	@echo "Uninstallation complete!"
 
 help:
 	@echo "make dev        Start Linux development with Vite and Wails"
-	@echo "make build      Build the native executable at build/bin/aerion"
+	@echo "make build      Build the native executable at build/bin/milo"
 	@echo "make test       Build frontend assets and run Go tests"
 	@echo "make generate   Regenerate the Wails TypeScript bindings"
 	@echo "make install    Install the Linux executable, desktop entry and icons"

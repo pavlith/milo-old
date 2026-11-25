@@ -19,11 +19,11 @@
 
 import { logger } from '$extensions/calendar/frontend/lib/logger'
 import { calendarSources } from '$extensions/calendar/frontend/stores/calendarSources.svelte'
-import { Calendar_SetDisplayTimezone } from '$bindings/github.com/hkdb/aerion/app/app'
+import { Calendar_SetDisplayTimezone } from '$bindings/github.com/pavlith/milo/app/app'
 
-const STORAGE_KEY_TZ        = 'aerion:calendar:displayTimezone'
-const STORAGE_KEY_GLOBAL    = 'aerion:calendar:globalDefaultCalendarId'
-const STORAGE_KEY_PROVIDER  = 'aerion:calendar:providerDefaults'
+const STORAGE_KEY_TZ        = 'milo:calendar:displayTimezone'
+const STORAGE_KEY_GLOBAL    = 'milo:calendar:globalDefaultCalendarId'
+const STORAGE_KEY_PROVIDER  = 'milo:calendar:providerDefaults'
 
 let displayTimezone = $state<string>('')
 let globalDefault = $state<string>('')

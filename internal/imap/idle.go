@@ -12,7 +12,7 @@ import (
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 	"github.com/emersion/go-sasl"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -47,9 +47,9 @@ func DefaultIdleConfig() IdleConfig {
 		ReconnectBackoff:     1 * time.Second,
 		MaxReconnectBackoff:  5 * time.Minute,
 		MaxReconnectAttempts: 10,
-		EventSendTimeout:     2 * time.Second,  // Don't block forever on event send
-		HealthCheckEnabled:   true,             // Verify connection before IDLE
-		ShutdownTimeout:      5 * time.Second,  // Graceful shutdown timeout
+		EventSendTimeout:     2 * time.Second, // Don't block forever on event send
+		HealthCheckEnabled:   true,            // Verify connection before IDLE
+		ShutdownTimeout:      5 * time.Second, // Graceful shutdown timeout
 	}
 }
 

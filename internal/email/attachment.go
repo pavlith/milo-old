@@ -13,7 +13,7 @@ import (
 
 	gomessage "github.com/emersion/go-message"
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/internal/message"
+	"github.com/pavlith/milo/internal/message"
 	"github.com/teamwork/tnef"
 )
 
@@ -260,4 +260,3 @@ func decodeRFC2047(s string) (string, error) {
 	dec := new(mime.WordDecoder)
 	return dec.DecodeHeader(s)
 }
-

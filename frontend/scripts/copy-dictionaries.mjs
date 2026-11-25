@@ -13,7 +13,7 @@ const scriptsDir = dirname(fileURLToPath(import.meta.url))
 const frontend = dirname(scriptsDir)
 const outDir = join(frontend, 'public', 'spellcheck')
 
-// Latin-script locales Aerion ships translations for. zh-* excluded (CJK has no
+// Latin-script locales Milo ships translations for. zh-* excluded (CJK has no
 // Latin-style per-word spelling); vi omitted until a usable dictionary exists.
 const LOCALES = ['en', 'en-gb', 'cs', 'de', 'fr', 'it', 'nb', 'nl', 'tr']
 

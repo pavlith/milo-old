@@ -14,7 +14,7 @@ import {
   ReauthorizeAccount,
   TestOAuthConnection,
   GetAccount,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import { EventsOn, EventsOff } from '$lib/desktop'
 import { get } from 'svelte/store'
 import { _ } from '$lib/i18n'

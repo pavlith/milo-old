@@ -11,7 +11,7 @@
     syncIntervalOptions,
   } from '$lib/config/providers'
   import { account, certificate, app } from '$lib/models'
-  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetTrustedCertificates, RemoveTrustedCertificate, GetFolders, SubscribeFolder, UnsubscribeFolder, SubscribeAllFolders } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetAccountFoldersForMapping, GetAutoDetectedFolders, GetTrustedCertificates, RemoveTrustedCertificate, GetFolders, SubscribeFolder, UnsubscribeFolder, SubscribeAllFolders } from '$bindings/github.com/pavlith/milo/app/app'
   import { folder } from '$lib/models'
   import { Button } from '$lib/components/ui/button'
   import { _, locale } from '$lib/i18n'

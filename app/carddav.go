@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/carddav"
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/kit/davutil"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/oauth2"
-	"github.com/hkdb/aerion/internal/platform"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/carddav"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/kit/davutil"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/oauth2"
+	"github.com/pavlith/milo/internal/platform"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

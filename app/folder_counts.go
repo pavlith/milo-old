@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
 )
 
 // Folder count maintenance for local actions (read flips, moves, deletes).

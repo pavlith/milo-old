@@ -31,7 +31,7 @@
     {align}
     {preventScroll}
     class={cn(
-      'relative z-50 flex max-h-96 min-w-32 flex-col overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md origin-(--bits-select-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
+      'relative z-50 flex max-h-96 min-w-32 flex-col overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-sm origin-(--bits-select-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
       position === 'popper' && 'max-h-[min(24rem,var(--bits-select-content-available-height))]',
       className
     )}

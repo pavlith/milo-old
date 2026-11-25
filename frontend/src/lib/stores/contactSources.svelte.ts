@@ -12,7 +12,7 @@ import {
   StartContactsOnlyOAuthFlow,
   CompleteContactSourceOAuthSetup,
   CancelContactSourceOAuthFlow,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import type { carddav, app } from '$lib/models'
 
 // Re-export LinkedAccountInfo type for components
@@ -139,7 +139,7 @@ function createContactSourcesStore() {
 
   // isSourceWritable reports whether a CardDAV source has its writable flag
   // enabled. Used by the Contacts extension to gate Edit/Delete buttons on
-  // per-source write capability. Unknown sourceIds (e.g., the "aerion" local
+  // per-source write capability. Unknown sourceIds (e.g., the "milo" local
   // store, which isn't in this list) return false — callers OR with their
   // own local-source check.
   function isSourceWritable(sourceId: string | undefined): boolean {

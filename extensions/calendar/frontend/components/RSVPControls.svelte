@@ -9,7 +9,7 @@
   import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
   import { toasts } from '$lib/stores/toast'
-  import { Calendar_UpdateMyAttendeeStatus } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_UpdateMyAttendeeStatus } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     eventId: string

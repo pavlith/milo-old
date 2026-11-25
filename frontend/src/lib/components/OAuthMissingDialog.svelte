@@ -1,6 +1,6 @@
 <script lang="ts">
   // Launch-time warning shown when one or more OAuth provider credentials
-  // weren't compiled into this build of Aerion. Sign-in for the listed
+  // weren't compiled into this build of Milo. Sign-in for the listed
   // providers will silently fail otherwise. Acknowledged via the OK button;
   // an optional "Don't show again" toggle persists the opt-out via the
   // SetOAuthWarningDisabled setting in App.svelte.
@@ -37,7 +37,7 @@
 
   let dontShowAgain = $state(false)
 
-  const INSTALL_URL = 'https://aerion.3df.io/docs/getting-started/installation/'
+  const INSTALL_URL = 'https://github.com/pavlith/milo/blob/dev/docs/BUILD.md'
 
   function iconFor(present: boolean): string {
     if (present) return 'lucide:check'
@@ -45,8 +45,8 @@
   }
 
   function iconClassFor(present: boolean): string {
-    if (present) return 'text-emerald-500'
-    return 'text-amber-500'
+    if (present) return 'text-success'
+    return 'text-warning'
   }
 
   function handleOk() {
@@ -89,7 +89,7 @@
       class="text-sm text-primary hover:underline break-all text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       onclick={openInstallDocs}
     >
-      https://aerion.3df.io/docs/getting-started/installation/
+      https://github.com/pavlith/milo/blob/dev/docs/BUILD.md
     </button>
 
     <label class="flex items-center gap-3 text-sm mt-2">

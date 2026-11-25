@@ -13,34 +13,34 @@ import (
 	"sync/atomic"
 	"time"
 
-	extcalendarbe "github.com/hkdb/aerion/extensions/calendar/backend"
-	extcontactsbe "github.com/hkdb/aerion/extensions/contacts/backend"
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/appstate"
-	"github.com/hkdb/aerion/internal/carddav"
-	"github.com/hkdb/aerion/internal/certificate"
-	"github.com/hkdb/aerion/internal/contact"
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
-	"github.com/hkdb/aerion/internal/credentials"
-	"github.com/hkdb/aerion/internal/database"
-	"github.com/hkdb/aerion/internal/draft"
-	extauth "github.com/hkdb/aerion/internal/extensions/auth"
-	extcompose "github.com/hkdb/aerion/internal/extensions/compose"
-	extmail "github.com/hkdb/aerion/internal/extensions/mail"
-	extui "github.com/hkdb/aerion/internal/extensions/ui"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/imap"
-	"github.com/hkdb/aerion/internal/kit/davutil"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/notification"
-	"github.com/hkdb/aerion/internal/oauth2"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/platform"
-	"github.com/hkdb/aerion/internal/settings"
-	"github.com/hkdb/aerion/internal/smime"
-	"github.com/hkdb/aerion/internal/sync"
-	"github.com/hkdb/aerion/internal/undo"
+	extcalendarbe "github.com/pavlith/milo/extensions/calendar/backend"
+	extcontactsbe "github.com/pavlith/milo/extensions/contacts/backend"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/appstate"
+	"github.com/pavlith/milo/internal/carddav"
+	"github.com/pavlith/milo/internal/certificate"
+	"github.com/pavlith/milo/internal/contact"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/credentials"
+	"github.com/pavlith/milo/internal/database"
+	"github.com/pavlith/milo/internal/draft"
+	extauth "github.com/pavlith/milo/internal/extensions/auth"
+	extcompose "github.com/pavlith/milo/internal/extensions/compose"
+	extmail "github.com/pavlith/milo/internal/extensions/mail"
+	extui "github.com/pavlith/milo/internal/extensions/ui"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/imap"
+	"github.com/pavlith/milo/internal/kit/davutil"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/notification"
+	"github.com/pavlith/milo/internal/oauth2"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/platform"
+	"github.com/pavlith/milo/internal/settings"
+	"github.com/pavlith/milo/internal/smime"
+	"github.com/pavlith/milo/internal/sync"
+	"github.com/pavlith/milo/internal/undo"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
@@ -314,7 +314,7 @@ type App struct {
 	wakeSyncing     bool                          // guards syncAfterWake against concurrent calls
 	syncMu          goSync.Mutex                  // protects sync maps
 
-	// Suppresses the IDLE echo of our own flag writes: when Aerion STOREs a flag
+	// Suppresses the IDLE echo of our own flag writes: when Milo STOREs a flag
 	// change it stamps the account here, so the incoming IDLE FETCH echo of that
 	// same change doesn't trigger a re-sync (only other clients' changes do).
 	ownFlagMu       goSync.Mutex
@@ -380,14 +380,14 @@ type StartupDialogInfo struct {
 // Other backends show the URL as selectable plain text and use the
 // ActionURL field to drive an "Open Docs" button.
 func StartupDialogInfoFor(err error) StartupDialogInfo {
-	const docsRollbackURL = "https://github.com/hkdb/aerion/blob/main/docs/SQL_ROLLBACK.md"
+	const docsRollbackURL = "https://github.com/pavlith/milo/blob/main/docs/SQL_ROLLBACK.md"
 
 	var schemaTooNew *database.ErrSchemaTooNew
 	if errors.As(err, &schemaTooNew) {
 		text := fmt.Sprintf(
-			"Aerion cannot open your database because its schema (version %d) is newer "+
-				"than this build of Aerion supports (max version %d).\n\n"+
-				"This usually means you downgraded Aerion. To recover, either reinstall "+
+			"Milo cannot open your database because its schema (version %d) is newer "+
+				"than this build of Milo supports (max version %d).\n\n"+
+				"This usually means you downgraded Milo. To recover, either reinstall "+
 				"the newer version, or follow the rollback instructions to bring your "+
 				"database back to version %d:\n\n"+
 				"%s",
@@ -395,15 +395,15 @@ func StartupDialogInfoFor(err error) StartupDialogInfo {
 			docsRollbackURL,
 		)
 		return StartupDialogInfo{
-			Title:       "Aerion could not start",
+			Title:       "Milo could not start",
 			Text:        text,
 			ActionLabel: "Open Docs",
 			ActionURL:   docsRollbackURL,
 		}
 	}
 	return StartupDialogInfo{
-		Title: "Aerion could not start",
-		Text:  fmt.Sprintf("Aerion could not start.\n\nDetails: %v", err),
+		Title: "Milo could not start",
+		Text:  fmt.Sprintf("Milo could not start.\n\nDetails: %v", err),
 	}
 }
 
@@ -450,7 +450,7 @@ func (a *App) Preflight() error {
 	}
 	log.Info().Msg("Database migrations complete")
 
-	credStore, err := credentials.NewStore(db.DB, paths.Data)
+	credStore, err := credentials.NewStore(db.DB, paths.Data, paths.UsesLegacyProfile())
 	if err != nil {
 		return fmt.Errorf("init credential store: %w", err)
 	}
@@ -470,7 +470,7 @@ func (a *App) Preflight() error {
 
 	// Wire user-picked slot aliases into the oauth2 resolver chain. When the
 	// user has chosen a non-default shipped option for a given config id
-	// (e.g., contacts settings → "Aerion mail client" reroutes google-contacts
+	// (e.g., contacts settings → "Milo mail client" reroutes google-contacts
 	// onto google-mail), the resolver consults this hook after the user-
 	// override step and before the provider chain.
 	oauth2.SlotAliasLookup = func(configID string) (string, bool) {
@@ -481,8 +481,8 @@ func (a *App) Preflight() error {
 		return target, true
 	}
 
-	// Wire the user's explicit picker choice ("custom" / "aerion-shipped"
-	// / "aerion-mail") into the resolver. When recorded, this routes the
+	// Wire the user's explicit picker choice ("custom" / "milo-shipped"
+	// / "milo-mail") into the resolver. When recorded, this routes the
 	// resolver by choice rather than by row presence — so switching the
 	// picker between options no longer requires destroying stored values
 	// to make the new option take effect.
@@ -812,9 +812,10 @@ func (a *App) startup(ctx context.Context) {
 	}()
 
 	// Initialize autostart manager
-	a.autostartMgr = platform.NewAutostartManager()
+	autostart, _ := a.settingsStore.GetAutostart()
+	a.autostartMgr = platform.NewAutostartManager(autostart && a.paths.UsesLegacyProfile())
 
-	log.Info().Msg("Aerion started successfully")
+	log.Info().Msg("Milo started successfully")
 }
 
 // WaitForReady resolves when the mail stores and background services are initialized.
@@ -954,7 +955,7 @@ func (a *App) ServiceShutdown() error {
 		log.Info().Msg("Database closed")
 	}
 
-	log.Info().Msg("Aerion shutdown complete")
+	log.Info().Msg("Milo shutdown complete")
 	return nil
 }
 

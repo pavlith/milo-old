@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/emersion/go-vcard"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 

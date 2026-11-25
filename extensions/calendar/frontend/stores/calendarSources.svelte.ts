@@ -13,7 +13,7 @@ import {
   Calendar_ForceSyncSource,
   Calendar_SetCalendarVisible,
   Calendar_SetCalendarColor,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import { EventsOn } from '$lib/desktop'
 import type { backend } from '$lib/models'
 

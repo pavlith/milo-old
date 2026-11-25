@@ -26,7 +26,7 @@
   import { calendarSettings } from '$extensions/calendar/frontend/stores/calendarSettings.svelte'
   import { fromZonedTime, toZonedTime } from 'date-fns-tz'
   import { untrack } from 'svelte'
-  import { Calendar_CreateEvent, Calendar_UpdateEvent } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_CreateEvent, Calendar_UpdateEvent } from '$bindings/github.com/pavlith/milo/app/app'
   import AttendeesSection from './AttendeesSection.svelte'
   import SendInvitationsDialog from './SendInvitationsDialog.svelte'
   import { accountStore } from '$lib/stores/accounts.svelte'

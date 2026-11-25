@@ -9,7 +9,7 @@ import {
   Contacts_DeleteLocalContact as DeleteLocalContact,
   Contacts_CreateContact as CreateContact,
   Contacts_ListAddressbooks as ListAddressbooks,
-} from '$bindings/github.com/hkdb/aerion/app/app'
+} from '$bindings/github.com/pavlith/milo/app/app'
 import type { v1 } from '$lib/models'
 // Responsive (mobile) integration — match mail's pattern of firing
 // showViewer/hideSidebar from the consumer's select actions. Layout-store

@@ -1,6 +1,6 @@
-# Contributing to Aerion
+# Contributing to Milo
 
-Thank you for your interest in contributing to Aerion! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Milo! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 
@@ -21,7 +21,7 @@ Before promoting `dev`, merge any newer `origin/main` commits into `dev` resolve
 
 ### Reporting Bugs
 
-1. Check if the bug has already been reported in [Issues](https://github.com/hkdb/aerion/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/pavlith/milo/issues)
 2. If not, create a new issue with:
     - Select the `Bug` template and fill the form out in detail.
 
@@ -39,7 +39,7 @@ Please read the [Translation Contribution Guide](docs/LANGUAGE.md) thoroughly pr
 
 ### General Pull Requests
 
-Aerion is currently in the rapid development state and aside from translation contributions, the workflow is not yet setup to accept pull requests. However, in the near future, we will transition to a workflow that will make accepting general PRs possible.
+Milo is currently in the rapid development state and aside from translation contributions, the workflow is not yet setup to accept pull requests. However, in the near future, we will transition to a workflow that will make accepting general PRs possible.
 
 Meanwhile, below are some guidelines for contributions when we become ready to accept general PRs.
 
@@ -61,7 +61,7 @@ Regardless of bug fix or feature implementation, all contributions must follow t
 - Security: always take a security-first approach
 - Privacy: user privacy is a top priority
 - Minimalist: always take the simplest approach and put forth best effort to have a clutter-free UI
-- Lightweight: maintain one of the core values of Aerion -- keep the app lightweight in all aspects
+- Lightweight: maintain one of the core values of Milo -- keep the app lightweight in all aspects
 - Efficiency: battery life on laptops is also a top priority -- minimize unnecessary resource consumption
 - Flexible: accommodate a reasonable range of mainstream user preferences through configurable options
 - Keyboard: ensure new UI components, features, and flows are fully accessible via keyboard
@@ -86,7 +86,7 @@ Instead, use guard clause (w/ early returns) or switch statements.
   - `info` — one line per operation that records a decision or outcome (a sync finished, an IDLE connection was replaced, a token was refreshed)
   - `debug` — anything per message, per IMAP command, per batch, per autosave, or on a timer
   - `warn` / `error` — something went wrong but the app carries on
-- To see logs while developing: `AERION_LOG_LEVEL=info make dev` (or `debug`). Add `AERION_LOG_FILE=<path>` to also write them to a file (console format, 10 MB rollover to `<path>.1`). Built binaries take `--log-level` and `--log-file`. The default is `fatal`, so a plain `make dev` prints nothing.
+- To see logs while developing: `MILO_LOG_LEVEL=info make dev` (or `debug`). Add `MILO_LOG_FILE=<path>` to also write them to a file (console format, 10 MB rollover to `<path>.1`). Built binaries take `--log-level` and `--log-file`. The default is `fatal`, so a plain `make dev` prints nothing.
 
 ```go
 // Good
@@ -185,8 +185,8 @@ npm run knip
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/hkdb/aerion.git
-   cd aerion
+   git clone https://github.com/pavlith/milo.git
+   cd milo
    ```
 
 2. **Install Go dependencies**
@@ -221,10 +221,10 @@ Native Linux setup and build commands are in [BUILD.md](docs/BUILD.md).
 
 ## Questions?
 
-- Open an [Issue](https://github.com/hkdb/aerion/issues) with the `Question` template for questions
+- Open an [Issue](https://github.com/pavlith/milo/issues) with the `Question` template for questions
 - Check existing issues first
 - Be patient - maintainers are volunteers
 
 ## License
 
-By contributing to Aerion, you agree that your contributions will be licensed under the Apache License 2.0.
+By contributing to Milo, you agree that your contributions will be licensed under the Apache License 2.0.

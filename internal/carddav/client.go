@@ -15,8 +15,8 @@ import (
 	"github.com/emersion/go-vcard"
 	"github.com/emersion/go-webdav"
 	"github.com/emersion/go-webdav/carddav"
-	"github.com/hkdb/aerion/internal/kit/davutil"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/kit/davutil"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -338,9 +338,9 @@ type ParsedRecord struct {
 	ETag     string
 	VCardRaw string
 
-	FN       string
-	NGiven   string
-	NFamily  string
+	FN      string
+	NGiven  string
+	NFamily string
 
 	Emails    []ParsedEmail
 	Phones    []ParsedPhone

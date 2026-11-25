@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hkdb/aerion/internal/database"
+	"github.com/pavlith/milo/internal/database"
 )
 
 func openTestStore(t *testing.T) *Store {
@@ -19,7 +19,7 @@ func openTestStore(t *testing.T) *Store {
 	}
 	t.Cleanup(func() { db.Close() })
 
-	store, err := NewStore(db.DB, t.TempDir())
+	store, err := NewStore(db.DB, t.TempDir(), false)
 	if err != nil {
 		t.Fatalf("NewStore: %v", err)
 	}
@@ -128,5 +128,16 @@ func TestUserClientCreds_IsolatedPerConfigID(t *testing.T) {
 	}
 	if !store.HasUserClientCreds("microsoft-contacts") {
 		t.Fatal("microsoft-contacts should still be set")
+	}
+}
+
+func TestGetLegacyOAuthActiveChoice(t *testing.T) {
+	store := openTestStore(t)
+	if err := store.SetOAuthActiveChoice("google-contacts", "aerion-mail"); err != nil {
+		t.Fatal(err)
+	}
+	choice, err := store.GetOAuthActiveChoice("google-contacts")
+	if err != nil || choice != "milo-mail" {
+		t.Fatalf("legacy OAuth choice = %q, %v; want milo-mail", choice, err)
 	}
 }

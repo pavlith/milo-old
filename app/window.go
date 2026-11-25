@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/hkdb/aerion/internal/appstate"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/appstate"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )

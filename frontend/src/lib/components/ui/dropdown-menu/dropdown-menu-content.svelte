@@ -25,7 +25,7 @@
     {align}
     {sideOffset}
     class={cn(
-      'z-50 min-w-40 max-h-(--bits-dropdown-menu-content-available-height) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md origin-(--bits-dropdown-menu-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
+      'z-50 min-w-40 max-h-(--bits-dropdown-menu-content-available-height) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-sm origin-(--bits-dropdown-menu-content-transform-origin) motion-safe:data-[state=open]:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-95 motion-safe:duration-100',
       className
     )}
     {...restProps}

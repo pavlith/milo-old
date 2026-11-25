@@ -7,7 +7,7 @@
 // fetched twice across overlapping/rapid ensure() calls (fast folder switching).
 // Reads the local contact DB only — no network — so it works offline.
 
-import { GetContactPhotos } from '$bindings/github.com/hkdb/aerion/app/app'
+import { GetContactPhotos } from '$bindings/github.com/pavlith/milo/app/app'
 import { EventsOn } from '$lib/desktop'
 
 type Photo = { data: string; mediaType: string }

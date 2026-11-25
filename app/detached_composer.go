@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hkdb/aerion/internal/smtp"
+	"github.com/pavlith/milo/internal/smtp"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 )
@@ -59,10 +59,10 @@ func (a *App) OpenComposerWindow(accountID, mode, messageID, draftID, mailtoURL 
 	}
 
 	window := application.Get().Window.NewWithOptions(application.WebviewWindowOptions{
-		Title: "Aerion", URL: "/composer.html",
+		Title: "Milo", URL: "/composer.html",
 		Width: 800, Height: 600, MinWidth: 500, MinHeight: 400,
 		Frameless: !nativeTitleBar, Hidden: true,
-		BackgroundColour: application.NewRGB(27, 38, 54),
+		BackgroundColour: application.NewRGB(22, 22, 22),
 	})
 	composer := &composerWindow{
 		window: window, mode: ComposeMode{AccountID: accountID, Mode: mode, MessageID: messageID, DraftID: draftID},

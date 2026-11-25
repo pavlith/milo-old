@@ -22,9 +22,9 @@
   import { logger } from '$extensions/calendar/frontend/lib/logger'
   import { accountStore } from '$lib/stores/accounts.svelte'
   import { toasts } from '$lib/stores/toast'
-  import { Calendar_DeleteEvent } from '$bindings/github.com/hkdb/aerion/app/app'
-  import { Calendar_GetEvent } from '$bindings/github.com/hkdb/aerion/app/app'
-  import { Calendar_OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_DeleteEvent } from '$bindings/github.com/pavlith/milo/app/app'
+  import { Calendar_GetEvent } from '$bindings/github.com/pavlith/milo/app/app'
+  import { Calendar_OpenURL } from '$bindings/github.com/pavlith/milo/app/app'
   import type { backend } from '$lib/models'
 
   interface Props {
@@ -98,13 +98,13 @@
     return null
   })
 
-  const color = $derived(event ? calendarSources.colorOf(event.calendarId) : '#999999')
+  const color = $derived(event ? calendarSources.colorOf(event.calendarId) : 'var(--muted-foreground)')
 
   // Self-emails for AttendeeListDisplay "(you)" suffix + RSVP self-match.
   // Same predicate the backend's UpdateMyAttendeeStatus uses on its side.
   //
   // Union of two sources:
-  //   - Every configured Aerion mail account's primary email.
+  //   - Every configured Milo mail account's primary email.
   //   - Every calendar source's organizer identities (from
   //     organizerIdentities populated at source-add time).
   //
@@ -592,7 +592,7 @@
     list-style: decimal;
   }
   .cal-about-html :global(a) {
-    color: hsl(var(--primary));
+    color: var(--primary);
     text-decoration: underline;
   }
   .cal-about-html :global(b),

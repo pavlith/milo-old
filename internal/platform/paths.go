@@ -7,13 +7,18 @@ import (
 	"runtime"
 )
 
-const appName = "aerion"
+const (
+	appName         = "milo"
+	legacyAppName   = "aerion"
+	previousAppName = "petchkin"
+)
 
 // Paths holds the application data paths
 type Paths struct {
-	Config string // Configuration files (config.toml, accounts/)
-	Data   string // Persistent data (databases, keys, attachments)
-	Cache  string // Cached data (can be deleted)
+	Config       string // Configuration files (config.toml, accounts/)
+	Data         string // Persistent data (databases, keys, attachments)
+	Cache        string // Cached data (can be deleted)
+	databaseName string
 }
 
 // GetPaths returns platform-specific paths for the application
@@ -52,11 +57,7 @@ func getLinuxPaths() (*Paths, error) {
 		cacheHome = filepath.Join(home, ".cache")
 	}
 
-	return &Paths{
-		Config: filepath.Join(configHome, appName),
-		Data:   filepath.Join(dataHome, appName),
-		Cache:  filepath.Join(cacheHome, appName),
-	}, nil
+	return resolvePaths(configHome, dataHome, cacheHome, "")
 }
 
 // getWindowsPaths returns Windows-style paths
@@ -81,11 +82,50 @@ func getWindowsPaths() (*Paths, error) {
 		localAppData = filepath.Join(home, "AppData", "Local")
 	}
 
-	return &Paths{
-		Config: filepath.Join(appData, "Aerion"),
-		Data:   filepath.Join(appData, "Aerion"),
-		Cache:  filepath.Join(localAppData, "Aerion", "Cache"),
-	}, nil
+	return resolvePaths(appData, appData, localAppData, "Cache")
+}
+
+// Prefer an existing Milo database. Otherwise adopt the first legacy profile
+// in place so SQLite sidecars, stored attachment paths and keys stay together.
+func resolvePaths(configHome, dataHome, cacheHome, cacheSubdir string) (*Paths, error) {
+	paths := &Paths{
+		Config:       filepath.Join(configHome, appName),
+		Data:         filepath.Join(dataHome, appName),
+		Cache:        filepath.Join(cacheHome, appName, cacheSubdir),
+		databaseName: "milo.db",
+	}
+	found := false
+	for _, profile := range []string{appName, previousAppName, legacyAppName} {
+		for _, name := range []string{"milo.db", "petchkin.db", "aerion.db"} {
+			dir := filepath.Join(dataHome, profile)
+			_, err := os.Stat(filepath.Join(dir, name))
+			if os.IsNotExist(err) {
+				continue
+			}
+			if err != nil {
+				return nil, err
+			}
+			paths.Data, paths.databaseName = dir, name
+			found = true
+			break
+		}
+		if found {
+			break
+		}
+	}
+
+	// Keep configuration and cache with the chosen profile. The old cache
+	// can contain files referenced by the database.
+	profile := filepath.Base(paths.Data)
+	paths.Config = filepath.Join(configHome, profile)
+	paths.Cache = filepath.Join(cacheHome, profile, cacheSubdir)
+	return paths, nil
+}
+
+// UsesLegacyProfile reports whether the profile may have credentials and an
+// instance lock under the original application namespace.
+func (p *Paths) UsesLegacyProfile() bool {
+	return filepath.Base(p.Data) != appName || p.databaseName != "milo.db"
 }
 
 // EnsureDirectories creates all necessary directories if they don't exist
@@ -114,7 +154,7 @@ func (p *Paths) EnsureDirectories() error {
 
 // DatabasePath returns the path to the main database
 func (p *Paths) DatabasePath() string {
-	return filepath.Join(p.Data, "aerion.db")
+	return filepath.Join(p.Data, p.databaseName)
 }
 
 // ContactsDatabasePath returns the path to the contacts database

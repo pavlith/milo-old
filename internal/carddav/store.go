@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/hkdb/aerion/internal/contact"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/contact"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 
@@ -1094,22 +1094,22 @@ func ParsedRecordToContactRecord(p *ParsedRecord, recordID, addressbookID string
 		return nil
 	}
 	rec := &contact.Record{
-		ID:        recordID,
-		Source:    "carddav",
-		SourceRef: addressbookID,
-		Fn:        p.FN,
-		NGiven:    p.NGiven,
-		NFamily:   p.NFamily,
-		Org:       p.Org,
-		Title:     p.Title,
-		Note:      p.Note,
-		Bday:      p.Bday,
-		Nickname:  p.Nickname,
+		ID:             recordID,
+		Source:         "carddav",
+		SourceRef:      addressbookID,
+		Fn:             p.FN,
+		NGiven:         p.NGiven,
+		NFamily:        p.NFamily,
+		Org:            p.Org,
+		Title:          p.Title,
+		Note:           p.Note,
+		Bday:           p.Bday,
+		Nickname:       p.Nickname,
 		PhotoData:      p.PhotoData,
 		PhotoMediaType: p.PhotoMediaType,
 		PhotoURL:       p.PhotoURL,
-		VCardRaw:  p.VCardRaw,
-		Categories: p.Categories,
+		VCardRaw:       p.VCardRaw,
+		Categories:     p.Categories,
 	}
 	for _, e := range p.Emails {
 		rec.Emails = append(rec.Emails, contact.RecordEmail{

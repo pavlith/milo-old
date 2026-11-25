@@ -1,17 +1,19 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
+  import { Button } from '$lib/components/ui/button'
+  import logo from '../../../assets/images/milo.svg'
   import { _ } from '$lib/i18n'
   import { WindowMinimise, WindowToggleMaximise } from '$lib/desktop'
-  import { QuitApp } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { QuitApp } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
+    title?: string
     onClose?: () => void
   }
 
-  let { onClose }: Props = $props()
+  let { title, onClose }: Props = $props()
 
   let isMaximized = $state(false)
-  let isHovering = $state(false)
 
   async function minimize() {
     await WindowMinimise()
@@ -32,55 +34,25 @@
   }
 </script>
 
-<header class="h-10 flex items-center justify-between bg-muted/50 border-b border-border select-none shrink-0">
-  <!-- Drag region - left side with app title -->
-  <div class="flex-1 flex items-center gap-2 px-3 h-full" style="--wails-draggable: drag">
-    <Icon icon="mdi:email-fast-outline" class="w-5 h-5 text-primary" />
-    <span class="text-sm font-medium text-foreground">Aerion</span>
+<header class="flex h-9 shrink-0 select-none items-center justify-between border-b bg-surface">
+  <div class="flex h-full min-w-0 flex-1 items-center gap-2 px-3" style="--wails-draggable: drag">
+    <img src={logo} alt="" class="size-5" />
+    <span class="truncate text-sm font-semibold">{title ?? 'milo'}</span>
   </div>
 
-  <!-- Mac-style traffic light controls -->
-  <div
-    class="flex items-center gap-2 px-3 h-full"
-    role="group"
-    aria-label={$_('aria.windowControls')}
-    onmouseenter={() => isHovering = true}
-    onmouseleave={() => isHovering = false}
-  >
-    <!-- Minimize (yellow) -->
-    <button
-      class="w-3 h-3 rounded-full flex items-center justify-center transition-all bg-[#FEBC2E] hover:brightness-90 active:brightness-75"
-      onclick={minimize}
-      title={$_('window.minimize')}
-      aria-label={$_('aria.minimizeWindow')}
-    >
-      {#if isHovering}
-        <span class="text-[10px] font-bold text-black/60 leading-none">−</span>
-      {/if}
-    </button>
-
-    <!-- Maximize/Restore (green) -->
-    <button
-      class="w-3 h-3 rounded-full flex items-center justify-center transition-all bg-[#28C840] hover:brightness-90 active:brightness-75"
-      onclick={toggleMaximize}
+  <div class="flex h-full items-center gap-0.5 px-1" role="group" aria-label={$_('aria.windowControls')}>
+    <Button variant="ghost" size="icon-sm" class="size-7" onclick={minimize}
+      title={$_('window.minimize')} aria-label={$_('aria.minimizeWindow')}>
+      <Icon icon="lucide:minus" />
+    </Button>
+    <Button variant="ghost" size="icon-sm" class="size-7" onclick={toggleMaximize}
       title={isMaximized ? $_('window.restore') : $_('window.maximize')}
-      aria-label={isMaximized ? $_('aria.restoreWindow') : $_('aria.maximizeWindow')}
-    >
-      {#if isHovering}
-        <span class="text-[10px] font-bold text-black/60 leading-none">+</span>
-      {/if}
-    </button>
-
-    <!-- Close (red) -->
-    <button
-      class="w-3 h-3 rounded-full flex items-center justify-center transition-all bg-[#FF5F57] hover:brightness-90 active:brightness-75"
-      onclick={close}
-      title={$_('window.close')}
-      aria-label={$_('aria.closeWindow')}
-    >
-      {#if isHovering}
-        <span class="text-[10px] font-bold text-black/60 leading-none">×</span>
-      {/if}
-    </button>
+      aria-label={isMaximized ? $_('aria.restoreWindow') : $_('aria.maximizeWindow')}>
+      <Icon icon={isMaximized ? 'lucide:copy' : 'lucide:square'} />
+    </Button>
+    <Button variant="ghost" size="icon-sm" class="size-7 hover:bg-error-surface hover:text-error"
+      onclick={close} title={$_('window.close')} aria-label={$_('aria.closeWindow')}>
+      <Icon icon="lucide:x" />
+    </Button>
   </div>
 </header>

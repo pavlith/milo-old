@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/account"
-	"github.com/hkdb/aerion/internal/folder"
-	"github.com/hkdb/aerion/internal/logging"
+	"github.com/pavlith/milo/internal/account"
+	"github.com/pavlith/milo/internal/folder"
+	"github.com/pavlith/milo/internal/logging"
 	"github.com/rs/zerolog"
 )
 

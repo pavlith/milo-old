@@ -18,7 +18,7 @@
   import { setFocusedPane } from '$lib/stores/keyboard.svelte'
   import { _, locale } from '$lib/i18n'
   import { account, folder } from '$lib/models'
-  import { GetUnifiedInboxUnreadCount } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetUnifiedInboxUnreadCount } from '$bindings/github.com/pavlith/milo/app/app'
   import { formatTimeSince } from '$lib/utils/date'
   import { EventsOn } from '$lib/desktop'
 

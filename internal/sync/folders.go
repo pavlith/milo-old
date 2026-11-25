@@ -9,8 +9,8 @@ import (
 	gosync "sync"
 	"time"
 
-	"github.com/hkdb/aerion/internal/folder"
-	imapPkg "github.com/hkdb/aerion/internal/imap"
+	"github.com/pavlith/milo/internal/folder"
+	imapPkg "github.com/pavlith/milo/internal/imap"
 )
 
 // folderStatusResult holds the result of a parallel STATUS fetch

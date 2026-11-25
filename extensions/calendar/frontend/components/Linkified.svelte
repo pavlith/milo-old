@@ -13,7 +13,7 @@
   // (heading, paragraph, whitespace-pre-wrap div).
 
   import { logger } from '$extensions/calendar/frontend/lib/logger'
-  import { Calendar_OpenURL } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { Calendar_OpenURL } from '$bindings/github.com/pavlith/milo/app/app'
 
   interface Props {
     text: string | undefined | null

@@ -9,12 +9,12 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/hkdb/aerion/internal/email"
-	"github.com/hkdb/aerion/internal/logging"
-	"github.com/hkdb/aerion/internal/message"
-	"github.com/hkdb/aerion/internal/pgp"
-	"github.com/hkdb/aerion/internal/platform"
-	"github.com/hkdb/aerion/internal/smime"
+	"github.com/pavlith/milo/internal/email"
+	"github.com/pavlith/milo/internal/logging"
+	"github.com/pavlith/milo/internal/message"
+	"github.com/pavlith/milo/internal/pgp"
+	"github.com/pavlith/milo/internal/platform"
+	"github.com/pavlith/milo/internal/smime"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 

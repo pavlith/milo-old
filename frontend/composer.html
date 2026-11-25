@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" class="dark" data-theme="nord-dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <title>Aerion</title>
-    <style>
-      /* Nord background while the shared palette CSS loads. */
-      html {
-        background-color: hsl(var(--background, 220 16% 22%));
-      }
-    </style>
+    <meta name="color-scheme" content="light dark" />
+    <title>Milo</title>
+    <link rel="icon" type="image/svg+xml" href="./src/assets/images/milo.svg" />
+    <link rel="stylesheet" href="./src/app.css" />
+    <script>
+      document.documentElement.classList.toggle('dark', matchMedia('(prefers-color-scheme: dark)').matches)
+    </script>
   </head>
   <body>
     <div id="app"></div>

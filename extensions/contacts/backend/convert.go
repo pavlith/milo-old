@@ -1,14 +1,14 @@
 package backend
 
 import (
-	"github.com/hkdb/aerion/internal/contact"
-	coreapi "github.com/hkdb/aerion/internal/core/api/v1"
+	"github.com/pavlith/milo/internal/contact"
+	coreapi "github.com/pavlith/milo/internal/core/api/v1"
 )
 
 // fromLocal converts a core contact.Contact into the API-surface Contact.
 //
 // Core contacts are keyed by email, so we use the email itself as the ID. The
-// Source field (e.g. "aerion", "google", "vcard", "carddav") becomes SourceID
+// Source field (e.g. "milo", "google", "vcard", "carddav") becomes SourceID
 // for search results where the user hasn't picked a specific source. Used by
 // the autocomplete-style per-email row paths; multi-field fromRecord is the
 // path the Contacts pane uses for its list + detail views.
@@ -32,8 +32,8 @@ func fromLocal(c *contact.Contact) coreapi.Contact {
 // Emails/Phones/Addresses/URLs/IMPPs/Categories slices.
 //
 // SourceID semantics:
-//   - For local records: returns the legacy-mapped Source value ("aerion") so
-//     the ContactDetail.svelte gate `sourceId === 'aerion'` keeps working for
+//   - For local records: returns the legacy-mapped Source value ("milo") so
+//     the ContactDetail.svelte gate `sourceId === 'milo'` keeps working for
 //     Edit/Delete on local contacts.
 //   - For CardDAV records: returns the addressbook-or-source id from
 //     rec.SourceRef (when available). Phase 2b.2.b refines this so the
@@ -46,26 +46,26 @@ func fromRecord(rec *contact.Record) coreapi.Contact {
 	// `"emails": []` rather than `"emails": null`. Frontend `{#each contact.emails}`
 	// blocks iterate empty arrays fine; iterating null throws.
 	out := coreapi.Contact{
-		ID:        rec.ID,
-		Name:      rec.Fn,
-		Emails:    []string{},
-		Org:       rec.Org,
-		Title:     rec.Title,
-		Note:      rec.Note,
-		Bday:      rec.Bday,
-		Nickname:  rec.Nickname,
+		ID:             rec.ID,
+		Name:           rec.Fn,
+		Emails:         []string{},
+		Org:            rec.Org,
+		Title:          rec.Title,
+		Note:           rec.Note,
+		Bday:           rec.Bday,
+		Nickname:       rec.Nickname,
 		PhotoData:      rec.PhotoData,
 		PhotoMediaType: rec.PhotoMediaType,
 		PhotoURL:       rec.PhotoURL,
-		UpdatedAt: rec.UpdatedAt,
+		UpdatedAt:      rec.UpdatedAt,
 	}
 
-	// Source mapping: 'local' → 'aerion' (legacy compat for the detail-pane
+	// Source mapping: 'local' → 'milo' (legacy compat for the detail-pane
 	// gate). 'carddav' stays as 'carddav' or is overridden by the caller when
 	// it knows a specific source id.
 	out.SourceID = rec.Source
 	if rec.Source == "local" {
-		out.SourceID = "aerion"
+		out.SourceID = "milo"
 	}
 
 	// Flat email list (legacy autocomplete shape) + structured email items.

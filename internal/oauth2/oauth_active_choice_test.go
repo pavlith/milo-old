@@ -49,12 +49,12 @@ func snapshotHooks(t *testing.T) {
 //
 //   - choice="custom" routes to UserOverrideLookup, falls through to
 //     provider chain when no override exists
-//   - choice="aerion-mail" routes to SlotAliasLookup (recursive), falls
+//   - choice="milo-mail" routes to SlotAliasLookup (recursive), falls
 //     through to provider chain when alias is missing
-//   - choice="aerion-shipped" skips override + alias, goes straight to
+//   - choice="milo-shipped" skips override + alias, goes straight to
 //     the provider chain
 //   - the routed source must not silently substitute another source's
-//     answer (e.g., choice="aerion-shipped" must NOT return the stored
+//     answer (e.g., choice="milo-shipped" must NOT return the stored
 //     override even when one exists — that's the data-preservation
 //     property)
 func TestClientConfigForID_ActiveChoiceMatrix(t *testing.T) {
@@ -86,35 +86,35 @@ func TestClientConfigForID_ActiveChoiceMatrix(t *testing.T) {
 			wantID:         "SHIPPED-2", wantOK: true,
 		},
 		{
-			name:           "aerion-mail + alias present → recurses on target",
+			name:           "milo-mail + alias present → recurses on target",
 			slot:           "test-ac-amail-with-alias",
-			choice:         "aerion-mail",
+			choice:         "milo-mail",
 			choiceRecorded: true,
 			aliasTarget:    "test-ac-amail-target",
 			shipped:        map[string]ClientCredentials{"test-ac-amail-target": {ClientID: "MAIL-TARGET-3"}},
 			wantID:         "MAIL-TARGET-3", wantOK: true,
 		},
 		{
-			name:           "aerion-mail + no alias → falls through to slot's own shipped",
+			name:           "milo-mail + no alias → falls through to slot's own shipped",
 			slot:           "test-ac-amail-no-alias",
-			choice:         "aerion-mail",
+			choice:         "milo-mail",
 			choiceRecorded: true,
 			shipped:        map[string]ClientCredentials{"test-ac-amail-no-alias": {ClientID: "OWN-SHIPPED-4"}},
 			wantID:         "OWN-SHIPPED-4", wantOK: true,
 		},
 		{
-			name:           "aerion-shipped + override present → override IGNORED, shipped wins",
+			name:           "milo-shipped + override present → override IGNORED, shipped wins",
 			slot:           "test-ac-ashipped-with-override",
-			choice:         "aerion-shipped",
+			choice:         "milo-shipped",
 			choiceRecorded: true,
 			overrideID:     "USER-IGNORED-5",
 			shipped:        map[string]ClientCredentials{"test-ac-ashipped-with-override": {ClientID: "SHIPPED-5"}},
 			wantID:         "SHIPPED-5", wantOK: true,
 		},
 		{
-			name:           "aerion-shipped + no shipped + no override → not configured",
+			name:           "milo-shipped + no shipped + no override → not configured",
 			slot:           "test-ac-ashipped-empty",
-			choice:         "aerion-shipped",
+			choice:         "milo-shipped",
 			choiceRecorded: true,
 			wantID:         "", wantOK: false,
 		},
@@ -165,7 +165,7 @@ func TestClientConfigForID_ActiveChoiceMatrix(t *testing.T) {
 
 // TestClientConfigForID_RoundTripPreservesOverride encodes the
 // data-preservation guarantee: a stored override survives a Custom →
-// Aerion → Custom round trip via the picker. Pre-fix, the picker
+// Milo → Custom round trip via the picker. Pre-fix, the picker
 // destroyed the override row on switch-away; here, only the active
 // choice marker changes, so the override stays alive and is reachable
 // again when the user switches back.
@@ -174,9 +174,9 @@ func TestClientConfigForID_RoundTripPreservesOverride(t *testing.T) {
 
 	const slot = "test-ac-roundtrip"
 
-	var activeChoice string                       // marker storage
-	overrideStore := ClientCredentials{}          // override "row" payload
-	var overrideStored bool                       // override "row exists" flag
+	var activeChoice string              // marker storage
+	overrideStore := ClientCredentials{} // override "row" payload
+	var overrideStored bool              // override "row exists" flag
 
 	ActiveChoiceLookup = func(id string) (string, bool) {
 		if id != slot || activeChoice == "" {
@@ -203,9 +203,9 @@ func TestClientConfigForID_RoundTripPreservesOverride(t *testing.T) {
 		t.Fatalf("step 1: got %q, want ROUNDTRIP-USER", creds.ClientID)
 	}
 
-	// 2. User switches to Aerion - X. Marker flips to aerion-shipped;
+	// 2. User switches to Milo - X. Marker flips to milo-shipped;
 	//    override row is INTENTIONALLY left in place.
-	activeChoice = "aerion-shipped"
+	activeChoice = "milo-shipped"
 	if creds, _ := ClientConfigForID(slot); creds.ClientID != "ROUNDTRIP-SHIPPED" {
 		t.Fatalf("step 2: got %q, want ROUNDTRIP-SHIPPED", creds.ClientID)
 	}
