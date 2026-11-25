@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check Wails appearance, legacy data, panes, Contacts and composer in an isolated profile."""
+"""Check Wails appearance, legacy data, panes, Contacts, composer and mailto in an isolated profile."""
 
 import argparse
 from contextlib import contextmanager
@@ -101,6 +101,7 @@ def seed_profile(database):
                 "autostart": "true",
                 "composer_mode": "detached",
                 "composer_format": "plain",
+                "mailto_mode": "detached",
                 "extension_contacts_enabled": "true",
             }.items(),
         )
@@ -255,6 +256,14 @@ def check_ui(binary, directory, display):
                        "getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)'",
                        "The saved Light mode should survive restart")
 
+        uri = "mailto:smoke@example.invalid?subject=Desktop%20fixture"
+        with run(binary, uri, env=env, stdout=log, stderr=log):
+            WebView(directory, 2).check(
+                "location.pathname.endsWith('/composer.html') && "
+                "document.querySelector('#composer-subject')?.value === 'Desktop fixture'",
+                "A cold mailto launch should honor the detached mode and preserve its subject",
+            )
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -269,7 +278,7 @@ def main():
             if log.is_file():
                 print("\n".join(log.read_text(encoding="utf-8", errors="replace").splitlines()[-20:]), file=sys.stderr)
             raise
-    print("PASS: Legacy profile, Carbon themes, Inter, Contacts, PaneForge and detached composer")
+    print("PASS: Legacy profile, Carbon themes, Inter, Contacts, PaneForge, detached composer and cold mailto")
 
 
 if __name__ == "__main__":

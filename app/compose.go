@@ -579,6 +579,8 @@ func (a *App) handleExternalMailto(rawURL string) {
 		accounts, err := a.accountStore.List()
 		if err != nil || len(accounts) == 0 {
 			log.Warn().Msg("No accounts available for mailto")
+			a.ShowWindow()
+			emit("mailto:external", mailtoData)
 			return
 		}
 		if err := a.OpenComposerWindow(accounts[0].ID, "new", "", "", rawURL); err != nil {

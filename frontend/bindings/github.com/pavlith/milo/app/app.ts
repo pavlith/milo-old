@@ -1604,7 +1604,7 @@ export function GetPGPSignPolicy(accountID: string): $CancellablePromise<string>
 
 /**
  * GetPendingMailto returns and clears any pending mailto: URL data.
- * This is used when Milo is launched with a mailto: URL argument.
+ * The main frontend calls this after its activation listeners are ready.
  */
 export function GetPendingMailto(): $CancellablePromise<$models.MailtoData | null> {
     return $Call.ByName("github.com/pavlith/milo/app.App.GetPendingMailto").then(($result: any) => {

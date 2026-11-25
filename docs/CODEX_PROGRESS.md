@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-25. Milo rebranding and Carbon appearance passed Linux validation. See the [Milo appearance guide](../frontend/README.md#milo-appearance) and [code map](CODEX_MAP.md).
+Updated 2026-11-25. Milo rebranding, Carbon appearance and cold `mailto:` launch passed Linux validation. See the [Milo appearance guide](../frontend/README.md#milo-appearance) and [code map](CODEX_MAP.md).
 
 ## Milestones
 
@@ -122,6 +122,11 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Existing profiles open in place with their SQLite sidecars, keys and cache. The native Linux smoke test verified saved account and Contacts access, login launcher migration, Latin and Cyrillic Inter, Dark and Light palettes, preview isolation, and theme persistence after restart. It also checked keyboard pane resizing and separate composer startup.
 - The staged Linux source passed Wails production build, generated binding comparison, frontend check and lint, Go tests and vet, desktop entry validation and a staged install. The sampled theme text and surface pairs met 4.5:1 in both modes. Knip still reports unused exports and dependency findings. Live mail services and Windows builds were outside validation.
 
+## Desktop activation and GitHub repository
+
+- Published `e89345b` as the initial `main` in the new [Milo repository](https://github.com/pavlith/milo). Local `origin` fetches from Milo over HTTPS and pushes over SSH.
+- Cold launches preserve the `mailto:` URL for the detached composer. Linux queues second-instance commands during startup until the main frontend registers its listeners. Binding generation, frontend check, lint and build, `go test ./...`, `go vet ./...` and the [native Linux smoke test](BUILD.md#focused-linux-regression-test) passed. The smoke test used Xvfb and a temporary profile to verify that a cold `mailto:` launch opens the detached composer with the expected subject.
+
 ## Next action
 
-Rename the existing GitHub repository to `pavlith/milo` and then update the local remote. The [Linux build and smoke commands](BUILD.md) document the validation baseline.
+Review the [Linux CI run for `dev`](https://github.com/pavlith/milo/actions?query=branch%3Adev) after the first push to the new repository.

@@ -18,8 +18,8 @@ import (
 type linuxSingleInstanceLock struct {
 	legacyProfile bool
 	listener      net.Listener
-	socketPath    string
 	onShow        func(data string)
+	pending       []string
 	mu            sync.Mutex
 	done          chan struct{}
 }
@@ -41,7 +41,6 @@ func (l *linuxSingleInstanceLock) TryLock(activateMsg string) (bool, error) {
 	if err != nil {
 		return true, fmt.Errorf("failed to build socket path: %w", err)
 	}
-	l.socketPath = socketPath
 
 	// Try to listen on the socket (atomic — only one process succeeds)
 	listener, err := net.Listen("unix", socketPath)
@@ -81,8 +80,13 @@ func (l *linuxSingleInstanceLock) TryLock(activateMsg string) (bool, error) {
 // SetOnShow sets the callback invoked when a second instance sends a command.
 func (l *linuxSingleInstanceLock) SetOnShow(fn func(data string)) {
 	l.mu.Lock()
-	defer l.mu.Unlock()
 	l.onShow = fn
+	pending := l.pending
+	l.pending = nil
+	l.mu.Unlock()
+	for _, command := range pending {
+		fn(command)
+	}
 }
 
 // Unlock releases the lock and cleans up resources.
@@ -90,9 +94,6 @@ func (l *linuxSingleInstanceLock) Unlock() {
 	close(l.done)
 	if l.listener != nil {
 		l.listener.Close()
-	}
-	if l.socketPath != "" {
-		os.Remove(l.socketPath)
 	}
 }
 
@@ -122,8 +123,8 @@ func (l *linuxSingleInstanceLock) handleConnection(conn net.Conn) {
 
 	_ = conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 	scanner := bufio.NewScanner(conn)
-	// Limit scanner buffer to 2KB — no legitimate command exceeds this
-	scanner.Buffer(make([]byte, 2048), 2048)
+	// Include room for the newline after a 2 KB mailto URL.
+	scanner.Buffer(make([]byte, 2049), 2049)
 	if !scanner.Scan() {
 		return
 	}
@@ -137,6 +138,10 @@ func (l *linuxSingleInstanceLock) handleConnection(conn net.Conn) {
 
 	l.mu.Lock()
 	fn := l.onShow
+	if fn == nil && len(l.pending) < 16 {
+		// GTK and the main WebView can still be starting up.
+		l.pending = append(l.pending, cmd)
+	}
 	l.mu.Unlock()
 
 	if fn == nil {

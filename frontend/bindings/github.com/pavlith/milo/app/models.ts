@@ -452,6 +452,7 @@ export class MailtoData {
     "bcc": string[];
     "subject": string;
     "body": string;
+    "url": string;
 
     /** Creates a new MailtoData instance. */
     constructor($$source: Partial<MailtoData> = {}) {
@@ -469,6 +470,9 @@ export class MailtoData {
         }
         if (!("body" in $$source)) {
             this["body"] = "";
+        }
+        if (!("url" in $$source)) {
+            this["url"] = "";
         }
 
         Object.assign(this, $$source);

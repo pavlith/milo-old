@@ -1,6 +1,8 @@
 package app
 
 import (
+	"strings"
+
 	"github.com/pavlith/milo/internal/appstate"
 )
 
@@ -49,9 +51,18 @@ func (a *App) GetAppInfo() AppInfo {
 }
 
 // GetPendingMailto returns and clears any pending mailto: URL data.
-// This is used when Milo is launched with a mailto: URL argument.
+// The main frontend calls this after its activation listeners are ready.
 func (a *App) GetPendingMailto() *MailtoData {
 	data := a.PendingMailto
-	a.PendingMailto = nil // Clear after reading
+	a.PendingMailto = nil
+	if a.SingleInstanceLock != nil {
+		a.SingleInstanceLock.SetOnShow(func(command string) {
+			if strings.HasPrefix(command, "mailto:") {
+				a.handleExternalMailto(command)
+				return
+			}
+			a.ShowWindow()
+		})
+	}
 	return data
 }

@@ -51,6 +51,7 @@ type MailtoData struct {
 	Bcc     []string `json:"bcc"`
 	Subject string   `json:"subject"`
 	Body    string   `json:"body"`
+	URL     string   `json:"url"`
 }
 
 // maxMailtoURLLength is the maximum allowed length for a mailto URL (2KB)
@@ -68,14 +69,14 @@ const maxBodyLength = 64 * 1024
 // ParseMailtoURL parses a mailto: URL and extracts email data with input validation.
 // Returns nil if the URL is invalid or doesn't start with "mailto:".
 func ParseMailtoURL(rawURL string) *MailtoData {
-	if len(rawURL) > maxMailtoURLLength {
+	if len(rawURL) > maxMailtoURLLength || strings.ContainsAny(rawURL, "\r\n") {
 		return nil
 	}
 	if !strings.HasPrefix(strings.ToLower(rawURL), "mailto:") {
 		return nil
 	}
 
-	data := &MailtoData{}
+	data := &MailtoData{URL: "mailto:" + rawURL[len("mailto:"):]}
 
 	// Remove mailto: prefix
 	rest := rawURL[7:]
@@ -757,15 +758,6 @@ func (a *App) startup(ctx context.Context) {
 
 	a.ready.Store(true)
 	close(a.readySignal)
-	if a.SingleInstanceLock != nil {
-		a.SingleInstanceLock.SetOnShow(func(data string) {
-			if strings.HasPrefix(data, "mailto:") {
-				a.handleExternalMailto(data)
-				return
-			}
-			a.ShowWindow()
-		})
-	}
 
 	// Initialize desktop notifications with click handling
 	a.initNotifications(ctx)

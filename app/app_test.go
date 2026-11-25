@@ -16,7 +16,7 @@ func TestParseMailtoURL_Valid(t *testing.T) {
 }
 
 func TestParseMailtoURL_WithParams(t *testing.T) {
-	result := ParseMailtoURL("mailto:test@example.com?subject=Hello&body=World")
+	result := ParseMailtoURL("MAILTO:test@example.com?subject=Hello&body=World")
 	if result == nil {
 		t.Fatal("ParseMailtoURL returned nil, want non-nil")
 	}
@@ -25,6 +25,9 @@ func TestParseMailtoURL_WithParams(t *testing.T) {
 	}
 	if result.Body != "World" {
 		t.Errorf("Body = %q, want %q", result.Body, "World")
+	}
+	if result.URL != "mailto:test@example.com?subject=Hello&body=World" {
+		t.Errorf("URL = %q, want lowercase scheme with the original payload", result.URL)
 	}
 }
 

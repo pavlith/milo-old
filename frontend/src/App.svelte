@@ -489,12 +489,10 @@
     // Fired unconditionally so the indicator clears even when starting hidden.
     NotifyStartupComplete()
 
-    // Check for pending mailto: URL from command line
+    // Hand off desktop activation after the account and mailto settings have loaded.
     try {
       const mailtoData = await GetPendingMailto()
-      if (mailtoData && (mailtoData.to?.length > 0 || mailtoData.subject || mailtoData.body)) {
-        // Wait a moment for accounts to load
-        await new Promise(resolve => setTimeout(resolve, 100))
+      if (mailtoData) {
         handleMailtoData(mailtoData)
       }
     } catch (err) {
@@ -679,13 +677,14 @@
     bcc?: string[]
     subject?: string
     body?: string
+    url: string
   }
 
-  function handleMailtoData(data: MailtoData, rawMailtoURL?: string) {
+  function handleMailtoData(data: MailtoData) {
     // Use selected account or first account (resolve 'unified' to real account)
     const accountId = resolveAccountId(selectedAccountId)
     if (!accountId) {
-      // No accounts available, can't compose
+      WindowShow()
       addToast({
         type: 'error',
         message: $_('toast.noAccountConfigured'),
@@ -694,11 +693,12 @@
     }
 
     // Check if detached mode is preferred for mailto
-    if (getMailtoMode() === 'detached' && rawMailtoURL) {
-      OpenComposerWindow(accountId, 'new', '', '', rawMailtoURL)
+    if (getMailtoMode() === 'detached') {
+      OpenComposerWindow(accountId, 'new', '', '', data.url)
       return
     }
 
+    WindowShow()
     composerAccountId = accountId
     composerDraftId = null
     composerInitialMessage = new smtp.ComposeMessage({
