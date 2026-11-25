@@ -96,7 +96,10 @@
     if (scheduleSearch.pending) scheduleSearch.cancel()
   }
 
-  onDestroy(cancelSearch)
+  onDestroy(() => {
+    // Let Runed recheck its queue after teardown when input and navigation share an update.
+    void scheduleSearch.cancel()
+  })
 
   function onSearchInput(event: Event) {
     searchInput = (event.currentTarget as HTMLInputElement).value

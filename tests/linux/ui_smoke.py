@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check production Wails shortcuts and composer preferences in a fresh profile."""
+"""Check production Wails pane, composer and Contacts behavior in a fresh profile."""
 
 import argparse
 from contextlib import contextmanager
@@ -99,6 +99,7 @@ def seed_profile(database):
                 "language": "en",
                 "composer_mode": "detached",
                 "composer_format": "plain",
+                "extension_contacts_enabled": "true",
             }.items(),
         )
         connection.execute("""
@@ -109,9 +110,41 @@ def seed_profile(database):
             INSERT INTO identities (id, account_id, name, email, is_default)
             VALUES ('smoke-identity', 'smoke', 'Fixture', 'smoke@example.invalid', 1)
         """)
+        connection.execute("""
+            INSERT INTO contact_records (id, source, kind, fn)
+            VALUES ('smoke-contact', 'local', 'manual', 'Fixture Contact')
+        """)
+        connection.execute("""
+            INSERT INTO contact_emails (record_id, email, is_primary)
+            VALUES ('smoke-contact', 'contact@example.invalid', 1)
+        """)
 
 
-def check_composer(binary, directory, display):
+def check_contacts(main):
+    contacts = "document.querySelector('nav button[aria-label=Contacts]')"
+    mail = "document.querySelector('nav button[aria-label=Mail]')"
+    fixture_visible = "document.querySelector('[role=listbox][aria-label=Contacts]')?.textContent.includes('Fixture Contact')"
+    main.check(f"!!{contacts}", "The enabled Contacts extension should have a rail tab")
+    main.evaluate(f"{contacts}.click()")
+    main.check(fixture_visible, "Contacts should list the local fixture")
+    main.evaluate("window.dispatchEvent(new KeyboardEvent('keydown', {key: 's', ctrlKey: true, cancelable: true}))")
+    search = "document.querySelector('input[aria-label=\"Search contacts...\"]')"
+    main.check(f"!!{search}", "Ctrl+S should open Contacts search")
+    main.evaluate(f"""(() => {{
+        const input = {search};
+        input.value = 'no matching contacts';
+        input.dispatchEvent(new Event('input', {{bubbles: true}}));
+        {mail}.click();
+    }})()""")
+    main.check(f"!{search} && {mail}.getAttribute('aria-pressed') === 'true'",
+               "The Mail tab should unmount Contacts")
+    sleep(0.3)  # Allow the old 200 ms search to run if teardown failed to cancel it.
+    main.evaluate(f"{contacts}.click()")
+    main.check(fixture_visible, "A pending Contacts search should be canceled on unmount")
+    main.evaluate(f"{mail}.click()")
+
+
+def check_ui(binary, directory, display):
     library = directory / "webview_probe.so"
     webkit_flags = shlex.split(subprocess.check_output(
         ["pkg-config", "--cflags", "--libs", "webkitgtk-6.0"], text=True
@@ -149,6 +182,7 @@ def check_composer(binary, directory, display):
         seed_profile(directory / "data/aerion/aerion.db")
 
         with run(binary, env=env, stdout=log, stderr=log):
+            check_contacts(main)
             handle = "document.querySelector('[aria-label=\"Resize message list\"]')"
             main.check(f"!!{handle} && !document.querySelector('[role=dialog],[role=alertdialog]')",
                        "Mail should open with a keyboard-accessible list separator")
@@ -185,13 +219,13 @@ def main():
     with TemporaryDirectory(prefix="aerion-smoke-") as profile, virtual_display() as display:
         directory = Path(profile)
         try:
-            check_composer(args.binary.resolve(strict=True), directory, display)
+            check_ui(args.binary.resolve(strict=True), directory, display)
         except (AssertionError, ValueError):
             log = directory / "native.log"
             if log.is_file():
                 print("\n".join(log.read_text(encoding="utf-8", errors="replace").splitlines()[-20:]), file=sys.stderr)
             raise
-    print("PASS: PaneForge keys, Ctrl+N from a separator, and detached Plain Text preference")
+    print("PASS: Contacts debounce cleanup, PaneForge keys, Ctrl+N from a separator, and detached Plain Text preference")
 
 
 if __name__ == "__main__":

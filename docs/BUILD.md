@@ -30,7 +30,7 @@ For Windows resource status and the validation scope, see [WAILS3_MIGRATION.md](
 Run this test after building the production binary and installing Python 3 and Xvfb.
 
 ```sh
-python3 tests/linux/composer_smoke.py
+python3 tests/linux/ui_smoke.py
 ```
 
-The test starts Wails with temporary XDG directories and a loopback-only fixture. It checks PaneForge keyboard resizing, Ctrl+N from a focused separator, and the saved Plain Text preference in a detached composer. Pass `--binary PATH` to test a specific production build.
+The test starts Wails with temporary XDG directories and a loopback-only fixture. It checks pending Contacts search cleanup, PaneForge keyboard resizing, Ctrl+N from a focused separator, and the saved Plain Text preference in a detached composer. Pass `--binary PATH` to test a specific production build.
