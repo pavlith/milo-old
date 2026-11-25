@@ -27,8 +27,8 @@
     }
   })
 
-  const PRIVACY_URL = 'https://github.com/hkdb/aerion/blob/main/docs/PRIVACY.md'
-  const TERMS_URL = 'https://github.com/hkdb/aerion/blob/main/docs/TERMS.md'
+  const PRIVACY_URL = 'https://github.com/pavlith/milo/blob/main/docs/PRIVACY.md'
+  const TERMS_URL = 'https://github.com/pavlith/milo/blob/main/docs/TERMS.md'
 
   function openWebsite() {
     if (appInfo?.website) {

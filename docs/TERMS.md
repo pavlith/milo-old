@@ -6,4 +6,4 @@ Milo connects to the email, contact and calendar services you configure. The rel
 
 ## In-app notices
 
-Current development builds still link to the upstream Aerion terms and privacy pages in the first-run dialog and About settings. This repository contains the Milo-specific documentation. [First-run dialog](../frontend/src/lib/components/TermsDialog.svelte) · [About settings](../frontend/src/lib/components/settings/AboutTab.svelte)
+Milo asks users to review and accept the terms and privacy notice on first run and saves their acceptance in the local profile. The first-run dialog and About settings open the documents from the stable `main` branch in the system browser. [Terms on GitHub](https://github.com/pavlith/milo/blob/main/docs/TERMS.md) · [Privacy on GitHub](https://github.com/pavlith/milo/blob/main/docs/PRIVACY.md)

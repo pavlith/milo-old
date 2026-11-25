@@ -473,9 +473,9 @@
   },
   "settingsAbout": {
     "version": "Version {version}",
-    "github": "GitHub",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use",
+    "github": "Milo on GitHub",
+    "privacyPolicy": "Privacy and Local Data",
+    "termsOfUse": "Terms and License",
     "failedToLoad": "Failed to load app information"
   },
   "account": {
@@ -862,12 +862,12 @@
     "acceptAlways": "Accept Always"
   },
   "terms": {
-    "title": "Terms of Use & Privacy Policy",
-    "description": "Please review and accept our terms to continue using Milo.",
-    "content": "These documents explain how the application handles your data and the terms under which you may use this software.",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfUse": "Terms of Use",
-    "agreeLabel": "I have read and agree to the Terms of Use and Privacy Policy",
+    "title": "Milo Terms and Privacy",
+    "description": "Read and accept Milo’s terms and privacy notice to continue.",
+    "content": "The terms cover use and distribution under the Apache License 2.0. The privacy notice explains what Milo stores locally and how it connects to your services.",
+    "privacyPolicy": "Privacy and Local Data",
+    "termsOfUse": "Terms and License",
+    "agreeLabel": "I have read and accept Milo’s terms and privacy notice",
     "accept": "Accept & Continue"
   },
   "oauthMissing": {
