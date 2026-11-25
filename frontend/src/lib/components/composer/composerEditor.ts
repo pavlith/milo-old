@@ -208,7 +208,7 @@ function passthroughAttributes(names: string[]): Record<string, object> {
  * font-size, font-family, text-align) from a raw style string, so a toolbar
  * change never fights a stale copy of the same declaration.
  */
-export function stripDeclarations(style: string | null, names: string[]): string | null {
+function stripDeclarations(style: string | null, names: string[]): string | null {
   if (!style) return null
   const kept = style
     .split(';')

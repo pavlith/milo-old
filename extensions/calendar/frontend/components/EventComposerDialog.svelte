@@ -681,7 +681,7 @@
 <svelte:window
   onkeydown={(e) => {
     if (!open) return
-    if (e.key !== 'Escape') return
+    if (e.key !== 'Escape' || e.defaultPrevented) return
     if (sendInvitationsOpen) return
     e.preventDefault()
     close()

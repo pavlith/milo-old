@@ -17,7 +17,8 @@
       "svelte": ["node_modules/svelte/src/runtime/index"],
       "svelte/*": ["node_modules/svelte/*"],
       "svelte-i18n": ["node_modules/svelte-i18n"],
-      "bits-ui": ["node_modules/bits-ui"]
+      "bits-ui": ["node_modules/bits-ui"],
+      "runed": ["node_modules/runed"]
     },
     "allowJs": true,
     "checkJs": true,

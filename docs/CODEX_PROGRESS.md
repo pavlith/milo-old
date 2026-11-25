@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-25. Stage 5 is complete and validated on Linux with Wails 3. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-25. Stage 6 consolidates the shared UI after the Stage 5 Linux and Wails 3 work. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -14,7 +14,7 @@ Updated 2026-11-25. Stage 5 is complete and validated on Linux with Wails 3. UI 
 | Wails 3 on Linux | Complete | Clean-copy builds and development startup, Go and frontend checks, and the Linux multi-window smoke test passed. See [WAILS3_MIGRATION.md](WAILS3_MIGRATION.md). |
 | Stage 4: shadcn-svelte | Complete | Official registry configured, shared components standardized, and Linux builds and WebKitGTK smoke checks passed. |
 | Stage 5: Application UI | Complete | The [mail layout and ecosystem integrations](#stage-5-mail-layout) passed frontend, native Linux build and WebKitGTK smoke checks covering both windows and extensions. |
-| Stage 6: Cleanup | Not started | Follow §9 after consumer verification. |
+| Stage 6: UI consolidation and cleanup | Complete | [Shared UI and Linux validation](#stage-6-ui-consolidation-and-cleanup). |
 | Stage 7: Validation | Not started | Follow §§10–12; preparation checks are not migration acceptance. |
 
 ## Audit and Tailwind decisions
@@ -97,6 +97,15 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Clean `npm ci`, frontend check (0 errors and 0 warnings), lint and production build passed. Vite retains its chunk and dynamic-import warnings. Knip reports the baseline findings minus the unused TanStack dependency. Its targeted export exceptions cover the namespace members used in Svelte templates. Linux Wails binding generation and native production build passed using the GTK4/WebKitGTK sysroot, as did `go test ./...` and `go vet ./...`.
 - Native Linux Wails with WebKitGTK 2.52.6 under Xvfb verified mouse and keyboard resizing, pixel limits and restart persistence, the narrow folder and viewer overlays, two accounts and Unified Inbox badges, virtual rows, local search, multi-select, context menus, attachments and HTML iframe isolation. The test also covered Calendar and Contacts switching, account edit validation and ARIA, detached TipTap, theme preview isolation, and theme propagation after save. Live OAuth, IMAP and SMTP were outside the local fixture.
 
+## Stage 6 UI consolidation and cleanup
+
+- Verified the Stage 5 implementations of Sidebar-09, ExtensionRail, the Mail Example layout, PaneForge, Formsnap, Mode Watcher and Runed. Mail, Contacts and Calendar share sidebar controls, toolbar sizing, responsive scrims and semantic tokens. Mail and the shared list rows use the same density variants. Contacts and Calendar use PaneForge in full mode, with session-local widths for each mounted extension. Mail keeps its saved pixel widths and TanStack virtualization.
+- Adapted Empty, Skeleton and Toggle Group from the official registry. Calendar uses the shared Sidebar, Checkbox, Dropdown Menu and a keyboard-accessible view selector. The existing kit props and extension registration are retained. [Empty](https://shadcn-svelte.com/docs/components/empty), [Skeleton](https://shadcn-svelte.com/docs/components/skeleton), [Toggle Group](https://shadcn-svelte.com/docs/components/toggle-group).
+- Both composer windows, the signature editor and the calendar description editor share the formatting toolbar. The composer uses labelled fields, a keyboard-accessible recipient list, portalled formatting controls and attachments with accessible remove buttons. Formsnap connects the IMAP and SMTP host fields to the existing account validation. Runed handles Contacts and recipient search debounce and the Calendar detail overlay listener.
+- Removed the unused SidebarAddItem and InfoDialog components, two unused global CSS classes, unused composer exports and the direct dependencies on the full Iconify collection, unplugin-icons and tslib. The installed Iconify collections continue to serve both entries offline.
+- Clean `npm ci`, `npm run check` (0 errors and 0 warnings), lint, Vite production build, native Linux `make build`, `go test ./...` and `go vet ./...` passed. Wails regenerated identical bindings. Vite reported the existing chunk-size and dynamic-import warnings. Knip exits 1 with the remaining baseline findings. The unused component and direct dev dependency findings are gone.
+- Native Wails and WebKitGTK under Xvfb exercised Rail navigation, persisted Mail resizing, virtual rows, HTML iframe isolation, Contacts search and resizing, Calendar keyboard navigation, responsive Agenda and the nested event link dialog, Formsnap error announcements, signature tables and HTML editing, both composer windows, offline spellcheck, attachment add/remove, recipient autocomplete, formatting shortcuts and both palettes. Linux testing used isolated data and local fixtures. Live mail and calendar providers were outside the run.
+
 ## Next action
 
-Use Stage 6 of [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) to review remaining legacy UI primitives and their consumers.
+Follow [Stage 7 validation](SHADCN_MIGRATION.md#этап-7--validation).

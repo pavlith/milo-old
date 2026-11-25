@@ -13,6 +13,8 @@
   // Filter UI is intentionally omitted — comes when contacts gains tags or
   // groups in a later phase.
 
+  import { onDestroy, tick } from 'svelte'
+  import { useDebounce } from 'runed'
   import Icon from '@iconify/svelte'
   import { _ } from 'svelte-i18n'
   import ListPane from '$lib/components/kit/ListPane.svelte'
@@ -26,6 +28,10 @@
   // Canonical list toolbar — owns hamburger placement, title styling, count
   // badge, search-mode swap. Extension just supplies label/count + per-extension
   // search markup + trailing action buttons.
+  import { Input } from '$lib/components/ui/input'
+  import { Button } from '$lib/components/ui/button'
+  import * as Empty from '$lib/components/ui/empty'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import ListHeader from '$lib/components/kit/ListHeader.svelte'
   import type { v1 } from '$lib/models'
 
@@ -81,14 +87,22 @@
     }
   }
 
-  let debounce: ReturnType<typeof setTimeout> | null = null
-  function onSearchInput(e: Event) {
-    searchInput = (e.currentTarget as HTMLInputElement).value
-    if (debounce) clearTimeout(debounce)
-    debounce = setTimeout(() => {
-      setSearchQuery(searchInput)
-      reloadContacts()
-    }, 200)
+  const scheduleSearch = useDebounce(() => {
+    setSearchQuery(searchInput)
+    reloadContacts()
+  }, 200)
+
+  function cancelSearch() {
+    if (scheduleSearch.pending) scheduleSearch.cancel()
+  }
+
+  onDestroy(cancelSearch)
+
+  function onSearchInput(event: Event) {
+    searchInput = (event.currentTarget as HTMLInputElement).value
+    void scheduleSearch().catch((error) => {
+      if (error !== 'Cancelled') console.error('Failed to schedule contacts search:', error)
+    })
   }
 
   function handleSearchKeydown(e: KeyboardEvent) {
@@ -109,7 +123,7 @@
     searchInput = ''
     setSearchQuery('')
     showSearch = false
-    if (debounce) clearTimeout(debounce)
+    cancelSearch()
     reloadContacts()
   }
 
@@ -120,10 +134,10 @@
   function toggleSearchFocus() {
     if (!showSearch) {
       showSearch = true
-      setTimeout(() => {
+      void tick().then(() => {
         searchInputEl?.focus()
         searchInputEl?.select()
-      }, 50)
+      })
       return
     }
     if (document.activeElement !== searchInputEl) {
@@ -177,69 +191,46 @@
   })
 </script>
 
-<div class="flex-1 min-w-0 min-h-0 flex flex-col border-r border-border bg-background">
-  <ListHeader
-    label={headerLabel}
-    count={contactsView.contacts.length}
-    searchMode={showSearch}
-  >
-    {#snippet search()}
-      <div class="flex items-center gap-1 bg-muted rounded-md px-2 flex-1 min-w-0">
-        <Icon icon="mdi:magnify" class="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        <input
-          bind:this={searchInputEl}
+<div class="flex h-full min-h-0 min-w-0 flex-1 flex-col bg-background">
+  <ListHeader label={headerLabel} count={contactsView.contacts.length}>
+    {#snippet actions()}
+      <ToolbarButton
+        icon="mdi:magnify"
+        label={showSearch ? $_('contacts.list.searchClose') : $_('contacts.list.searchOpen')}
+        aria-pressed={showSearch}
+        onclick={() => showSearch ? clearSearch() : toggleSearchFocus()}
+      />
+      <ToolbarButton
+        icon={sortOrder === 'name-asc' ? 'mdi:sort-alphabetical-ascending' : 'mdi:sort-alphabetical-descending'}
+        label={sortOrder === 'name-asc' ? $_('contacts.list.sortAsc') : $_('contacts.list.sortDesc')}
+        onclick={toggleSort}
+      />
+      {#if onAdd}
+        <ToolbarButton icon="mdi:plus" label={$_('contacts.list.addTooltip')} onclick={onAdd} />
+      {/if}
+    {/snippet}
+  </ListHeader>
+
+  {#if showSearch}
+    <div class="flex shrink-0 items-center gap-1.5 border-b px-3 py-2">
+      <div class="relative min-w-0 flex-1">
+        <Icon icon="mdi:magnify" class="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Input
+          bind:ref={searchInputEl}
           type="text"
+          aria-label={$_('contacts.list.searchPlaceholder')}
           placeholder={$_('contacts.list.searchPlaceholder')}
-          class="bg-transparent border-none outline-hidden text-sm py-1.5 w-full min-w-[200px] text-foreground"
+          class="h-8 pl-8"
           value={searchInput}
           oninput={onSearchInput}
           onkeydown={handleSearchKeydown}
         />
-        {#if searchInput}
-          <button
-            onclick={clearSearch}
-            class="p-0.5 hover:bg-muted-foreground/20 rounded"
-            title={$_('contacts.list.searchClear')}
-            type="button"
-          >
-            <Icon icon="mdi:close" class="w-4 h-4 text-muted-foreground" />
-          </button>
-        {/if}
       </div>
-    {/snippet}
-
-    {#snippet actions()}
-      <button
-        class="p-2 rounded-md hover:bg-muted transition-colors {showSearch ? 'bg-muted' : ''}"
-        title={showSearch ? $_('contacts.list.searchClose') : $_('contacts.list.searchOpen')}
-        onclick={toggleSearchFocus}
-        type="button"
-      >
-        <Icon icon={showSearch ? 'mdi:close' : 'mdi:magnify'} class="w-5 h-5 text-muted-foreground" />
-      </button>
-      <button
-        class="p-2 rounded-md hover:bg-muted transition-colors"
-        title={sortOrder === 'name-asc' ? $_('contacts.list.sortAsc') : $_('contacts.list.sortDesc')}
-        onclick={toggleSort}
-        type="button"
-      >
-        <Icon
-          icon={sortOrder === 'name-asc' ? 'mdi:sort-alphabetical-ascending' : 'mdi:sort-alphabetical-descending'}
-          class="w-5 h-5 text-muted-foreground"
-        />
-      </button>
-      {#if onAdd}
-        <button
-          class="p-2 rounded-md hover:bg-muted transition-colors"
-          title={$_('contacts.list.addTooltip')}
-          onclick={onAdd}
-          type="button"
-        >
-          <Icon icon="mdi:plus" class="w-5 h-5 text-muted-foreground" />
-        </button>
+      {#if searchInput}
+        <ToolbarButton icon="mdi:close" label={$_('contacts.list.searchClear')} onclick={clearSearch} />
       {/if}
-    {/snippet}
-  </ListHeader>
+    </div>
+  {/if}
 
   <WriteAccessBanner />
 
@@ -267,21 +258,22 @@
     {/snippet}
 
     {#snippet empty()}
-      <p class="m-4 text-sm text-muted-foreground">
-        {searchInput ? $_('contacts.list.emptySearch') : $_('contacts.list.empty')}
-      </p>
+      <Empty.Root>
+        <Empty.Header>
+          <Empty.Media variant="icon"><Icon icon={searchInput ? 'mdi:magnify' : 'mdi:account-multiple'} aria-hidden="true" /></Empty.Media>
+          <Empty.Description>{searchInput ? $_('contacts.list.emptySearch') : $_('contacts.list.empty')}</Empty.Description>
+        </Empty.Header>
+      </Empty.Root>
     {/snippet}
 
     {#snippet footer()}
       {#if contactsView.hasMore}
-        <button
-          type="button"
-          class="w-full py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors disabled:opacity-50"
+        <Button variant="ghost" size="sm" class="w-full"
           disabled={contactsView.loadingMore}
           onclick={() => loadMoreContacts()}
         >
           {$_('contacts.list.loadMore')}
-        </button>
+        </Button>
       {/if}
     {/snippet}
   </ListPane>

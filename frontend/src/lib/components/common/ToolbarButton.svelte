@@ -17,7 +17,7 @@
 <Tooltip.Root>
   <Tooltip.Trigger>
     {#snippet child({ props })}
-      <Button {...props} {...restProps} aria-label={label} variant="ghost" size="icon" class={cn('size-8', className)}>
+      <Button {...props} {...restProps} aria-label={label} variant="ghost" size="icon-sm" class={className}>
         <Icon {icon} class={cn('size-4', iconClass)} aria-hidden="true" />
       </Button>
     {/snippet}

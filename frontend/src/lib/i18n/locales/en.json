@@ -13,6 +13,9 @@
     "removeWord": "Remove word"
   },
   "common": {
+    "noItems": "No items.",
+    "nothingSelected": "Nothing selected.",
+    "enterFocus": "Enter focus mode",
     "save": "Save",
     "cancel": "Cancel",
     "close": "Close",
@@ -884,6 +887,7 @@
     "yesterdayAt": "Yesterday at {time}"
   },
   "editor": {
+    "linkUrl": "URL",
     "bold": "Bold (Ctrl+B)",
     "italic": "Italic (Ctrl+I)",
     "underline": "Underline (Ctrl+U)",

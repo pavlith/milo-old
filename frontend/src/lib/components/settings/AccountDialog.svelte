@@ -197,7 +197,11 @@
     allIdentityGroups.filter(g => g.account?.id !== editAccount?.id && !g.account?.noOutgoingServer)
   )
 
-  const accountFields = createAccountFormAdapter(() => ({ name, displayName, email }), () => errors, true)
+  const accountFields = createAccountFormAdapter(
+    () => ({ name, displayName, email, imapHost, smtpHost }),
+    () => errors,
+    { editing: true, noOutgoingServer: () => noOutgoingServer },
+  )
 
   function validate(): boolean {
     errors = {}
@@ -469,6 +473,7 @@
 
           <Tabs.Content value="server" class="mt-0">
             <AccountServerTab
+              form={accountFields}
               {editAccount}
               bind:imapHost
               bind:imapPort

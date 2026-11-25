@@ -6,6 +6,7 @@
   // "sync now" button (disabled while syncing). Lives in the kit because it's
   // fully generic: all labels are passed in, so it carries no i18n and no
   // extension-specific knowledge. Drop it into a SidebarFooter `leading` slot.
+  import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
 
   interface Props {
@@ -29,28 +30,28 @@
 
 {#snippet content()}
   {#if syncing}
-    <Icon icon="mdi:sync" class="w-4 h-4 shrink-0 animate-spin" />
+    <Icon icon="mdi:sync" class="size-4 shrink-0 animate-spin" />
     <span class="truncate">{syncingLabel}</span>
   {:else if errorLabel}
-    <Icon icon="mdi:alert-circle" class="w-4 h-4 shrink-0 text-destructive" />
+    <Icon icon="mdi:alert-circle" class="size-4 shrink-0 text-destructive" />
     <span class="truncate text-destructive">{errorLabel}</span>
   {:else}
-    <Icon icon="mdi:sync" class="w-4 h-4 shrink-0" />
+    <Icon icon="mdi:sync" class="size-4 shrink-0" />
     <span class="truncate">{idleLabel}</span>
   {/if}
 {/snippet}
 
 {#if onSync}
-  <button
-    type="button"
-    class="flex items-center gap-2 min-w-0 flex-1 -mx-1 px-1 py-0.5 rounded text-left
-           hover:bg-muted/40 disabled:hover:bg-transparent"
+  <Button
+    variant="ghost"
+    size="sm"
+    class="h-8 min-w-0 flex-1 justify-start gap-2 px-1 text-xs"
     onclick={onSync}
     disabled={syncing}
     title={errorDetail}
   >
     {@render content()}
-  </button>
+  </Button>
 {:else}
   <div class="flex items-center gap-2 min-w-0 flex-1" title={errorDetail}>
     {@render content()}

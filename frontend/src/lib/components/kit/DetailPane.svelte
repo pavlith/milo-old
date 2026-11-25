@@ -5,6 +5,9 @@
   // handler).
 
   import { type Snippet } from 'svelte'
+  import { cn } from '$lib/utils'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
+  import * as Empty from '$lib/components/ui/empty'
   import Icon from '@iconify/svelte'
   import { _ } from 'svelte-i18n'
   import { isPaneFlashing, type FocusablePane } from '$lib/stores/keyboard.svelte'
@@ -40,7 +43,7 @@
     body,
     emptyState,
     emptyIcon = 'mdi:tray-arrow-down',
-    emptyText = 'Nothing selected.',
+    emptyText,
   }: Props = $props()
 
   const flashing = $derived(isPaneFlashing(focusSlot))
@@ -48,31 +51,15 @@
   const visible = $derived(getResponsiveView() === 'viewer')
 </script>
 
-<section class="flex-1 min-w-0 flex flex-col bg-background {flashing ? 'pane-focus-flash' : ''} {overlay ? 'responsive-viewer-overlay' : ''} {overlay && visible ? 'responsive-viewer-visible' : ''}">
-  <!--
-    Header rendering rules — matched 1-for-1 with mail's ConversationViewer
-    pattern at App.svelte:1488 (showBackButton={isResponsive()}):
-
-      - Full (>1024px): render header bar ONLY when the consumer provided a
-        `header` snippet AND we're not in the empty state. No back button.
-      - Responsive (medium ≤1024px OR narrow ≤767px): render header bar
-        UNCONDITIONALLY so the back button is always visible. Both medium and
-        narrow render the detail pane as an overlay (per responsive-viewer-
-        overlay CSS) — both need the back affordance. Using `narrow` only
-        would strand users at medium breakpoints (laptop tablet windows) with
-        a visible overlay and no back button.
-  -->
+<section
+  class={cn('flex h-full min-w-0 flex-1 flex-col bg-background', flashing && 'pane-focus-flash',
+    overlay && 'responsive-viewer-overlay', overlay && visible && 'responsive-viewer-visible')}
+  inert={overlay && !visible}
+>
   {#if overlay || (!empty && header)}
-    <header class="flex items-center gap-3 px-4 py-3 border-b border-border">
+    <header class="flex min-h-[52px] shrink-0 items-center gap-2 border-b px-3 py-2">
       {#if overlay}
-        <button
-          type="button"
-          class="p-2 rounded-md hover:bg-muted transition-colors flex-shrink-0"
-          onclick={hideViewer}
-          aria-label={$_('common.back')}
-        >
-          <Icon icon="mdi:arrow-left" class="w-5 h-5 text-muted-foreground" />
-        </button>
+        <ToolbarButton icon="mdi:arrow-left" label={$_('common.back')} onclick={hideViewer} />
       {/if}
       {#if !empty && header}
         {@render header()}
@@ -81,14 +68,18 @@
   {/if}
 
   {#if empty}
-    <div class="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 p-6">
-      {#if emptyState}
+    {#if emptyState}
+      <div class="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-muted-foreground">
         {@render emptyState()}
-      {:else}
-        <Icon icon={emptyIcon} width="48" height="48" />
-        <p class="text-lg">{emptyText}</p>
-      {/if}
-    </div>
+      </div>
+    {:else}
+      <Empty.Root>
+        <Empty.Header>
+          <Empty.Media variant="icon"><Icon icon={emptyIcon} aria-hidden="true" /></Empty.Media>
+          <Empty.Description>{emptyText ?? $_('common.nothingSelected')}</Empty.Description>
+        </Empty.Header>
+      </Empty.Root>
+    {/if}
   {:else}
     <div class="flex-1 min-h-0 overflow-y-auto p-6">
       {#if body}

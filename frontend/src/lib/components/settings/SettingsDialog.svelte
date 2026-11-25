@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte'
   import Icon from '@iconify/svelte'
+  import { Skeleton } from '$lib/components/ui/skeleton'
   import * as Dialog from '$lib/components/ui/dialog'
   import * as Tabs from '$lib/components/ui/tabs'
   import { Button } from '$lib/components/ui/button'
@@ -240,7 +241,7 @@
 </script>
 
 <Dialog.Root bind:open onOpenChange={handleOpenChange}>
-  <Dialog.Content class="max-w-3xl" preventCloseAutoFocus onInteractOutside={(e) => e.preventDefault()}>
+  <Dialog.Content class="flex max-h-[calc(100dvh-1rem)] max-w-3xl flex-col gap-3 p-4 sm:p-6" preventCloseAutoFocus onInteractOutside={(e) => e.preventDefault()}>
     <Dialog.Header>
       <Dialog.Title>{$_('settings.title')}</Dialog.Title>
       <Dialog.Description>
@@ -249,43 +250,43 @@
     </Dialog.Header>
 
     {#if loading}
-      <div class="flex items-center justify-center py-8">
-        <Icon icon="mdi:loading" class="w-6 h-6 animate-spin text-muted-foreground" />
-      </div>
+      <span class="sr-only" role="status">{$_('common.loading')}</span>
+      <Skeleton class="h-9 w-full" />
+      <Skeleton class="h-32 w-full" />
     {:else}
-      <Tabs.Root bind:value={activeTab} class="w-full">
-        <Tabs.List class="h-auto w-full flex-wrap justify-start gap-1">
+      <Tabs.Root bind:value={activeTab} class="flex min-h-0 w-full flex-col">
+        <Tabs.List class="h-auto w-full shrink-0 flex-wrap justify-start gap-1">
           <Tabs.Trigger value="general" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:settings-2" width="16" height="16" /></span>
+            <Icon icon="lucide:settings-2" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.general')}
           </Tabs.Trigger>
           <Tabs.Trigger value="composer" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:square-pen" width="46" height="46" /></span>
+            <Icon icon="lucide:square-pen" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.composer')}
           </Tabs.Trigger>
           <Tabs.Trigger value="images" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:image" width="16" height="16" /></span>
+            <Icon icon="lucide:image" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.images')}
           </Tabs.Trigger>
           <Tabs.Trigger value="accounts" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:mails" width="16" height="16" /></span>
+            <Icon icon="lucide:mails" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.accounts')}
           </Tabs.Trigger>
           <Tabs.Trigger value="contacts" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:contact" width="16" height="16" /></span>
+            <Icon icon="lucide:contact" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.contacts')}
           </Tabs.Trigger>
           <Tabs.Trigger value="extensions" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:puzzle" width="16" height="16" /></span>
+            <Icon icon="lucide:puzzle" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.extensions')}
           </Tabs.Trigger>
           <Tabs.Trigger value="about" class="flex items-center gap-2">
-            <span class="inline-flex w-4 h-4 items-center justify-center shrink-0"><Icon icon="lucide:info" width="16" height="16" /></span>
+            <Icon icon="lucide:info" class="size-4 shrink-0" aria-hidden="true" />
             {$_('settings.about')}
           </Tabs.Trigger>
         </Tabs.List>
 
-        <div class="mt-4 h-[350px] overflow-y-auto pl-1 pr-3">
+        <div class="mt-3 h-88 min-h-0 overflow-y-auto px-1 sm:pr-3">
           <Tabs.Content value="general" class="mt-0">
             <GeneralTab
               bind:markAsReadDelaySeconds
@@ -360,7 +361,7 @@
 
       <!-- Actions - show Save/Cancel on General and Composer tabs -->
       {#if activeTab === 'general' || activeTab === 'composer' || activeTab === 'images'}
-        <div class="flex items-center justify-end gap-2 pt-4 border-t border-border">
+        <Dialog.Footer class="shrink-0 flex-row justify-end gap-2 border-t pt-3 sm:space-x-0">
           <Button variant="ghost" onclick={handleCancel} disabled={saving}>
             {$_('common.cancel')}
           </Button>
@@ -370,13 +371,13 @@
             {/if}
             {$_('common.save')}
           </Button>
-        </div>
+        </Dialog.Footer>
       {:else}
-        <div class="flex items-center justify-end gap-2 pt-4 border-t border-border">
+        <Dialog.Footer class="shrink-0 flex-row justify-end gap-2 border-t pt-3 sm:space-x-0">
           <Button variant="ghost" onclick={handleCancel}>
             {$_('common.close')}
           </Button>
-        </div>
+        </Dialog.Footer>
       {/if}
     {/if}
   </Dialog.Content>

@@ -17,7 +17,11 @@
   import { _, locale } from '$lib/i18n'
   import ConfirmDialog from '$lib/components/ui/confirm-dialog/ConfirmDialog.svelte'
 
+  import AccountTextField from './AccountTextField.svelte'
+  import type { AccountFormAdapter } from './accountFormAdapter.svelte'
+
   interface Props {
+    form: AccountFormAdapter
     /** The account being edited */
     editAccount: account.Account
     /** Bound form values */
@@ -89,6 +93,7 @@
   }
 
   let {
+    form,
     editAccount,
     imapHost = $bindable(),
     imapPort = $bindable(),
@@ -362,20 +367,15 @@
     </h3>
 
     <div class="grid grid-cols-2 gap-3">
-      <div class="space-y-2">
-        <Label for="imapHost">{$_('account.server')}</Label>
-        <Input
-          id="imapHost"
-          type="text"
-          placeholder="imap.example.com"
-          bind:value={imapHost}
-          oninput={(e) => onImapHostChange((e.target as HTMLInputElement).value)}
-          class={errors.imapHost ? 'border-destructive' : ''}
-        />
-        {#if errors.imapHost}
-          <p class="text-sm text-destructive">{errors.imapHost}</p>
-        {/if}
-      </div>
+      <AccountTextField
+        {form}
+        name="imapHost"
+        id="imapHost"
+        label={$_('account.server')}
+        placeholder="imap.example.com"
+        bind:value={imapHost}
+        onValueChange={onImapHostChange}
+      />
       <div class="grid grid-cols-2 gap-2">
         <div class="space-y-2">
           <Label for="imapPort">{$_('account.port')}</Label>
@@ -508,20 +508,15 @@
     </h3>
 
     <div class="grid grid-cols-2 gap-3">
-      <div class="space-y-2">
-        <Label for="smtpHost">{$_('account.server')}</Label>
-        <Input
-          id="smtpHost"
-          type="text"
-          placeholder="smtp.example.com"
-          bind:value={smtpHost}
-          oninput={(e) => onSmtpHostChange((e.target as HTMLInputElement).value)}
-          class={errors.smtpHost ? 'border-destructive' : ''}
-        />
-        {#if errors.smtpHost}
-          <p class="text-sm text-destructive">{errors.smtpHost}</p>
-        {/if}
-      </div>
+      <AccountTextField
+        {form}
+        name="smtpHost"
+        id="smtpHost"
+        label={$_('account.server')}
+        placeholder="smtp.example.com"
+        bind:value={smtpHost}
+        onValueChange={onSmtpHostChange}
+      />
       <div class="grid grid-cols-2 gap-2">
         <div class="space-y-2">
           <Label for="smtpPort">{$_('account.port')}</Label>

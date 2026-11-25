@@ -7,6 +7,8 @@
 
   import { _, locale } from 'svelte-i18n'
   import Icon from '@iconify/svelte'
+  import * as ToggleGroup from '$lib/components/ui/toggle-group'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import { Button } from '$lib/components/ui/button'
   import ResponsiveSidebarToggle from '$lib/components/kit/ResponsiveSidebarToggle.svelte'
   import TimezonePicker from './TimezonePicker.svelte'
@@ -70,56 +72,35 @@
 
 </script>
 
-<div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-border bg-background">
-  <!-- Left: view selector + date nav. -->
-  <div class="flex items-center gap-2 min-w-0">
+<header class="flex min-h-[52px] shrink-0 flex-wrap items-center justify-between gap-x-2 gap-y-1 border-b bg-background px-3 py-2">
+  <div class="flex min-w-0 flex-wrap items-center gap-1">
     <ResponsiveSidebarToggle />
-    <div class="inline-flex rounded-md border border-border overflow-hidden">
+    <ToggleGroup.Root
+      type="single"
+      bind:value={() => calendarView.viewKind, (value) => {
+        const option = viewOptions.find((option) => option.kind === value)
+        if (option) calendarView.setViewKind(option.kind)
+      }}
+      aria-label={$_('calendar.viewSwitcher.view')}
+    >
       {#each viewOptions as opt (opt.kind)}
-        <button
-          type="button"
-          class="h-9 px-3 text-xs font-medium transition-colors
-                 {calendarView.viewKind === opt.kind ? 'bg-primary text-primary-foreground' : 'bg-background hover:bg-muted/40 text-foreground'}"
-          onclick={() => calendarView.setViewKind(opt.kind)}
-        >
-          {opt.label}
-        </button>
+        <ToggleGroup.Item value={opt.kind}>{opt.label}</ToggleGroup.Item>
       {/each}
-    </div>
+    </ToggleGroup.Root>
 
-    <div class="inline-flex items-center gap-1 ml-2">
-      <button
-        type="button"
-        class="p-2 rounded-md hover:bg-muted transition-colors"
-        title={$_('calendar.viewSwitcher.prev')}
-        aria-label={$_('calendar.viewSwitcher.prev')}
-        onclick={() => calendarView.goPrev()}
-      >
-        <Icon icon="mdi:chevron-left" class="w-5 h-5 text-muted-foreground" />
-      </button>
-      <Button
-        size="sm"
-        variant="outline"
-        onclick={() => calendarView.goToday()}
-      >
+    <div class="inline-flex items-center gap-0.5">
+      <ToolbarButton icon="mdi:chevron-left" label={$_('calendar.viewSwitcher.prev')} onclick={() => calendarView.goPrev()} />
+      <Button size="sm" variant="outline" class="h-8" onclick={() => calendarView.goToday()}>
         {$_('calendar.viewSwitcher.today')}
       </Button>
-      <button
-        type="button"
-        class="p-2 rounded-md hover:bg-muted transition-colors"
-        title={$_('calendar.viewSwitcher.next')}
-        aria-label={$_('calendar.viewSwitcher.next')}
-        onclick={() => calendarView.goNext()}
-      >
-        <Icon icon="mdi:chevron-right" class="w-5 h-5 text-muted-foreground" />
-      </button>
+      <ToolbarButton icon="mdi:chevron-right" label={$_('calendar.viewSwitcher.next')} onclick={() => calendarView.goNext()} />
     </div>
 
     <MiniCalendar {title} />
   </div>
 
   <!-- Right: tz picker + new event + sync. -->
-  <div class="flex items-center gap-2 shrink-0">
+  <div class="flex shrink-0 items-center gap-1">
     <div class="hidden sm:inline">
       <TimezonePicker />
     </div>
@@ -127,25 +108,26 @@
       <Button
         size="sm"
         variant="outline"
+        class="h-8 gap-1.5"
         onclick={() => calendarView.requestNewEvent()}
       >
-        <Icon icon="mdi:plus" class="w-4 h-4 mr-1" />
+        <Icon icon="mdi:plus" class="size-4" />
         {$_('calendar.viewSwitcher.newEvent')}
       </Button>
     {/if}
     <Button
       size="sm"
       variant="outline"
+      class="h-8 gap-1.5"
       onclick={handleSync}
       disabled={syncing}
     >
       {#if animateSpin}
-        <Icon icon="mdi:loading" class="w-4 h-4 mr-1 animate-spin" />
+        <Icon icon="mdi:loading" class="size-4 animate-spin" />
       {:else}
-        <Icon icon="mdi:sync" class="w-4 h-4 mr-1" />
+        <Icon icon="mdi:sync" class="size-4" />
       {/if}
       {$_('calendar.viewSwitcher.sync')}
     </Button>
   </div>
-</div>
-
+</header>

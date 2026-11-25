@@ -21,6 +21,7 @@
   import { Checkbox } from '$lib/components/ui/checkbox'
   import { Button } from '$lib/components/ui/button'
   import { cn } from '$lib/utils'
+  import { listRowVariants } from '$lib/components/kit/listRowVariants'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import { toasts } from '$lib/stores/toast'
   import { getAccentBarUnread, getAccentUnreadStyle, getShowMessageListCircles, getShowMessageListProfilePics, getAlwaysShowMessageCheckbox } from '$lib/stores/settings.svelte'
@@ -108,14 +109,6 @@
   // Density-based class mappings
   // micro = smallest (power users), compact = small, standard = default, large = accessibility
   const densityClasses = {
-    row: {
-      // Left padding is a half-step wider than the right — symmetric px reads
-      // as left-light next to the right edge's date/star column
-      micro: 'pl-3.5 pr-3 py-2 gap-2',
-      compact: 'pl-[1.125rem] pr-4 py-3 gap-3',
-      standard: 'pl-[1.375rem] pr-5 py-4 gap-4',
-      large: 'pl-[1.625rem] pr-6 py-5 gap-5',
-    },
     senderText: {
       micro: 'text-xs',
       compact: 'text-sm',
@@ -428,9 +421,7 @@
     data-conversation-row
     draggable={getLayoutMode() !== 'narrow'}
     class={cn(
-      'group relative flex w-full touch-pan-y cursor-pointer items-start rounded-lg border bg-card text-left transition-colors hover:bg-accent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-      densityClasses.row[density],
-      selected && 'border-primary/50 bg-muted',
+      listRowVariants({ density, selected, class: 'group relative touch-pan-y items-start' }),
       checked && 'bg-accent',
       getAccentBarUnread() && hasUnread && getAccentUnreadStyle() === 'bar' && 'border-l-2 border-l-primary',
       swipeAnim === 'select' && 'swipe-select-anim',

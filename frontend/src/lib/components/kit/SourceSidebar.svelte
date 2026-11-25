@@ -12,6 +12,7 @@
   // consumers inherit them automatically.
 
   import { type Snippet, onMount } from 'svelte'
+  import * as Sidebar from '$lib/components/ui/sidebar'
   import SidebarFrame from './SidebarFrame.svelte'
   import { KEY } from '$lib/keyboard/shortcuts'
   import { setFocusedPane, getFocusedPane, isPaneFlashing, registerPaneNav, type FocusablePane } from '$lib/stores/keyboard.svelte'
@@ -81,6 +82,7 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
+    if (e.target !== containerRef && !(e.target instanceof Element && e.target.matches('[data-sidebar="menu-button"]'))) return
     if (KEY.LIST_NEXT(e)) {
       e.preventDefault()
       e.stopPropagation()
@@ -93,8 +95,8 @@
       move(-1)
       return
     }
-    if (KEY.LIST_OPEN(e)) {
-      if (!selectedId) return
+    if (e.target === containerRef && KEY.LIST_OPEN(e)) {
+      if (selectedId == null) return
       e.preventDefault()
       e.stopPropagation()
       onSelect(selectedId)
@@ -108,7 +110,8 @@
     }
   }
 
-  function handleMouseDown(_e: MouseEvent) {
+  function handleMouseDown(e: MouseEvent) {
+    if (e.target instanceof Element && e.target.closest('button, input, a')) return
     if (containerRef && document.activeElement !== containerRef) {
       containerRef.focus()
     }
@@ -120,7 +123,7 @@
     navigatePrev: () => move(-1),
     navigateFirst: () => jumpTo(0),
     navigateLast: () => jumpTo(allItems.length - 1),
-    activate: () => { if (selectedId) onSelect(selectedId) },
+    activate: () => { if (selectedId != null) onSelect(selectedId) },
   }))
 
   const flashing = $derived(isPaneFlashing(focusSlot))
@@ -142,21 +145,24 @@
     {/if}
 
     {#each sections as section, sIdx (sIdx)}
-      {#if section.heading}
-        <div class="mx-4 mt-3 mb-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-          {section.heading}
-        </div>
-      {/if}
-
-      {#if section.items.length === 0}
-        {#if sectionEmpty}
-          {@render sectionEmpty(section)}
+      <Sidebar.Group>
+        {#if section.heading}
+          <h3 class="truncate px-2 py-1 text-xs font-medium text-muted-foreground">{section.heading}</h3>
         {/if}
-      {:else}
-        {#each section.items as it (it.id)}
-          {@render item(it, { active: it.id === selectedId })}
-        {/each}
-      {/if}
+        <Sidebar.GroupContent>
+          {#if section.items.length === 0}
+            {@render sectionEmpty?.(section)}
+          {:else}
+            <Sidebar.Menu>
+              {#each section.items as it (it.id)}
+                <Sidebar.MenuItem>
+                  {@render item(it, { active: it.id === selectedId })}
+                </Sidebar.MenuItem>
+              {/each}
+            </Sidebar.Menu>
+          {/if}
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
     {/each}
   {/snippet}
 

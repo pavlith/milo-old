@@ -151,10 +151,16 @@
   onDestroy(unregSyncFocused)
 </script>
 
-<PaneLayout>
-  <ContactsSidebar onSelect={handleSourceSelected} onOpenSettings={() => { showSettings = true }} />
-  <ContactList onAdd={openAdd} />
-  <ContactDetail onEdit={openEdit} />
+<PaneLayout detailResizeLabel={$_('contacts.list.resize')}>
+  {#snippet sidebar()}
+    <ContactsSidebar onSelect={handleSourceSelected} onOpenSettings={() => { showSettings = true }} />
+  {/snippet}
+  {#snippet content()}
+    <ContactList onAdd={openAdd} />
+  {/snippet}
+  {#snippet detail()}
+    <ContactDetail onEdit={openEdit} />
+  {/snippet}
 </PaneLayout>
 
 <AddContactDialog bind:open={showAdd} onCreated={handleCreated} />

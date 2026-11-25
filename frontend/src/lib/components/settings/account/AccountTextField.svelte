@@ -7,7 +7,8 @@
 
   interface Props {
     form: AccountFormAdapter
-    name: 'name' | 'displayName' | 'email'
+    name: 'name' | 'displayName' | 'email' | 'imapHost' | 'smtpHost'
+    id?: string
     label: string
     description?: string
     placeholder?: string
@@ -18,14 +19,14 @@
   }
 
   let {
-    form, name, label, description, placeholder, value = $bindable(), disabled = false, onValueChange, leading,
+    form, name, id, label, description, placeholder, value = $bindable(), disabled = false, onValueChange, leading,
   }: Props = $props()
 </script>
 
 <Form.Field {form} {name}>
   {#snippet children({ errors })}
     <Field data-invalid={errors.length > 0 || undefined} data-disabled={disabled || undefined} class="gap-2">
-      <Form.Control>
+      <Form.Control {id}>
         {#snippet children({ props })}
           <Form.Label class="text-sm font-medium">{label}</Form.Label>
           <div class="flex items-center gap-3">

@@ -1,6 +1,8 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import * as Select from '$lib/components/ui/select'
+  import { Field, FieldGroup } from '$lib/components/ui/field'
+  import { Separator } from '$lib/components/ui/separator'
   import { Label } from '$lib/components/ui/label'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
   import AccountAddressDefaults from './AccountAddressDefaults.svelte'
@@ -117,128 +119,135 @@
 
 </script>
 
-<div class="space-y-6 p-1">
-  <div class="space-y-2">
+<FieldGroup class="gap-5 p-1">
+  <Field>
     <Label for="composer-open-mode">{$_('settings.composerMode')}</Label>
     <Select.Root value={composerMode} onValueChange={handleComposerModeChange}>
-      <Select.Trigger id="composer-open-mode">
+      <Select.Trigger id="composer-open-mode" aria-describedby="composer-open-mode-help">
         <Select.Value placeholder={$_('settings.composerMode')}>
           {getModeLabel(composerMode)}
         </Select.Value>
       </Select.Trigger>
       <Select.Content>
-        {#each modeOptions as opt (opt.value)}
-          <Select.Item value={opt.value} label={opt.label} />
-        {/each}
+        <Select.Group>
+          {#each modeOptions as opt (opt.value)}
+            <Select.Item value={opt.value} label={opt.label} />
+          {/each}
+        </Select.Group>
       </Select.Content>
     </Select.Root>
-    <p class="text-xs text-muted-foreground">
+    <p id="composer-open-mode-help" class="text-xs text-muted-foreground">
       {$_('settings.composerModeDescription')}
     </p>
-  </div>
+  </Field>
 
-  <div class="space-y-2">
+  <Field>
     <Label for="composer-mailto-mode">{$_('settings.mailtoMode')}</Label>
     <Select.Root value={mailtoMode} onValueChange={handleMailtoModeChange}>
-      <Select.Trigger id="composer-mailto-mode">
+      <Select.Trigger id="composer-mailto-mode" aria-describedby="composer-mailto-mode-help">
         <Select.Value placeholder={$_('settings.mailtoMode')}>
           {getModeLabel(mailtoMode)}
         </Select.Value>
       </Select.Trigger>
       <Select.Content>
-        {#each modeOptions as opt (opt.value)}
-          <Select.Item value={opt.value} label={opt.label} />
-        {/each}
+        <Select.Group>
+          {#each modeOptions as opt (opt.value)}
+            <Select.Item value={opt.value} label={opt.label} />
+          {/each}
+        </Select.Group>
       </Select.Content>
     </Select.Root>
-    <p class="text-xs text-muted-foreground">
+    <p id="composer-mailto-mode-help" class="text-xs text-muted-foreground">
       {$_('settings.mailtoModeDescription')}
     </p>
-  </div>
+  </Field>
 
-  <div class="space-y-2">
+  <Field>
     <Label for="composer-format">{$_('settings.composerFormat')}</Label>
     <Select.Root value={composerFormat} onValueChange={handleFormatChange}>
-      <Select.Trigger id="composer-format">
+      <Select.Trigger id="composer-format" aria-describedby="composer-format-help">
         <Select.Value placeholder={$_('settings.composerFormat')}>
           {getFormatLabel(composerFormat)}
         </Select.Value>
       </Select.Trigger>
       <Select.Content>
-        {#each formatOptions as opt (opt.value)}
-          <Select.Item value={opt.value} label={opt.label} />
-        {/each}
+        <Select.Group>
+          {#each formatOptions as opt (opt.value)}
+            <Select.Item value={opt.value} label={opt.label} />
+          {/each}
+        </Select.Group>
       </Select.Content>
     </Select.Root>
-    <p class="text-xs text-muted-foreground">
+    <p id="composer-format-help" class="text-xs text-muted-foreground">
       {$_('settings.composerFormatDescription')}
     </p>
-  </div>
+  </Field>
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
   <!-- Read Receipts Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-3">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:email-check-outline" class="w-4 h-4" />
       {$_('settingsGeneral.readReceipts')}
     </h3>
 
-    <div class="space-y-2">
+    <Field>
       <Label for="read-receipt-policy">{$_('settingsGeneral.readReceiptPolicy')}</Label>
       <Select.Root value={readReceiptResponsePolicy} onValueChange={handlePolicyChange}>
-        <Select.Trigger id="read-receipt-policy">
+        <Select.Trigger id="read-receipt-policy" aria-describedby="read-receipt-policy-help">
           <Select.Value placeholder={$_('settingsGeneral.selectPolicy')}>
             {getPolicyLabel(readReceiptResponsePolicy)}
           </Select.Value>
         </Select.Trigger>
         <Select.Content>
-          {#each readReceiptResponseOptions as opt (opt.value)}
-            <Select.Item value={opt.value} label={opt.label} />
-          {/each}
+          <Select.Group>
+            {#each readReceiptResponseOptions as opt (opt.value)}
+              <Select.Item value={opt.value} label={opt.label} />
+            {/each}
+          </Select.Group>
         </Select.Content>
       </Select.Root>
-      <p class="text-xs text-muted-foreground">
+      <p id="read-receipt-policy-help" class="text-xs text-muted-foreground">
         {$_('settingsGeneral.readReceiptPolicyHelp')}
       </p>
-    </div>
+    </Field>
   </div>
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
   <!-- Spellcheck Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-3">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:spellcheck" class="w-4 h-4" />
       {$_('spellcheck.title')}
     </h3>
 
-    <div class="flex items-center justify-between">
+    <Field orientation="horizontal" class="justify-between gap-3">
       <div>
         <Label for="spellcheck-enabled">{$_('spellcheck.enable')}</Label>
-        <p class="text-xs text-muted-foreground">{$_('spellcheck.enableHelp')}</p>
+        <p id="spellcheck-enabled-help" class="text-xs text-muted-foreground">{$_('spellcheck.enableHelp')}</p>
       </div>
-      <Switch id="spellcheck-enabled" checked={spellcheckEnabled} onCheckedChange={handleSpellcheckEnabledChange} />
-    </div>
+      <Switch id="spellcheck-enabled" aria-describedby="spellcheck-enabled-help" checked={spellcheckEnabled} onCheckedChange={handleSpellcheckEnabledChange} />
+    </Field>
 
-    <div class="space-y-2 {spellcheckEnabled ? '' : 'opacity-50 pointer-events-none'}">
-      <Label>{$_('spellcheck.languages')}</Label>
-      <div class="space-y-1 max-h-48 overflow-y-auto rounded-md border border-border p-2">
+    <fieldset class="flex min-w-0 flex-col gap-2 disabled:opacity-50" disabled={!spellcheckEnabled} aria-describedby="spellcheck-languages-help">
+      <legend class="mb-2 text-sm font-medium">{$_('spellcheck.languages')}</legend>
+      <div class="flex max-h-48 flex-col gap-1 overflow-y-auto rounded-md border border-border p-2">
         {#each dictLanguages as lang (lang.code)}
           <div class="flex items-center justify-between px-1 py-1">
             <Label for={`spellcheck-lang-${lang.code}`} class="font-normal">{lang.name}</Label>
             <Switch
               id={`spellcheck-lang-${lang.code}`}
+              disabled={!spellcheckEnabled}
               checked={spellcheckLanguages.includes(lang.code)}
               onCheckedChange={(v) => handleLangToggle(lang.code, v)}
             />
           </div>
         {/each}
       </div>
-      <p class="text-xs text-muted-foreground">{$_('spellcheck.languagesHelp')}</p>
-    </div>
+      <p id="spellcheck-languages-help" class="text-xs text-muted-foreground">{$_('spellcheck.languagesHelp')}</p>
+    </fieldset>
 
     <SpellWordList
       title={$_('spellcheck.addedWords')}
@@ -249,8 +258,7 @@
     />
   </div>
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
   <!-- Per-account default Reply-To -->
   <AccountAddressDefaults
@@ -262,8 +270,7 @@
     single
   />
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
   <!-- Per-account default CC -->
   <AccountAddressDefaults
@@ -274,8 +281,7 @@
     placeholder="boss@example.com"
   />
 
-  <!-- Divider -->
-  <div class="border-t border-border"></div>
+  <Separator />
 
   <!-- Per-account default BCC (#341) -->
   <AccountAddressDefaults
@@ -285,4 +291,4 @@
     help={$_('settings.defaultBccHelp')}
     placeholder="crm@example.com"
   />
-</div>
+</FieldGroup>

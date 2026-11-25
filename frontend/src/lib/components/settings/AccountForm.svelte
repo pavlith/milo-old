@@ -551,7 +551,11 @@
   }
 
   // Validate form
-  const accountFields = createAccountFormAdapter(() => ({ name, displayName, email }), () => errors)
+  const accountFields = createAccountFormAdapter(
+    () => ({ name, displayName, email, imapHost, smtpHost }),
+    () => errors,
+    { noOutgoingServer: () => noOutgoingServer },
+  )
 
   function validate(): boolean {
     errors = {}
@@ -572,11 +576,11 @@
     }
 
     if (!imapHost.trim()) errors.imapHost = $_('account.imapHostRequired')
-    if (imapPort < 1 || imapPort > 65535) errors.imapPort = $_('account.invalidPort')
+    if (!Number.isInteger(imapPort) || imapPort < 1 || imapPort > 65535) errors.imapPort = $_('account.invalidPort')
     // SMTP host/port checks only when the user wants outgoing.
     if (!noOutgoingServer) {
       if (!smtpHost.trim()) errors.smtpHost = $_('account.smtpHostRequired')
-      if (smtpPort < 1 || smtpPort > 65535) errors.smtpPort = $_('account.invalidPort')
+      if (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535) errors.smtpPort = $_('account.invalidPort')
     }
     // Separate SMTP credentials (Generic only, toggle off): username
     // always required; password required on NEW accounts. Blank on EDIT
@@ -689,7 +693,7 @@
   }
 </script>
 
-<form onsubmit={handleSubmit} class="space-y-6">
+<form novalidate onsubmit={handleSubmit} class="space-y-6">
   {#if step === 'provider' && !editAccount}
     <!-- Step 1: Provider Selection -->
     <div class="space-y-4">
@@ -1176,25 +1180,17 @@
           <div class="space-y-3">
             <h4 class="text-sm font-medium">{$_('account.incomingMail')}</h4>
             <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-2">
-                <Label for="imapHost">{$_('account.server')}</Label>
-                <Input
-                  id="imapHost"
-                  type="text"
-                  placeholder="imap.example.com"
-                  bind:value={imapHost}
-                  oninput={(e) => {
-                    const v = (e.target as HTMLInputElement).value
-                    if (isGenericProvider && !editAccount && smtpHostMirrorsImap) {
-                      smtpHost = v
-                    }
-                  }}
-                  class={errors.imapHost ? 'border-destructive' : ''}
-                />
-                {#if errors.imapHost}
-                  <p class="text-sm text-destructive">{errors.imapHost}</p>
-                {/if}
-              </div>
+              <AccountTextField
+                form={accountFields}
+                name="imapHost"
+                id="imapHost"
+                label={$_('account.server')}
+                placeholder="imap.example.com"
+                bind:value={imapHost}
+                onValueChange={(value) => {
+                  if (isGenericProvider && !editAccount && smtpHostMirrorsImap) smtpHost = value
+                }}
+              />
               <div class="grid grid-cols-2 gap-2">
                 <div class="space-y-2">
                   <Label for="imapPort">{$_('account.port')}</Label>
@@ -1305,20 +1301,15 @@
           <div class="space-y-3">
             <h4 class="text-sm font-medium">{$_('account.outgoingMail')}</h4>
             <div class="grid grid-cols-2 gap-3">
-              <div class="space-y-2">
-                <Label for="smtpHost">{$_('account.server')}</Label>
-                <Input
-                  id="smtpHost"
-                  type="text"
-                  placeholder="smtp.example.com"
-                  bind:value={smtpHost}
-                  oninput={() => { smtpHostMirrorsImap = false }}
-                  class={errors.smtpHost ? 'border-destructive' : ''}
-                />
-                {#if errors.smtpHost}
-                  <p class="text-sm text-destructive">{errors.smtpHost}</p>
-                {/if}
-              </div>
+              <AccountTextField
+                form={accountFields}
+                name="smtpHost"
+                id="smtpHost"
+                label={$_('account.server')}
+                placeholder="smtp.example.com"
+                bind:value={smtpHost}
+                onValueChange={() => { smtpHostMirrorsImap = false }}
+              />
               <div class="grid grid-cols-2 gap-2">
                 <div class="space-y-2">
                   <Label for="smtpPort">{$_('account.port')}</Label>

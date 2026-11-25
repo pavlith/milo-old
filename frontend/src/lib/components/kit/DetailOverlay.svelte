@@ -23,10 +23,12 @@
   // introduces one, this overlay would mis-position. Test before adding
   // any of those properties to wrapping divs.
 
-  import { type Snippet, onMount, onDestroy } from 'svelte'
+  import { type Snippet } from 'svelte'
+  import { useEventListener } from 'runed'
+  import { _ } from '$lib/i18n'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import { fly } from 'svelte/transition'
   import { cubicOut } from 'svelte/easing'
-  import Icon from '@iconify/svelte'
   import { isResponsive } from '$lib/stores/layout.svelte'
   import { isDialogGuardActive } from '$lib/stores/dialogGuard'
 
@@ -74,13 +76,7 @@
     onClose?.()
   }
 
-  onMount(() => {
-    window.addEventListener('keydown', handleKeyDown, true)
-  })
-
-  onDestroy(() => {
-    window.removeEventListener('keydown', handleKeyDown, true)
-  })
+  useEventListener(() => open ? window : null, 'keydown', handleKeyDown, { capture: true })
 </script>
 
 {#if open}
@@ -90,45 +86,22 @@
            {fillsWindow ? 'inset-0' : 'right-0 w-[340px] border-l border-border'}"
     role="dialog"
     aria-modal="false"
+    aria-label={title}
     transition:fly={{ x: 360, duration: 200, easing: cubicOut }}
   >
     <!-- Header bar: back (responsive only), title, focus toggle, close. -->
-    <div class="flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
+    <div class="flex min-h-[52px] shrink-0 items-center gap-2 border-b px-3 py-2">
       {#if responsive}
-        <button
-          type="button"
-          class="p-1 rounded hover:bg-muted/40"
-          onclick={() => onClose?.()}
-          aria-label="Back"
-          title="Back"
-        >
-          <Icon icon="mdi:arrow-left" class="w-5 h-5 text-muted-foreground" />
-        </button>
+        <ToolbarButton icon="mdi:arrow-left" label={$_('common.back')} onclick={onClose} />
       {/if}
-      <span class="flex-1 min-w-0 truncate text-sm font-medium text-foreground">
-        {title}
-      </span>
-      <button
-        type="button"
-        class="p-1 rounded hover:bg-muted/40"
-        onclick={() => onToggleFocus?.()}
-        aria-label={focused ? 'Exit focus' : 'Enter focus mode'}
-        title={focused ? 'Exit focus' : 'Enter focus mode'}
-      >
-        <Icon
-          icon={focused ? 'mdi:fullscreen-exit' : 'mdi:fullscreen'}
-          class="w-5 h-5 text-muted-foreground"
-        />
-      </button>
-      <button
-        type="button"
-        class="p-1 rounded hover:bg-muted/40"
-        onclick={() => onClose?.()}
-        aria-label="Close"
-        title="Close"
-      >
-        <Icon icon="mdi:close" class="w-5 h-5 text-muted-foreground" />
-      </button>
+      <h2 class="min-w-0 flex-1 truncate text-base font-semibold">{title}</h2>
+      <ToolbarButton
+        icon={focused ? 'mdi:fullscreen-exit' : 'mdi:fullscreen'}
+        label={focused ? $_('viewer.exitFocus') : $_('common.enterFocus')}
+        aria-pressed={focused}
+        onclick={onToggleFocus}
+      />
+      <ToolbarButton icon="mdi:close" label={$_('common.close')} onclick={onClose} />
     </div>
 
     <!-- Body: scrollable area for arbitrary consumer content. -->

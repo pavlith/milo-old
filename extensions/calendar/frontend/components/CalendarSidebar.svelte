@@ -12,7 +12,10 @@
   // sidebar (and any future extension sidebar) is automatic.
 
   import { _, locale } from 'svelte-i18n'
-  import Icon from '@iconify/svelte'
+  import * as Sidebar from '$lib/components/ui/sidebar'
+  import { Checkbox } from '$lib/components/ui/checkbox'
+  import { Label } from '$lib/components/ui/label'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import SidebarFrame from '$lib/components/kit/SidebarFrame.svelte'
   import SidebarFooter from '$lib/components/kit/SidebarFooter.svelte'
   import SidebarSyncStatus from '$lib/components/kit/SidebarSyncStatus.svelte'
@@ -93,54 +96,40 @@
 
 <SidebarFrame title={$_('calendar.sidebar.title')}>
   {#snippet body()}
-    <div class="py-2">
-      {#if sections.length === 0}
-        <p class="px-4 py-3 text-xs text-muted-foreground">
-          {$_('calendar.sidebar.noCalendars')}
-        </p>
-      {/if}
+    {#if sections.length === 0}
+      <p class="px-4 py-3 text-xs text-muted-foreground">{$_('calendar.sidebar.noCalendars')}</p>
+    {/if}
 
-      {#each sections as section (section.source.id)}
-        <div class="mb-3">
-          <div class="px-4 mb-1 text-[11px] uppercase tracking-wider text-muted-foreground truncate">
-            {section.source.name}
-          </div>
-          {#each section.calendars as cal (cal.id)}
-            <div
-              class="group flex items-center gap-2 mx-2 px-2 py-1.5 rounded-md cursor-pointer text-sm
-                     hover:bg-muted/40 transition-colors"
-              role="button"
-              tabindex="0"
-              onclick={() => toggleVisibility(cal)}
-              onkeydown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  toggleVisibility(cal)
-                }
-              }}
-            >
-              <input
-                type="checkbox"
-                class="shrink-0 cursor-pointer accent-primary"
-                checked={cal.visible}
-                onclick={(e) => { e.stopPropagation(); toggleVisibility(cal) }}
-                aria-label={cal.displayName}
-              />
-              <span
-                class="shrink-0 inline-block w-2.5 h-2.5 rounded-full"
-                style:background-color={calendarSources.colorOf(cal.id)}
-                aria-hidden="true"
-              ></span>
-              <span class="flex-1 min-w-0 truncate text-foreground">{cal.displayName}</span>
-            </div>
-          {/each}
-        </div>
-      {/each}
+    {#each sections as section (section.source.id)}
+      <Sidebar.Group>
+        <h3 class="truncate px-2 py-1 text-xs font-medium text-muted-foreground">{section.source.name}</h3>
+        <Sidebar.GroupContent>
+          <Sidebar.Menu>
+            {#each section.calendars as cal (cal.id)}
+              <Sidebar.MenuItem class="flex h-8 items-center gap-2 rounded-md px-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                <Checkbox
+                  id={'calendar-visible-' + cal.id}
+                  checked={cal.visible}
+                  onCheckedChange={() => toggleVisibility(cal)}
+                  onkeydown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      toggleVisibility(cal)
+                    }
+                  }}
+                />
+                <Label for={'calendar-visible-' + cal.id} class="flex h-full min-w-0 flex-1 cursor-pointer items-center gap-2 font-normal">
+                  <span class="size-2.5 shrink-0 rounded-full" style:background-color={calendarSources.colorOf(cal.id)} aria-hidden="true"></span>
+                  <span class="truncate">{cal.displayName}</span>
+                </Label>
+              </Sidebar.MenuItem>
+            {/each}
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+    {/each}
 
-      <!-- "+ Add Calendar" inline-expanding picker. Owns its own dialogs
-           for Local + CalDAV; Phase 2 entries appear disabled until wired. -->
-      <AddCalendarMenu />
-    </div>
+    <AddCalendarMenu />
   {/snippet}
 
   {#snippet footer()}
@@ -156,15 +145,11 @@
         />
       {/snippet}
       {#snippet trailing()}
-        <button
-          class="p-1 rounded hover:bg-muted/40"
-          title={$_('calendar.sidebar.settings')}
+        <ToolbarButton
+          icon="mdi:cog-outline"
+          label={$_('calendar.sidebar.settings')}
           onclick={() => onOpenSettings?.()}
-          type="button"
-          aria-label={$_('calendar.sidebar.settings')}
-        >
-          <Icon icon="mdi:cog-outline" class="w-4 h-4" />
-        </button>
+        />
       {/snippet}
     </SidebarFooter>
   {/snippet}

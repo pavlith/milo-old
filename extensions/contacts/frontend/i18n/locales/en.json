@@ -22,6 +22,7 @@
       "settings": "Contact settings"
     },
     "list": {
+      "resize": "Resize contact list",
       "header": "Contacts",
       "label": "Contacts",
       "searchPlaceholder": "Search contacts...",

@@ -49,6 +49,7 @@
       "syncError": "Sync failed"
     },
     "viewSwitcher": {
+      "view": "Calendar view",
       "month": "Month",
       "week": "Week",
       "day": "Day",

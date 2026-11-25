@@ -1,6 +1,7 @@
 <script lang="ts">
   import Icon from '@iconify/svelte'
   import * as Select from '$lib/components/ui/select'
+  import { Field, FieldGroup } from '$lib/components/ui/field'
   import { Label } from '$lib/components/ui/label'
   import { Input } from '$lib/components/ui/input'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
@@ -158,15 +159,15 @@
 
 </script>
 
-<div class="space-y-6">
+<FieldGroup>
   <!-- Display Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-4">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:format-size" class="w-4 h-4" />
       {$_('settingsGeneral.display')}
     </h3>
 
-    <div class="space-y-2">
+    <Field>
       <Label for="title-bar-style">{$_('settingsGeneral.titleBar')}</Label>
       <Select.Root value={titleBarValue} onValueChange={handleTitleBarChange}>
         <Select.Trigger id="title-bar-style">
@@ -183,9 +184,9 @@
       <p class="text-xs text-muted-foreground">
         {$_('settingsGeneral.titleBarHelp')}
       </p>
-    </div>
+    </Field>
 
-    <div class="space-y-2">
+    <Field>
       <Label for="ui-language">{$_('settingsGeneral.language')}</Label>
       <Select.Root bind:value={language}>
         <Select.Trigger id="ui-language">
@@ -199,9 +200,9 @@
           {/each}
         </Select.Content>
       </Select.Root>
-    </div>
+    </Field>
 
-    <div class="space-y-2">
+    <Field>
       <Label for="appearance-theme">{$_('settingsGeneral.theme')}</Label>
       <Select.Root value={themeMode} onValueChange={handleThemeChange} disabled={themeDisabled}>
         <Select.Trigger id="appearance-theme">
@@ -215,9 +216,9 @@
           {/each}
         </Select.Content>
       </Select.Root>
-    </div>
+    </Field>
 
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="dark-mail-content">{$_('settingsGeneral.darkMailContent')}</Label>
@@ -230,10 +231,10 @@
           bind:checked={darkMailContent}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Dark composer body — keep the composer message body white by default in dark mode -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="dark-composer-body">{$_('settingsGeneral.darkComposerBody')}</Label>
@@ -246,11 +247,11 @@
           bind:checked={darkComposerBody}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Always show checkbox next to message — reserve the fixed checkbox
          column instead of the hover/swipe slide-reveal -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="always-show-message-checkbox">{$_('settingsGeneral.alwaysShowCheckbox')}</Label>
@@ -263,10 +264,10 @@
           bind:checked={alwaysShowMessageCheckbox}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Show colored circles in message list -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="show-message-list-circles">{$_('settingsGeneral.showMessageListCircles')}</Label>
@@ -279,10 +280,10 @@
           bind:checked={showMessageListCircles}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Show colored circles in conversation viewer -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="show-viewer-circles">{$_('settingsGeneral.showViewerCircles')}</Label>
@@ -295,10 +296,10 @@
           bind:checked={showViewerCircles}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Show contact profile pictures in message list -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="show-message-list-profile-pics">{$_('settingsGeneral.showMessageListProfilePics')}</Label>
@@ -311,10 +312,10 @@
           bind:checked={showMessageListProfilePics}
         />
       </div>
-    </div>
+    </Field>
 
     <!-- Accent bar for unread messages -->
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div>
           <Label for="accent-bar-unread">{$_('settingsGeneral.accentBarUnread')}</Label>
@@ -341,9 +342,9 @@
           </Select.Content>
         </Select.Root>
       {/if}
-    </div>
+    </Field>
 
-    <div class="space-y-2">
+    <Field>
       <Label for="message-list-density">{$_('settingsGeneral.messageListDensity')}</Label>
       <Select.Root value={messageListDensity} onValueChange={handleDensityChange}>
         <Select.Trigger id="message-list-density">
@@ -360,20 +361,20 @@
       <p class="text-xs text-muted-foreground">
         {$_('settingsGeneral.messageListDensityHelp')}
       </p>
-    </div>
+    </Field>
   </div>
 
   <!-- Divider -->
   <div class="border-t border-border"></div>
 
   <!-- Mark as Read Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-4">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:email-open-outline" class="w-4 h-4" />
       {$_('settingsGeneral.markAsRead')}
     </h3>
 
-    <div class="space-y-2">
+    <Field>
       <Label>{$_('settingsGeneral.markAsReadAfter')}</Label>
       <div class="flex items-center gap-2">
         <Input
@@ -390,20 +391,20 @@
       <p class="text-xs text-muted-foreground">
         {$_('settingsGeneral.markAsReadHelp')}
       </p>
-    </div>
+    </Field>
   </div>
 
   <!-- Divider -->
   <div class="border-t border-border"></div>
 
   <!-- Background Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-4">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:application-cog-outline" class="w-4 h-4" />
       {$_('settingsGeneral.background')}
     </h3>
 
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div class="space-y-0.5">
           <Label for="run-background">{$_('settingsGeneral.runInBackground')}</Label>
@@ -417,9 +418,9 @@
           onCheckedChange={handleRunBackgroundChange}
         />
       </div>
-    </div>
+    </Field>
 
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div class="space-y-0.5">
           <Label for="start-hidden" class={!runBackground ? 'text-muted-foreground' : ''}>{$_('settingsGeneral.startHidden')}</Label>
@@ -434,20 +435,20 @@
           disabled={!runBackground}
         />
       </div>
-    </div>
+    </Field>
   </div>
 
   <!-- Divider -->
   <div class="border-t border-border"></div>
 
   <!-- Startup Section -->
-  <div class="space-y-4">
+  <div class="flex flex-col gap-4">
     <h3 class="text-sm font-medium flex items-center gap-2">
       <Icon icon="mdi:power" class="w-4 h-4" />
       {$_('settingsGeneral.startup')}
     </h3>
 
-    <div class="space-y-2">
+    <Field>
       <div class="flex items-center justify-between">
         <div class="space-y-0.5">
           <Label for="autostart">{$_('settingsGeneral.autostartOnLogin')}</Label>
@@ -461,8 +462,7 @@
           onCheckedChange={handleAutostartChange}
         />
       </div>
-    </div>
+    </Field>
   </div>
 
-</div>
-
+</FieldGroup>

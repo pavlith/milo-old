@@ -7,6 +7,7 @@
   import { MarkAsRead, MarkAsUnread, Star, Unstar, Archive, Trash, MarkAsSpam, MarkAsNotSpam, DeletePermanently, Undo } from '$bindings/github.com/hkdb/aerion/app/app'
   import { EventsOn } from '$lib/desktop'
   import { message as messageModels } from '$lib/models'
+  import * as Empty from '$lib/components/ui/empty'
   import Avatar from '$lib/components/kit/Avatar.svelte'
   import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import { Badge } from '$lib/components/ui/badge'
@@ -1297,10 +1298,12 @@
 <div class="flex flex-col h-full {isFlashing ? 'pane-focus-flash' : ''}">
   {#if !threadId}
     <!-- No conversation selected -->
-    <div class="flex flex-col items-center justify-center h-full text-muted-foreground">
-      <Icon icon="mdi:email-open-outline" class="w-16 h-16 mb-4" />
-      <p class="text-lg">{$_('viewer.selectConversation')}</p>
-    </div>
+    <Empty.Root>
+      <Empty.Header>
+        <Empty.Media variant="icon"><Icon icon="mdi:email-open-outline" aria-hidden="true" /></Empty.Media>
+        <Empty.Description>{$_('viewer.selectConversation')}</Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
   {:else if loading}
     <!-- Loading -->
     <div class="flex items-center justify-center h-full">

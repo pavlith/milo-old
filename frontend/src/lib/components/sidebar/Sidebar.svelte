@@ -8,6 +8,7 @@
   import DeleteAccountDialog from '$lib/components/settings/DeleteAccountDialog.svelte'
   import * as SidebarUI from '$lib/components/ui/sidebar'
   import { ScrollArea } from '$lib/components/ui/scroll-area'
+  import SidebarFooter from '$lib/components/kit/SidebarFooter.svelte'
   import { Separator } from '$lib/components/ui/separator'
   import { cn } from '$lib/utils'
   import { Button } from '$lib/components/ui/button'
@@ -625,29 +626,32 @@
     </ScrollArea>
   </SidebarUI.Content>
 
-  <Separator />
-  <SidebarUI.Footer class="relative min-h-[52px] justify-center px-3 text-xs text-muted-foreground">
-    {#if syncStatus.percentage !== null}
-      <div class="absolute inset-x-0 top-0 h-1 bg-muted">
-        <div class="h-full bg-primary transition-all duration-300" style:width="{syncStatus.percentage}%"></div>
-      </div>
-    {/if}
-    <Button
-      variant="ghost"
-      size="sm"
-      class="h-auto min-w-0 justify-start gap-2 px-1 py-1.5 text-left"
-      onclick={toggleSync}
-      title={$_(accountStore.isAnySyncing ? 'sidebar.clickToCancel' : 'sidebar.syncAllAccounts')}
-    >
-      <Icon icon="mdi:sync" class={cn('size-4 shrink-0', accountStore.isAnySyncing && 'animate-spin')} />
-      <span class="min-w-0 text-xs font-normal">
-        {#if syncStatus.accountName}
-          <span class="block truncate font-medium text-foreground">{syncStatus.accountName}</span>
-        {/if}
-        <span class="block truncate">{syncStatus.label}</span>
-      </span>
-    </Button>
-  </SidebarUI.Footer>
+  <SidebarFooter>
+    {#snippet overlay()}
+      {#if syncStatus.percentage !== null}
+        <div class="absolute inset-x-0 top-0 h-1 bg-muted">
+          <div class="h-full bg-primary transition-all duration-300" style:width="{syncStatus.percentage}%"></div>
+        </div>
+      {/if}
+    {/snippet}
+    {#snippet leading()}
+      <Button
+        variant="ghost"
+        size="sm"
+        class="h-auto w-full min-w-0 justify-start gap-2 px-1 py-1.5 text-left"
+        onclick={toggleSync}
+        title={$_(accountStore.isAnySyncing ? 'sidebar.clickToCancel' : 'sidebar.syncAllAccounts')}
+      >
+        <Icon icon="mdi:sync" class={cn('size-4 shrink-0', accountStore.isAnySyncing && 'animate-spin')} />
+        <span class="min-w-0 text-xs font-normal">
+          {#if syncStatus.accountName}
+            <span class="block truncate font-medium text-foreground">{syncStatus.accountName}</span>
+          {/if}
+          <span class="block truncate">{syncStatus.label}</span>
+        </span>
+      </Button>
+    {/snippet}
+  </SidebarFooter>
 </SidebarUI.Root>
 
 <!-- Account Dialog -->

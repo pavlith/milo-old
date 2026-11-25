@@ -13,6 +13,9 @@
   // === focusSlot, we DOM-focus the container so subsequent keypresses route
   // here. This lets Alt+H/L cycle uniformly across mail and extension panes.
 
+  import { _ } from '$lib/i18n'
+  import * as Empty from '$lib/components/ui/empty'
+  import { Skeleton } from '$lib/components/ui/skeleton'
   import { onMount, type Snippet } from 'svelte'
   import { KEY } from '$lib/keyboard/shortcuts'
   import { setFocusedPane, getFocusedPane, isPaneFlashing, registerPaneNav, type FocusablePane } from '$lib/stores/keyboard.svelte'
@@ -152,6 +155,7 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
+    if (e.target !== containerRef) return
     // Range-extend (Shift+J / Shift+ArrowDown / Shift+K / Shift+ArrowUp) —
     // checked before LIST_NEXT/PREV because those predicates require !shiftKey.
     // Match mail's selectNextWithCheck / selectPreviousWithCheck pattern: cursor
@@ -264,7 +268,8 @@
   // are non-focusable <div role="option"> elements (see ListRow); without
   // this, DOM focus would stay on whatever was previously focused, and
   // arrow keys would not flow back into the list.
-  function handleMouseDown(_e: MouseEvent) {
+  function handleMouseDown(e: MouseEvent) {
+    if (e.target instanceof Element && e.target.closest('button, input, a')) return
     if (containerRef && document.activeElement !== containerRef) {
       containerRef.focus()
     }
@@ -290,23 +295,28 @@
   role="listbox"
   aria-label={label ?? 'List'}
   tabindex="0"
-  class="flex-1 min-w-0 min-h-0 flex flex-col outline-hidden {flashing ? 'pane-focus-flash' : ''}"
+  class="flex-1 min-w-0 min-h-0 flex flex-col outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring {flashing ? 'pane-focus-flash' : ''}"
   onkeydown={handleKeyDown}
   onfocus={handleFocus}
   onmousedown={handleMouseDown}
 >
-  <div bind:this={scrollRegionRef} class="flex-1 min-h-0 overflow-y-auto" aria-busy={loading}>
+  <div bind:this={scrollRegionRef} class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2 py-1 [&>[role=option]]:shrink-0" aria-busy={loading}>
     {#if loading}
       {#if loadingSnippet}
         {@render loadingSnippet()}
       {:else}
-        <p class="m-4 text-sm text-muted-foreground">Loading…</p>
+        <span class="sr-only" role="status">{$_('common.loading')}</span>
+        <div class="flex flex-col gap-1 px-2 py-1" aria-hidden="true">
+          {#each [1, 2, 3] as row (row)}
+            <Skeleton class="h-14 w-full" />
+          {/each}
+        </div>
       {/if}
     {:else if items.length === 0}
       {#if empty}
         {@render empty()}
       {:else}
-        <p class="m-4 text-sm text-muted-foreground">No items.</p>
+        <Empty.Root><Empty.Description>{$_('common.noItems')}</Empty.Description></Empty.Root>
       {/if}
     {:else}
       {#each items as item (item.id)}
@@ -318,8 +328,3 @@
     {/if}
   </div>
 </div>
-
-<style>
-  /* density prop is propagated by the row renderer; container has no density-
-     specific styles of its own. */
-</style>

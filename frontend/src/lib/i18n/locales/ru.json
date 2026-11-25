@@ -13,6 +13,9 @@
     "removeWord": "Удалить слово"
   },
   "common": {
+    "noItems": "Нет элементов.",
+    "nothingSelected": "Ничего не выбрано.",
+    "enterFocus": "Перейти в режим фокусировки",
     "save": "Сохранить",
     "cancel": "Отмена",
     "close": "Закрыть",
@@ -884,6 +887,7 @@
     "yesterdayAt": "Вчера в {time}"
   },
   "editor": {
+    "linkUrl": "Адрес ссылки",
     "bold": "Полужирный (Ctrl+B)",
     "italic": "Курсив (Ctrl+I)",
     "underline": "Подчёркнутый (Ctrl+U)",

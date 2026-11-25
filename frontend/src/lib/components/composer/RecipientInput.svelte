@@ -6,7 +6,11 @@
 </script>
 
 <script lang="ts">
-  import { getContext } from 'svelte'
+  import { getContext, onDestroy } from 'svelte'
+  import { useDebounce } from 'runed'
+  import { _ } from '$lib/i18n'
+  import { Button } from '$lib/components/ui/button'
+  import { Input } from '$lib/components/ui/input'
   import Icon from '@iconify/svelte'
   import { smtp, contact } from '$lib/models'
   import { type ComposerApi, COMPOSER_API_KEY, createMainWindowApi } from '$lib/composerApi'
@@ -14,14 +18,16 @@
   interface Props {
     recipients: smtp.Address[]
     placeholder?: string
+    id?: string
     /** Optional: search contacts function override */
     searchContactsFn?: (query: string, limit: number) => Promise<contact.Contact[]>
   }
 
-  let { recipients = $bindable([]), placeholder = 'Add recipients...', searchContactsFn }: Props = $props()
+  let { recipients = $bindable([]), placeholder, id, searchContactsFn }: Props = $props()
 
   nextInstanceId += 1
   const instanceId = nextInstanceId
+  const suggestionsId = `recipient-suggestions-${instanceId}`
 
   // Get API from context or create default
   const contextApi = getContext<ComposerApi | undefined>(COMPOSER_API_KEY)
@@ -37,38 +43,50 @@
   let suggestions = $state<contact.Contact[]>([])
   let showSuggestions = $state(false)
   let selectedIndex = $state(-1)
-  let inputElement: HTMLInputElement
+  let inputElement = $state<HTMLInputElement | null>(null)
   let containerElement: HTMLDivElement
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null
+  let searchVersion = 0
 
-  // Search contacts as user types
-  async function searchContacts(query: string) {
-    if (query.length < 2) {
-      suggestions = []
-      showSuggestions = false
-      return
-    }
-
+  const scheduleSearch = useDebounce(async (query: string, version: number) => {
     try {
       const results = await doSearchContacts(query, 10)
+      if (version !== searchVersion || document.activeElement !== inputElement) return
       suggestions = results || []
       showSuggestions = suggestions.length > 0
       selectedIndex = -1
     } catch (err) {
       console.error('Failed to search contacts:', err)
-      suggestions = []
+    }
+  }, 200)
+
+  function closeSuggestions() {
+    searchVersion++
+    if (scheduleSearch.pending) scheduleSearch.cancel()
+    suggestions = []
+    showSuggestions = false
+    selectedIndex = -1
+  }
+
+  function updateSuggestions(event: Event) {
+    const query = (event.currentTarget as HTMLInputElement).value
+    closeSuggestions()
+    if (query.length >= 2) {
+      void scheduleSearch(query, searchVersion).catch((error) => {
+        if (error !== 'Cancelled') console.error('Failed to schedule contact search:', error)
+      })
     }
   }
 
-  function handleInput() {
-    // Debounce the search
-    if (debounceTimer) {
-      clearTimeout(debounceTimer)
+  onDestroy(() => {
+    searchVersion++
+    if (scheduleSearch.pending) scheduleSearch.cancel()
+  })
+
+  $effect(() => {
+    if (showSuggestions && selectedIndex >= 0) {
+      document.getElementById(`${suggestionsId}-${selectedIndex}`)?.scrollIntoView({ block: 'nearest' })
     }
-    debounceTimer = setTimeout(() => {
-      searchContacts(inputValue)
-    }, 200)
-  }
+  })
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
@@ -88,9 +106,9 @@
       } else if (inputValue.trim()) {
         addRecipient(inputValue.trim())
       }
-    } else if (e.key === 'Escape') {
-      showSuggestions = false
-      selectedIndex = -1
+    } else if (e.key === 'Escape' && showSuggestions) {
+      e.preventDefault()
+      closeSuggestions()
     } else if (e.key === 'Backspace' && inputValue === '' && recipients.length > 0) {
       // Remove last recipient
       removeRecipient(recipients.length - 1)
@@ -109,9 +127,7 @@
     })
     recipients = [...recipients, address]
     inputValue = ''
-    suggestions = []
-    showSuggestions = false
-    selectedIndex = -1
+    closeSuggestions()
     inputElement?.focus()
   }
 
@@ -127,6 +143,7 @@
       // Check if already added (handle both 'address' and 'email' field names)
       if (recipients.some(r => (r.address || (r as any).email || '').toLowerCase() === email)) {
         inputValue = ''
+        closeSuggestions()
         return
       }
 
@@ -136,8 +153,7 @@
       })
       recipients = [...recipients, address]
       inputValue = ''
-      suggestions = []
-      showSuggestions = false
+      closeSuggestions()
     }
   }
 
@@ -247,30 +263,13 @@
   }
 
   function handleBlur() {
-    // Delay hiding to allow click on suggestion (mousedown-based selection
-    // runs before blur and clears inputValue, so the auto-commit below becomes
-    // a no-op for that path).
-    setTimeout(() => {
-      showSuggestions = false
-      // Auto-commit typed text on blur so the user doesn't have to press
-      // Tab/Enter to turn a typed address into a chip. Invalid input is left
-      // in the field for the user to fix (addRecipient is a no-op on regex
-      // miss).
-      if (inputValue.trim()) {
-        addRecipient(inputValue.trim())
-      }
-    }, 200)
+    closeSuggestions()
+    if (inputValue.trim()) addRecipient(inputValue.trim())
   }
 
   // Allow parent to focus the input programmatically
   export function focus() {
     inputElement?.focus()
-  }
-
-  function handleFocus() {
-    if (inputValue.length >= 2 && suggestions.length > 0) {
-      showSuggestions = true
-    }
   }
 
   function handlePaste(e: ClipboardEvent) {
@@ -291,7 +290,7 @@
     <!-- Recipient chips -->
     {#each recipients as recipient, index (recipient.address + ':' + index)}
       <div
-        role="listitem"
+        role="group"
         draggable="true"
         ondragstart={(e) => handleChipDragStart(e, index)}
         ondragend={handleChipDragEnd}
@@ -299,52 +298,67 @@
         ondragover={(e) => handleDragOver(e, index)}
         ondragleave={handleDragLeave}
         ondrop={(e) => handleDrop(e, index)}
-        class="flex items-center gap-1 px-2 py-0.5 bg-muted rounded-md text-sm transition-opacity cursor-grab {draggingIndex === index ? 'opacity-50' : ''} {dropTargetIndex === index ? 'border-l-2 border-primary -ml-0.5 pl-[7px]' : ''}"
+        class="flex max-w-full items-center gap-1 rounded-md bg-secondary px-2 text-sm transition-opacity cursor-grab {draggingIndex === index ? 'opacity-50' : ''} {dropTargetIndex === index ? 'border-l-2 border-primary -ml-0.5 pl-[7px]' : ''}"
       >
-        <span>
+        <span class="min-w-0 truncate">
           {#if recipient.name}
             {recipient.name}
           {:else}
             {recipient.address || (recipient as any).email || ''}
           {/if}
         </span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          class="size-6"
           onclick={() => removeRecipient(index)}
-          class="text-muted-foreground hover:text-foreground"
-          type="button"
+          aria-label={$_('common.remove') + ': ' + recipient.address}
         >
-          <Icon icon="mdi:close" class="w-3.5 h-3.5" />
-        </button>
+          <Icon icon="mdi:close" class="size-3.5" aria-hidden="true" />
+        </Button>
       </div>
     {/each}
 
     <!-- Input — also a drop target for "insert at end" -->
-    <input
-      bind:this={inputElement}
+    <Input
+      bind:ref={inputElement}
+      {id}
+      role="combobox"
+      aria-autocomplete="list"
+      aria-expanded={showSuggestions}
+      aria-controls={showSuggestions ? suggestionsId : undefined}
+      aria-activedescendant={showSuggestions && selectedIndex >= 0 ? `${suggestionsId}-${selectedIndex}` : undefined}
+      aria-label={id ? undefined : (placeholder ?? $_('composer.addRecipients'))}
       bind:value={inputValue}
-      oninput={handleInput}
+      oninput={updateSuggestions}
+      onfocus={updateSuggestions}
       onkeydown={handleKeyDown}
       onblur={handleBlur}
-      onfocus={handleFocus}
       onpaste={handlePaste}
       ondragenter={(e) => handleDragEnter(e, recipients.length)}
       ondragover={(e) => handleDragOver(e, recipients.length)}
       ondragleave={handleDragLeave}
       ondrop={(e) => handleDrop(e, recipients.length)}
       type="email"
-      {placeholder}
-      class="flex-1 min-w-[150px] bg-transparent text-sm focus:outline-hidden {dropTargetIndex === recipients.length ? 'border-l-2 border-primary' : ''}"
+      placeholder={placeholder ?? $_('composer.addRecipients')}
+      class="h-8 w-auto min-w-24 flex-1 {dropTargetIndex === recipients.length ? 'border-l-2 border-primary' : ''}"
     />
   </div>
 
   <!-- Suggestions dropdown -->
   {#if showSuggestions}
-    <div class="absolute left-0 right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-60 overflow-auto">
+    <div id={suggestionsId} role="listbox" aria-label={placeholder ?? $_('composer.addRecipients')}
+      class="absolute inset-x-0 top-full z-50 mt-1 max-h-60 overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
       {#each suggestions as suggestion, index (suggestion.email + ':' + index)}
-        <button
-          onmousedown={() => selectSuggestion(suggestion)}
-          class="w-full px-3 py-2 text-left hover:bg-muted transition-colors flex items-center gap-3 {index === selectedIndex ? 'bg-muted' : ''}"
-          type="button"
+        <Button
+          id={`${suggestionsId}-${index}`}
+          variant="ghost"
+          role="option"
+          tabindex={-1}
+          aria-selected={index === selectedIndex}
+          onmousedown={(event) => event.preventDefault()}
+          onclick={() => selectSuggestion(suggestion)}
+          class="h-auto w-full justify-start gap-3 px-2 py-1.5 text-left aria-selected:bg-accent aria-selected:text-accent-foreground"
         >
           <!-- Avatar placeholder -->
           <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
@@ -365,7 +379,7 @@
               {suggestion.send_count}x
             </div>
           {/if}
-        </button>
+        </Button>
       {/each}
     </div>
   {/if}

@@ -11,7 +11,7 @@
         destructive: 'bg-destructive text-destructive-foreground hover:ring-1 hover:ring-destructive',
         outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground',
+        ghost: 'hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground aria-pressed:bg-accent aria-pressed:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
@@ -19,6 +19,7 @@
         sm: 'h-9 px-3',
         lg: 'h-11 px-8',
         icon: 'size-10',
+        'icon-sm': 'size-8 [&_svg:not([class*=size-])]:size-4',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

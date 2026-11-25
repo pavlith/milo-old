@@ -1,48 +1,69 @@
 <script lang="ts">
-  // PaneLayout — outer flex container for kit-based extension panes that
-  // composes SourceSidebar + ListPane + DetailPane (or any subset). Provides:
-  //
-  //   1. A 'relative' positioning context so the kit primitives' absolute-
-  //      positioned overlay states (responsive-sidebar-overlay,
-  //      responsive-viewer-overlay) anchor to this layout, not the page.
-  //   2. The responsive scrim that darkens behind the sidebar overlay on
-  //      narrow viewports. Clicking the scrim dismisses the sidebar.
-  //
-  // Behavior is 1-for-1 with mail's App.svelte layout (lines 1407-1417):
-  // scrim is always rendered in narrow mode; the `-visible` modifier turns
-  // it on when the sidebar overlay is open.
-  //
-  // Extensions don't need to import the layout store, manage scrim state,
-  // or wire pane-class merging — that all lives in the kit primitives
-  // themselves. ContactsPane.svelte is the canonical consumer.
-
-  import { type Snippet } from 'svelte'
+  import type { Snippet } from 'svelte'
+  import { _ } from '$lib/i18n'
+  import { cn } from '$lib/utils'
+  import * as Resizable from '$lib/components/ui/resizable'
   import { getLayoutMode, getResponsiveView, hideSidebar } from '$lib/stores/layout.svelte'
 
   interface Props {
-    children: Snippet
+    children?: Snippet
+    sidebar?: Snippet
+    content?: Snippet
+    detail?: Snippet
+    detailResizeLabel?: string
   }
 
-  const { children }: Props = $props()
+  const { children, sidebar, content, detail, detailResizeLabel }: Props = $props()
+  const full = $derived(getLayoutMode() === 'full')
+  const narrow = $derived(getLayoutMode() === 'narrow')
+  const sidebarVisible = $derived(getResponsiveView() === 'sidebar')
 </script>
 
-<!--
-  overflow-hidden is critical: it clips the absolute-positioned overlays
-  (sidebar slid left via translateX(-100%), viewer slid right via
-  translateX(100%)) so their hit-test regions don't escape PaneLayout into
-  sibling layout (notably the ExtensionRail at the left). Without this, the
-  hidden sidebar's leftward-translated hit area intercepts rail clicks. Mail
-  gets the same clipping for free via App.svelte's outer container.
--->
-<div class="flex flex-1 min-w-0 h-full relative overflow-hidden">
-  {@render children()}
+<div class="relative flex h-full min-h-0 min-w-0 flex-1 overflow-hidden">
+  {#if sidebar && content}
+    <Resizable.PaneGroup direction="horizontal" class="relative">
+      <Resizable.Pane
+        class={cn(narrow
+          ? 'w-0 flex-none! overflow-visible!'
+          : full ? 'min-w-0 [&>[data-sidebar=sidebar]]:w-full' : 'w-60 flex-none!')}
+        defaultSize={detail ? 21 : 24}
+        minSize={15}
+        maxSize={35}
+      >
+        {@render sidebar()}
+      </Resizable.Pane>
+      {#if full}
+        <Resizable.Handle aria-label={$_('aria.resizeSidebar')} />
+      {/if}
+      <Resizable.Pane class={cn('min-w-0', !full && 'flex-1!')} defaultSize={detail ? 33 : 76} minSize={22}>
+        {@render content()}
+      </Resizable.Pane>
+      {#if detail}
+        {#if full}
+          <Resizable.Handle aria-label={detailResizeLabel} />
+        {/if}
+        <Resizable.Pane
+          class={cn('min-w-0 overflow-visible!', !full && 'w-0 flex-none!')}
+          defaultSize={46}
+          minSize={25}
+        >
+          {@render detail()}
+        </Resizable.Pane>
+      {/if}
+    </Resizable.PaneGroup>
+  {:else}
+    {@render children?.()}
+  {/if}
 
-  {#if getLayoutMode() === 'narrow'}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div
-      class="responsive-scrim {getResponsiveView() === 'sidebar' ? 'responsive-scrim-visible' : ''}"
+  {#if narrow}
+    <button
+      type="button"
+      class="responsive-scrim"
+      class:responsive-scrim-visible={sidebarVisible}
+      tabindex="-1"
+      aria-hidden={!sidebarVisible}
+      aria-label={$_('aria.closeSidebar')}
       onclick={hideSidebar}
-    ></div>
+    ></button>
   {/if}
 </div>

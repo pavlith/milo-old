@@ -413,7 +413,7 @@ Clicking the notification raises the Aerion window, switches the rail to Calenda
 
 - **Tz-aware UI** via `date-fns-tz` + a calendar-scoped helper module ([`extensions/calendar/frontend/lib/tzMath.ts`](../extensions/calendar/frontend/lib/tzMath.ts)) wrapping `toZonedTime`/`fromZonedTime`. Every date-math helper in the view store reads the user's chosen tz at call time so changes propagate. See the [Per-extension npm deps convention](#vite--tsconfig-aliases) note for how the extension declares its dep without touching the host config files structurally.
 - **Searchable IANA timezone picker** via `Intl.supportedValuesOf('timeZone')` + `Intl.DateTimeFormat({ timeZone })` for formatters. localStorage persistence behind a `calendarSettings` store with the API shape ready to swap for a Wails-backed Store when extensions get richer settings infrastructure.
-- **Greenfield kit primitives Calendar consumed first**: `DetailOverlay` (right-side focus-mode panel — the first kit primitive with no mail equivalent, sanctioned by R25), `SidebarAddItem` (in-list "+ Add …" button), `ColorPicker` (palette + hex input pass-through). All three are calendar-driven additions to the kit; future extensions can adopt them.
+- **Shared sidebar actions** use shadcn Sidebar and Dropdown Menu. Calendar groups its source actions in [`AddCalendarMenu.svelte`](../extensions/calendar/frontend/components/AddCalendarMenu.svelte) and uses the kit's `DetailOverlay` and `ColorPicker`.
 
 **Settings dialog** ([`extensions/calendar/frontend/components/CalendarSettingsDialog.svelte`](../extensions/calendar/frontend/components/CalendarSettingsDialog.svelte)) follows the same `bits-ui` Dialog pattern Contacts uses but adds a per-source `Select`-based sync-interval picker, a Sync Now button with optimistic UI, and a `ConfirmDialog`-driven Delete flow. Add CalDAV source uses the existing 2-stage AddCalDAVSourceDialog (color picker stage 2 was added during the per-calendar color work).
 
@@ -1456,25 +1456,17 @@ This coupling is architectural debt — extensions touching `frontend/vite.confi
 
 ## Extension UI Kit
 
-The kit at [`frontend/src/lib/components/kit/`](../frontend/src/lib/components/kit) is the layer extensions compose their UI from. Theme tokens, keyboard navigation, density, accent-bar selection, avatar palette, dialog interactions — all are baked in, **matching mail's behavior 1-for-1**. Your extension provides data and callbacks, the kit owns rendering, and the end user gets a UX indistinguishable from the rest of Aerion.
+The kit at [`frontend/src/lib/components/kit/`](../frontend/src/lib/components/kit) provides shared UI for Mail and extensions. It uses the same semantic tokens, control sizes, keyboard navigation and focus behavior. An extension supplies data and callbacks through the kit's component props and snippet slots.
 
-### Why the UI kit exists
+### Sharing UI with Mail
 
-Extensions need to look and behave like the rest of Aerion — same keys, same focus rules, same scrolling, same dialog interactions. Modifying mail's code (`MessageList.svelte`, `Sidebar.svelte`, `ConversationViewer.svelte`, etc.) to share components directly carries too much regression risk to do that way. The kit is the mechanism for getting cohesion without touching mail. **It's not an alternative design — it's the necessary copy of mail's UX, made consumable by extensions.**
-
-### The 1-for-1 rule
-
-Every kit primitive (`Avatar`, `PaneLayout`, `ListPane`, `ListRow`, `ListHeader`, `ResponsiveSidebarToggle`, `SidebarFrame`, `SourceSidebar`, `SourceItem`, `SidebarAddItem`, `DetailPane`, `ConfirmDialog`, `ColorPicker`, `OAuthCredsSlotEditor`, …) is a behavioral replica of how the equivalent functionality works in mail today: same key bindings, same focus semantics, same scroll-into-view, same edge-case behavior. The backwards-compat test: **if mail were ever refactored to consume the kit, the user should see zero difference**. If you can't pass that test on a kit primitive you're writing, you've diverged.
-
-**Greenfield exception (R25).** Some kit primitives have no mail equivalent — Calendar's `DetailOverlay`, for example, since mail's viewer is a flex-chain pane, not a fixed overlay. Per [`EXT_RULES.md` R25](./EXT_RULES.md), kit is an extension-driven SDK; when mail has no counterpart, the primitive is designed cleanly from the consumer's needs. The 1-for-1 rule applies to primitives that DO have a mail counterpart (`SidebarAddItem` ↔ mail's "+ Add Account" inline button, `ConfirmDialog` ↔ mail's confirms, etc.). Greenfield primitives are still bound by the kit's general conventions: theme tokens, density-aware sizing, layout-store responsive handling, `shortcuts.ts` predicates for keys, and **no imports from mail's `components/{list,sidebar,viewer}/` namespace**.
-
-**Practical consequence: read the mail equivalent before implementing a kit primitive.** Don't infer behavior. Don't reach for a generic third-party pattern. Open `MessageList.svelte` / `Sidebar.svelte` / `ConversationViewer.svelte` / the relevant `ui/` host primitive and study how it handles keyboard, focus, scroll, and edge cases. Then match that behavior in the kit.
+Use the shared layout, list and editor components for matching interactions. Compose shadcn primitives from `$lib/components/ui/` for extension-specific controls. Mail owns its account and folder tree, TanStack Virtual message rows and persisted pane widths. Calendar's `DetailOverlay` has its own non-modal detail interaction. See [R25](./EXT_RULES.md#7--frontend-extension-sdk-pattern) for the kit boundary.
 
 Visual consistency is also preserved at the **theme layer**. The kit's `Avatar` uses the same `.avatar-1..14` CSS classes (defined in [`frontend/src/themes/_utilities.css`](../frontend/src/themes/_utilities.css)) that mail's avatar uses, so colors match. Same applies to all theme tokens (`bg-muted`, `border-border`, `text-foreground`, `bg-accent`, `text-primary`).
 
 When the host primitive has a bug that affects the kit, **fix it at the host layer** so both benefit. Don't add the fix only to the kit wrapper — that creates drift and silently breaks the 1-for-1 contract. Example: `ui/confirm-dialog/ConfirmDialog.svelte` was missing `dialogGuard` registration (which prevents mail's global key handler from killing Enter/Space activation on dialog buttons). The fix landed on the host primitive, and the kit's thin pass-through inherited it automatically.
 
-This pattern is anchored in [the lightweight-by-default motto](../README.md) — Aerion remains a simple email client for users who don't enable extensions, and extensions opt-in to features at the cost of weight. Mail must never carry kit overhead.
+The host loads extension panes through the existing extension registration and rail.
 
 ### Keyboard bridge
 
@@ -1622,7 +1614,7 @@ Lower-level kit primitive owning *only* the visual chrome of an extension sideba
 | `containerRef` | `bindable HTMLElement \| null` | Bind to access the outer `<aside>`. SourceSidebar uses this for its tabindex-based keyboard focus. |
 | `focusable` | `boolean?` | When true, the `<aside>` gets `tabindex="0"`. SourceSidebar passes true; row-only consumers leave false. |
 | `class` | `string?` | Extra class string appended to the outer `<aside>`. SourceSidebar uses this for `pane-focus-flash`. |
-| `onkeydown` / `onfocus` / `onmousedown` | `(e) => void`? | DOM event handlers forwarded to the outer `<aside>`. |
+| `onkeydown` / `onfocus` / `onmousedown` | `(e) => void`? | DOM event handlers forwarded to the sidebar navigation. |
 
 **Layout model**: title is non-scrolling (sticky at the top), body fills the remaining space with its own overflow-y-auto, optional footer pins at the bottom. This split is intrinsic to the primitive — it's what enables consumers like Calendar to pin a sync-indicator + settings cog strip below a scrolling list.
 
@@ -1630,28 +1622,9 @@ Lower-level kit primitive owning *only* the visual chrome of an extension sideba
 
 **Greenfield primitive (R25)** — no 1-for-1 mail counterpart at this abstraction level; mail's `Sidebar.svelte` has app-level `TitleBar` chrome and a different idiom. Sits in the §"The 1-for-1 rule" greenfield-exception lane.
 
-#### `SidebarAddItem` — "+ Add …" entry for sidebar lists
+#### Add actions in a sidebar
 
-[`frontend/src/lib/components/kit/SidebarAddItem.svelte`](../frontend/src/lib/components/kit/SidebarAddItem.svelte)
-
-```svelte
-<SidebarAddItem
-  label={$_('calendar.sidebar.addSource')}
-  onclick={() => { showAddSource = true }}
-/>
-```
-
-| Prop | Type | Notes |
-|---|---|---|
-| `label` | `string` | Required. Button text — i18n it at the call site. |
-| `icon` | `string?` | Defaults to `'mdi:plus'`. Any `@iconify/svelte` icon name. |
-| `onclick` | `() => void` | Required. Invoked on click. |
-
-1-for-1 replica of mail's "+ Add Account" inline button at [`frontend/src/lib/components/sidebar/Sidebar.svelte:606-615`](../frontend/src/lib/components/sidebar/Sidebar.svelte) — same styling (`w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors`), same `px-3 py-2` outer wrapper, same `mdi:plus` default icon.
-
-**Intended placement**: at the bottom of the scrollable source/account list, BELOW the last source row — NOT in a separate footer strip. The primitive does not draw a divider; pair it with whatever sync-status / settings-cog footer chrome the sidebar already has (Calendar's `CalendarSidebar` is the reference: scrollable list with sources + `SidebarAddItem`, then a separate `border-t` footer with sync indicator + settings cog).
-
-Pairs with both manually-rolled sidebars (Calendar's case — `SourceSidebar`'s single-select keyboard nav didn't fit its multi-toggle visibility semantics) and `SourceSidebar`-based sidebars (render `SidebarAddItem` outside the `SourceSidebar` so its keyboard nav doesn't try to focus the button).
+Use a `Sidebar.MenuButton` inside `Sidebar.MenuItem` at the end of the scrollable sidebar. For multiple source types, compose it with `DropdownMenu.Trigger` as in [Calendar's add menu](../extensions/calendar/frontend/components/AddCalendarMenu.svelte).
 
 #### `DetailPane` — header/body/empty-state shell
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { _ } from 'svelte-i18n'
-  import Icon from '@iconify/svelte'
+  import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import SourceSidebar from '$lib/components/kit/SourceSidebar.svelte'
   import SourceItem from '$lib/components/kit/SourceItem.svelte'
   import SidebarFooter from '$lib/components/kit/SidebarFooter.svelte'
@@ -82,15 +82,11 @@
         />
       {/snippet}
       {#snippet trailing()}
-        <button
-          class="p-1 rounded hover:bg-muted/40"
-          title={$_('contacts.sidebar.settings')}
+        <ToolbarButton
+          icon="mdi:cog-outline"
+          label={$_('contacts.sidebar.settings')}
           onclick={() => onOpenSettings?.()}
-          type="button"
-          aria-label={$_('contacts.sidebar.settings')}
-        >
-          <Icon icon="mdi:cog-outline" class="w-4 h-4" />
-        </button>
+        />
       {/snippet}
     </SidebarFooter>
   {/snippet}

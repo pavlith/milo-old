@@ -28,7 +28,7 @@
     filename: string
   }
   import RecipientInput from './RecipientInput.svelte'
-  import EditorToolbar from './EditorToolbar.svelte'
+  import EditorToolbar from '$lib/components/kit/EditorToolbar.svelte'
   import ComposerAttachmentList from './ComposerAttachmentList.svelte'
   import {
     addParagraphStyles,
@@ -47,6 +47,11 @@
     removeSignatureFromContent,
     hasSignatureMarker,
   } from './composerSignature'
+  import { Button } from '$lib/components/ui/button'
+  import { Checkbox } from '$lib/components/ui/checkbox'
+  import { Input } from '$lib/components/ui/input'
+  import { Label } from '$lib/components/ui/label'
+  import { Field, FieldGroup } from '$lib/components/ui/field'
   import * as Select from '$lib/components/ui/select'
   import * as AlertDialog from '$lib/components/ui/alert-dialog'
   import Switch from '$lib/components/ui/switch/Switch.svelte'
@@ -1470,6 +1475,8 @@
 
   // Keyboard shortcuts
   function handleKeyDown(e: KeyboardEvent) {
+    if (e.defaultPrevented || (e.target instanceof Element && e.target.closest('[data-slot="dialog-content"], [data-slot="alert-dialog-content"]'))) return
+
     // Security mode key handling (must be early in handleKeyDown)
     if (securityMode) {
       if (e.key === 'Escape') {
@@ -1864,9 +1871,9 @@
   aria-label={$_('aria.emailComposer')}
 >
   <!-- Header -->
-  <div class="flex items-center justify-between px-4 py-3 border-b border-border">
-    <div class="flex items-center gap-3">
-      <h2 class="text-lg font-semibold">
+  <header class="flex min-h-[52px] shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
+    <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
+      <h2 class="truncate text-base font-semibold">
         {#if getDisplayMode() === 'new'}
           {$_('composer.newMessage')}
         {:else if getDisplayMode() === 'reply'}
@@ -1888,177 +1895,176 @@
     <div class="flex items-center gap-2">
       <!-- Pop-out button (only shown in main window, not detached) -->
       {#if !isDetached && api.openComposerWindow}
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onclick={handlePopOut}
           disabled={poppingOut || sending}
-          class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title={$_('composer.openInNewWindow')}
+          aria-label={$_('composer.openInNewWindow')}
         >
-          {#if poppingOut}
-            <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
-          {:else}
-            <Icon icon="mdi:open-in-new" class="w-4 h-4" />
-          {/if}
-        </button>
+          <Icon icon={poppingOut ? 'mdi:loading' : 'mdi:open-in-new'} class={poppingOut ? 'animate-spin' : undefined} aria-hidden="true" />
+        </Button>
       {/if}
-      <button
-        onclick={handleClose}
-        disabled={poppingOut}
-        class="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors disabled:opacity-50"
-      >
+      <Button variant="ghost" size="sm" class="h-8" onclick={handleClose} disabled={poppingOut}>
         {$_('composer.close')}
-      </button>
-      <button
-        onclick={handleSend}
-        disabled={sending || poppingOut || toRecipients.length === 0}
-        class="px-4 py-1.5 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-      >
+      </Button>
+      <Button size="sm" class="h-8 gap-2" onclick={handleSend} disabled={sending || poppingOut || toRecipients.length === 0}>
         {#if sending}
-          <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+          <Icon icon="mdi:loading" class="size-4 animate-spin" />
           {$_('composer.sending')}
         {:else if poppingOut}
-          <Icon icon="mdi:loading" class="w-4 h-4 animate-spin" />
+          <Icon icon="mdi:loading" class="size-4 animate-spin" />
           {$_('composer.opening')}
         {:else}
-          <Icon icon="mdi:send" class="w-4 h-4" />
+          <Icon icon="mdi:send" class="size-4" />
           {$_('composer.send')}
         {/if}
-      </button>
+      </Button>
     </div>
-  </div>
+  </header>
 
   <!-- Compose form -->
   <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
-    <!-- From -->
-    <div class="flex items-center gap-2 px-4 py-2 border-b border-border">
-      <span class="text-sm text-muted-foreground w-16">{$_('composer.from')}:</span>
-      <div class="flex-1">
-        <Select.Root value={selectedIdentityId} onValueChange={handleIdentityChange}>
-          <Select.Trigger class="h-8 px-0 border-0 bg-transparent shadow-none focus:ring-0">
-            <Select.Value placeholder={$_('composer.selectIdentity')}>
-              {#if selectedIdentityId}
-                {@const identity = identities.find(i => i.id === selectedIdentityId)}
-                {#if identity}
-                  {@const group = allGroups.find(g => g.account?.id === identity.accountId)}
-                  {#if group?.account?.color}
-                    <span class="inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0" style="background-color: {group.account.color}"></span>
-                  {/if}
-                  {identity.name} &lt;{identity.email}&gt;
-                {/if}
-              {/if}
-            </Select.Value>
-          </Select.Trigger>
-          <Select.Content>
-            {#if allGroups.length > 0}
-              <!-- Cross-account: grouped by account -->
-              {#each allGroups as group (group.account?.id)}
-                <Select.Group>
-                  <Select.GroupHeading class="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {#if group.account?.color}
-                      <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background-color: {group.account.color}"></span>
+    <FieldGroup class="shrink-0 gap-0">
+      <!-- From -->
+      <Field orientation="horizontal" class="border-b px-3 py-1.5">
+        <Label for="composer-from" class="w-16 shrink-0 text-muted-foreground">{$_('composer.from')}:</Label>
+        <div class="min-w-0 flex-1">
+          <Select.Root value={selectedIdentityId} onValueChange={handleIdentityChange}>
+            <Select.Trigger id="composer-from" class="h-8 w-full">
+              <Select.Value placeholder={$_('composer.selectIdentity')}>
+                {#if selectedIdentityId}
+                  {@const identity = identities.find(i => i.id === selectedIdentityId)}
+                  {#if identity}
+                    {@const group = allGroups.find(g => g.account?.id === identity.accountId)}
+                    {#if group?.account?.color}
+                      <span class="inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0" style="background-color: {group.account.color}"></span>
                     {/if}
-                    {group.account?.name || group.account?.email}
-                  </Select.GroupHeading>
-                  {#each present(group.identities) as identity (identity.id)}
+                    {identity.name} &lt;{identity.email}&gt;
+                  {/if}
+                {/if}
+              </Select.Value>
+            </Select.Trigger>
+            <Select.Content>
+              {#if allGroups.length > 0}
+                <!-- Cross-account: grouped by account -->
+                {#each allGroups as group (group.account?.id)}
+                  <Select.Group>
+                    <Select.GroupHeading class="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-muted-foreground">
+                      {#if group.account?.color}
+                        <span class="inline-block w-2 h-2 rounded-full flex-shrink-0" style="background-color: {group.account.color}"></span>
+                      {/if}
+                      {group.account?.name || group.account?.email}
+                    </Select.GroupHeading>
+                    {#each present(group.identities) as identity (identity.id)}
+                      <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
+                    {/each}
+                  </Select.Group>
+                {/each}
+              {:else}
+                <!-- Single-account fallback (detached window) -->
+                <Select.Group>
+                  {#each identities as identity (identity.id)}
                     <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
                   {/each}
                 </Select.Group>
-              {/each}
-            {:else}
-              <!-- Single-account fallback (detached window) -->
-              {#each identities as identity (identity.id)}
-                <Select.Item value={identity.id} label="{identity.name} <{identity.email}>" />
-              {/each}
-            {/if}
-          </Select.Content>
-        </Select.Root>
-      </div>
-      {#if !showReplyTo}
-        <div class="flex items-center gap-1 text-sm text-muted-foreground">
-          <button onclick={() => showReplyTo = true} class="hover:text-foreground">{$_('composer.replyTo')}</button>
+              {/if}
+            </Select.Content>
+          </Select.Root>
         </div>
-      {/if}
-    </div>
+        {#if !showReplyTo}
+          <div class="flex items-center gap-1 text-sm text-muted-foreground">
+            <Button variant="ghost" size="sm" class="h-8 px-2" onclick={() => showReplyTo = true}>{$_('composer.replyTo')}</Button>
+          </div>
+        {/if}
+      </Field>
 
-    <!-- Reply-To (single address; revealed via the From-row link) -->
-    {#if showReplyTo}
-      <div class="flex items-start gap-2 px-4 py-2 border-b border-border">
-        <span class="text-sm text-muted-foreground w-16 pt-1">{$_('composer.replyTo')}:</span>
-        <div class="flex-1">
+      <!-- Reply-To (single address; revealed via the From-row link) -->
+      {#if showReplyTo}
+        <Field orientation="horizontal" class="border-b px-3 py-1.5">
+          <Label for="composer-replyTo" class="w-16 shrink-0 text-muted-foreground">{$_('composer.replyTo')}:</Label>
+          <div class="min-w-0 flex-1">
+            <RecipientInput
+              id="composer-replyTo"
+              bind:recipients={replyToRecipients}
+              placeholder={$_('composer.addRecipients')}
+            />
+          </div>
+        </Field>
+      {/if}
+
+      <!-- To -->
+      <Field orientation="horizontal" class="border-b px-3 py-1.5">
+        <Label for="composer-to" class="w-16 shrink-0 text-muted-foreground">{$_('composer.to')}:</Label>
+        <div class="min-w-0 flex-1">
           <RecipientInput
-            bind:recipients={replyToRecipients}
+            id="composer-to"
+            bind:this={toInputRef}
+            bind:recipients={toRecipients}
             placeholder={$_('composer.addRecipients')}
           />
         </div>
-      </div>
-    {/if}
+        {#if !showCc || !showBcc}
+          <div class="flex items-center gap-1 text-sm text-muted-foreground">
+            {#if !showCc}
+              <Button variant="ghost" size="sm" class="h-8 px-2" onclick={() => showCc = true}>{$_('composer.cc')}</Button>
+            {/if}
+            {#if !showBcc}
+              <Button variant="ghost" size="sm" class="h-8 px-2" onclick={() => showBcc = true}>{$_('composer.bcc')}</Button>
+            {/if}
+          </div>
+        {/if}
+      </Field>
 
-    <!-- To -->
-    <div class="flex items-start gap-2 px-4 py-2 border-b border-border">
-      <span class="text-sm text-muted-foreground w-16 pt-1">{$_('composer.to')}:</span>
-      <div class="flex-1">
-        <RecipientInput
-          bind:this={toInputRef}
-          bind:recipients={toRecipients}
-          placeholder={$_('composer.addRecipients')}
-        />
-      </div>
-      {#if !showCc || !showBcc}
-        <div class="flex items-center gap-1 text-sm text-muted-foreground">
-          {#if !showCc}
-            <button onclick={() => showCc = true} class="hover:text-foreground">{$_('composer.cc')}</button>
-          {/if}
-          {#if !showBcc}
-            <button onclick={() => showBcc = true} class="hover:text-foreground">{$_('composer.bcc')}</button>
-          {/if}
-        </div>
+      <!-- Cc -->
+      {#if showCc}
+        <Field orientation="horizontal" class="border-b px-3 py-1.5">
+          <Label for="composer-cc" class="w-16 shrink-0 text-muted-foreground">{$_('composer.cc')}:</Label>
+          <div class="min-w-0 flex-1">
+            <RecipientInput
+              id="composer-cc"
+              bind:recipients={ccRecipients}
+              placeholder={$_('composer.addCcRecipients')}
+            />
+          </div>
+        </Field>
       {/if}
-    </div>
 
-    <!-- Cc -->
-    {#if showCc}
-      <div class="flex items-start gap-2 px-4 py-2 border-b border-border">
-        <span class="text-sm text-muted-foreground w-16 pt-1">{$_('composer.cc')}:</span>
-        <div class="flex-1">
-          <RecipientInput
-            bind:recipients={ccRecipients}
-            placeholder={$_('composer.addCcRecipients')}
-          />
-        </div>
-      </div>
-    {/if}
+      <!-- Bcc -->
+      {#if showBcc}
+        <Field orientation="horizontal" class="border-b px-3 py-1.5">
+          <Label for="composer-bcc" class="w-16 shrink-0 text-muted-foreground">{$_('composer.bcc')}:</Label>
+          <div class="min-w-0 flex-1">
+            <RecipientInput
+              id="composer-bcc"
+              bind:recipients={bccRecipients}
+              placeholder={$_('composer.addBccRecipients')}
+            />
+          </div>
+        </Field>
+      {/if}
 
-    <!-- Bcc -->
-    {#if showBcc}
-      <div class="flex items-start gap-2 px-4 py-2 border-b border-border">
-        <span class="text-sm text-muted-foreground w-16 pt-1">{$_('composer.bcc')}:</span>
-        <div class="flex-1">
-          <RecipientInput
-            bind:recipients={bccRecipients}
-            placeholder={$_('composer.addBccRecipients')}
-          />
-        </div>
-      </div>
-    {/if}
-
-    <!-- Subject -->
-    <div class="flex items-center gap-2 px-4 py-2 border-b border-border">
-      <label for="composer-subject" class="text-sm text-muted-foreground w-16">{$_('composer.subject')}:</label>
-      <input
-        id="composer-subject"
-        bind:value={subject}
-        type="text"
-        placeholder={$_('composer.subject')}
-        class="flex-1 bg-transparent text-sm focus:outline-hidden"
-        onkeydown={(e) => {
-          // Tab skips security rows + toolbar and goes directly to body
-          if (e.key === 'Tab' && !e.shiftKey) {
-            e.preventDefault()
-            editor?.commands.focus('start')
-          }
-        }}
-      />
-    </div>
+      <!-- Subject -->
+      <Field orientation="horizontal" class="border-b px-3 py-1.5">
+        <Label for="composer-subject" class="w-16 shrink-0 text-muted-foreground">{$_('composer.subject')}:</Label>
+        <Input
+          id="composer-subject"
+          bind:value={subject}
+          type="text"
+          placeholder={$_('composer.subject')}
+          class="h-8 min-w-0 flex-1"
+          onkeydown={(e) => {
+            // Tab skips security rows + toolbar and goes directly to body
+            if (e.key === 'Tab' && !e.shiftKey) {
+              e.preventDefault()
+              if (isPlainTextMode) plainTextRef?.focus()
+              else editor?.commands.focus('start')
+            }
+          }}
+        />
+      </Field>
+    </FieldGroup>
 
     <!-- Security toggles -->
     {#if showPGPSignOption || showPGPEncryptOption}
@@ -2132,20 +2138,17 @@
 
     <!-- Remote images blocked bar -->
     {#if composerImagesBlocked}
-      <div class="flex items-center gap-2 px-3 py-2 mx-2 mt-2 rounded-md bg-yellow-500/10 border border-yellow-500/30 text-sm">
-        <Icon icon="mdi:image-off" class="w-4 h-4 text-yellow-600 flex-shrink-0" />
-        <span class="text-yellow-700 dark:text-yellow-400">{$_('viewer.remoteImagesBlocked')}</span>
-        <button
-          class="ml-auto px-2 py-1 text-xs font-medium rounded bg-yellow-600 text-white hover:bg-yellow-700 transition-colors"
-          onclick={loadComposerImages}
-        >
+      <div class="mx-2 mt-2 flex shrink-0 flex-wrap items-center gap-2 rounded-md border bg-muted px-3 py-2 text-sm">
+        <Icon icon="mdi:image-off" class="size-4 shrink-0 text-muted-foreground" />
+        <span class="text-muted-foreground">{$_('viewer.remoteImagesBlocked')}</span>
+        <Button variant="outline" size="sm" class="ml-auto h-7" onclick={loadComposerImages}>
           {$_('viewer.loadImages')}
-        </button>
+        </Button>
       </div>
     {/if}
 
     <!-- Editor -->
-    <div class="flex-1 overflow-auto {forceLightComposer ? 'composer-body--light' : 'bg-white dark:bg-zinc-900'}">
+    <div class="min-h-0 flex-1 overflow-auto {forceLightComposer ? 'composer-body--light' : 'bg-background'}">
       <!-- Both surfaces stay mounted; we toggle visibility instead of using
            {#if}/{:else}. Unmounting the editor <div> orphaned the TipTap
            instance, so a later switch back to rich text wrote into a dead
@@ -2166,33 +2169,30 @@
 
     <!-- Missing S/MIME cert warning -->
     {#if encryptMessage && missingCertRecipients.length > 0}
-      <div class="flex items-center gap-2 text-xs px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-t border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300">
+      <div class="flex shrink-0 flex-wrap items-center gap-2 border-t border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive" role="status">
         <Icon icon="mdi:alert" class="w-3.5 h-3.5 flex-shrink-0" />
         <span class="flex-1">{$_('composer.noCertFor', { values: { emails: missingCertRecipients.join(', ') } })}</span>
-        <button onclick={handleImportRecipientCert} class="px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 font-medium transition-colors">{$_('composer.import')}</button>
-        <button onclick={() => encryptMessage = false} class="px-2 py-0.5 rounded hover:bg-amber-200 dark:hover:bg-amber-800 font-medium transition-colors">{$_('common.cancel')}</button>
+        <Button variant="outline" size="sm" class="h-7" onclick={handleImportRecipientCert}>{$_('composer.import')}</Button>
+        <Button variant="ghost" size="sm" class="h-7" onclick={() => encryptMessage = false}>{$_('common.cancel')}</Button>
       </div>
     {/if}
 
     <!-- Missing PGP key warning -->
     {#if pgpEncryptMessage && missingPGPKeyRecipients.length > 0}
-      <div class="flex items-center gap-2 text-xs px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-t border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300">
+      <div class="flex shrink-0 flex-wrap items-center gap-2 border-t border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs text-destructive" role="status">
         <Icon icon="mdi:alert" class="w-3.5 h-3.5 flex-shrink-0" />
         <span class="flex-1">{$_('composer.noPGPKeyFor', { values: { emails: missingPGPKeyRecipients.join(', ') } })}</span>
-        <button onclick={handleImportRecipientPGPKey} class="px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-800 hover:bg-amber-300 dark:hover:bg-amber-700 font-medium transition-colors">{$_('composer.import')}</button>
-        <button onclick={() => pgpEncryptMessage = false} class="px-2 py-0.5 rounded hover:bg-amber-200 dark:hover:bg-amber-800 font-medium transition-colors">{$_('common.cancel')}</button>
+        <Button variant="outline" size="sm" class="h-7" onclick={handleImportRecipientPGPKey}>{$_('composer.import')}</Button>
+        <Button variant="ghost" size="sm" class="h-7" onclick={() => pgpEncryptMessage = false}>{$_('common.cancel')}</Button>
       </div>
     {/if}
 
     <!-- Footer -->
-    <div class="flex items-center gap-2 px-4 py-2 border-t border-border text-sm text-muted-foreground">
-      <button
-        onclick={handleAttachFiles}
-        class="flex items-center gap-1 hover:text-foreground transition-colors"
-      >
+    <div class="flex shrink-0 flex-wrap items-center gap-2 border-t px-3 py-2 text-sm text-muted-foreground">
+      <Button variant="ghost" size="sm" class="h-8 gap-2" onclick={handleAttachFiles}>
         <Icon icon="mdi:attachment" class="w-4 h-4" />
         {$_('composer.attachFiles')}
-      </button>
+      </Button>
       {#if attachments.length > 0}
         <span class="text-xs">
           {$_('composer.filesAttached', { values: { count: attachments.length } })}
@@ -2200,14 +2200,12 @@
       {/if}
       <div class="flex-1"></div>
       {#if showReadReceiptOption}
-        <label class="flex items-center gap-1.5 text-xs cursor-pointer hover:text-foreground transition-colors">
-          <input
-            type="checkbox"
-            bind:checked={requestReadReceipt}
-            class="w-3.5 h-3.5 rounded border-border accent-primary"
-          />
-          {$_('composer.requestReadReceipt')}
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox id="composer-read-receipt" bind:checked={requestReadReceipt} />
+          <Label for="composer-read-receipt" class="cursor-pointer text-xs">
+            {$_('composer.requestReadReceipt')}
+          </Label>
+        </div>
       {/if}
       <span class="text-xs">{$_('composer.ctrlEnterToSend')}</span>
     </div>

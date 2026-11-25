@@ -3,6 +3,7 @@
   import './lib/iconify-offline'
 
   import { onMount, onDestroy } from 'svelte'
+  import { Button } from '$lib/components/ui/button'
   import Icon from '@iconify/svelte'
   import Composer from './lib/components/composer/Composer.svelte'
   import ToastContainer from './lib/components/ui/toast/ToastContainer.svelte'
@@ -214,12 +215,9 @@
         <div class="flex flex-col items-center gap-3 text-center px-4">
           <Icon icon="mdi:alert-circle" class="w-12 h-12 text-destructive" />
           <p class="text-sm text-destructive">{error}</p>
-          <button
-            onclick={() => void FinishComposer()}
-            class="px-4 py-2 text-sm bg-muted hover:bg-muted/80 rounded-md transition-colors"
-          >
+          <Button variant="secondary" size="sm" onclick={() => void FinishComposer()}>
             {$_('window.closeWindow')}
-          </button>
+          </Button>
         </div>
       </div>
     {:else if composeMode}

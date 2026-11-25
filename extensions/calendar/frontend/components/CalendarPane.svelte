@@ -186,14 +186,18 @@
 </script>
 
 <PaneLayout>
-  <CalendarSidebar onOpenSettings={openSettings} />
-  <div class="flex-1 flex flex-col min-w-0 bg-background">
-    <ViewSwitcher />
-    {#if calendarView.viewKind === 'month'}<MonthView />{/if}
-    {#if calendarView.viewKind === 'week'}<WeekView />{/if}
-    {#if calendarView.viewKind === 'day'}<DayView />{/if}
-    {#if calendarView.viewKind === 'agenda'}<AgendaView />{/if}
-  </div>
+  {#snippet sidebar()}
+    <CalendarSidebar onOpenSettings={openSettings} />
+  {/snippet}
+  {#snippet content()}
+    <div class="flex h-full min-h-0 min-w-0 flex-col bg-background">
+      <ViewSwitcher />
+      {#if calendarView.viewKind === 'month'}<MonthView />{/if}
+      {#if calendarView.viewKind === 'week'}<WeekView />{/if}
+      {#if calendarView.viewKind === 'day'}<DayView />{/if}
+      {#if calendarView.viewKind === 'agenda'}<AgendaView />{/if}
+    </div>
+  {/snippet}
 </PaneLayout>
 
 <DetailOverlay

@@ -16,6 +16,8 @@
   import { useDebounce } from 'runed'
   import Icon from '@iconify/svelte'
   import VirtualRows from './VirtualRows.svelte'
+  import * as Empty from '$lib/components/ui/empty'
+  import ListHeader from '$lib/components/kit/ListHeader.svelte'
   import ToolbarButton from '$lib/components/common/ToolbarButton.svelte'
   import { Input } from '$lib/components/ui/input'
   import { Badge } from '$lib/components/ui/badge'
@@ -1464,19 +1466,13 @@
 </script>
 
 <div class="flex flex-col h-full {isFlashing ? 'pane-focus-flash' : ''}">
-  <div class="flex min-h-[52px] shrink-0 items-center justify-between gap-2 px-3 py-2">
-    <div class="flex min-w-0 items-center gap-2">
-      {#if showFolderToggle}
-        <ToolbarButton icon="mdi:dock-left" label={$_('aria.toggleSidebar')} onclick={onToggleSidebar} />
-      {/if}
-      <div class="min-w-0">
-        <h2 class="truncate text-base font-semibold leading-tight" title={folderName}>{folderName}</h2>
-        <p class="truncate text-xs text-muted-foreground">
-          {$_('messageList.unread', { values: { count: unreadCount } })}
-        </p>
-      </div>
-    </div>
-    <div class="flex shrink-0 items-center gap-0.5">
+  <ListHeader
+    label={folderName}
+    description={$_('messageList.unread', { values: { count: unreadCount } })}
+    showSidebarToggle={showFolderToggle}
+    {onToggleSidebar}
+  >
+    {#snippet actions()}
       {#if syncing}
         <ToolbarButton
           icon="mdi:refresh"
@@ -1539,9 +1535,8 @@
         label={$_(getMessageListSortOrder() === 'newest' ? 'messageList.showingNewest' : 'messageList.showingOldest')}
         onclick={toggleSortOrder}
       />
-    </div>
-  </div>
-  <Separator />
+    {/snippet}
+  </ListHeader>
 
   {#if showSearch}
     <div class="flex shrink-0 items-center gap-1.5 bg-background px-3 py-2">
@@ -1633,10 +1628,12 @@
         </button>
       </div>
     {:else if !isUnifiedView && (!accountId || !folderId)}
-      <div class="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-        <Icon icon="mdi:email-outline" class="w-12 h-12 mb-2" />
-        <p>{$_('messageList.selectFolder')}</p>
-      </div>
+      <Empty.Root class="min-h-full">
+        <Empty.Header>
+          <Empty.Media variant="icon"><Icon icon="mdi:email-outline" aria-hidden="true" /></Empty.Media>
+          <Empty.Description>{$_('messageList.selectFolder')}</Empty.Description>
+        </Empty.Header>
+      </Empty.Root>
     {:else if isSearchMode}
       <!-- Search Results -->
       {#if isSearching || isServerSearching}
@@ -1649,10 +1646,12 @@
       {:else if serverSearchMode}
         <!-- Server search results -->
         {#if serverSearchResults.length === 0}
-          <div class="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-            <Icon icon="mdi:magnify" class="w-12 h-12 mb-2" />
-            <p>{$_('messageList.noResults', { values: { query: searchQuery } })}</p>
-          </div>
+          <Empty.Root class="min-h-full">
+            <Empty.Header>
+              <Empty.Media variant="icon"><Icon icon="mdi:magnify" aria-hidden="true" /></Empty.Media>
+              <Empty.Description>{$_('messageList.noResults', { values: { query: searchQuery } })}</Empty.Description>
+            </Empty.Header>
+          </Empty.Root>
         {:else}
           <VirtualRows
             bind:this={virtualRows}
@@ -1823,22 +1822,21 @@
       </div>
     {:else if conversations.length === 0}
       {@const serverFolder = !isUnifiedView && accountId && folderId ? accountStore.getFolder(accountId, folderId) : null}
-      <div class="flex flex-col items-center justify-center h-full text-center px-6 text-muted-foreground">
-        <Icon icon="mdi:inbox-outline" class="w-12 h-12 mb-2" />
-        {#if serverFolder && serverFolder.totalCount > 0}
-          <!-- The server holds mail older than the sync period: say so instead of "no messages" (#458) -->
-          <p class="max-w-xs">{$_('messageList.olderThanSyncPeriod', { values: { count: serverFolder.totalCount } })}</p>
-        {:else}
-          <p>{$_('messageList.noMessages')}</p>
-        {/if}
-        <button
-          class="mt-2 text-sm text-primary hover:underline"
-          onclick={syncFolder}
-          disabled={syncing}
-        >
-          {$_('messageList.syncNow')}
-        </button>
-      </div>
+      <Empty.Root class="min-h-full">
+        <Empty.Header>
+          <Empty.Media variant="icon"><Icon icon="mdi:inbox-outline" aria-hidden="true" /></Empty.Media>
+          <Empty.Description>
+            {serverFolder && serverFolder.totalCount > 0
+              ? $_('messageList.olderThanSyncPeriod', { values: { count: serverFolder.totalCount } })
+              : $_('messageList.noMessages')}
+          </Empty.Description>
+        </Empty.Header>
+        <Empty.Content>
+          <Button variant="outline" size="sm" onclick={syncFolder} disabled={syncing}>
+            {$_('messageList.syncNow')}
+          </Button>
+        </Empty.Content>
+      </Empty.Root>
     {:else}
       <VirtualRows
         bind:this={virtualRows}
