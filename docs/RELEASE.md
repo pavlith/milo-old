@@ -1,7 +1,14 @@
-# Release workflow
+# Milo release workflow
 
-Approve releases separately from development work. Merge any newer `main` commits into `dev`, validate the result, then open a `dev` → `main` pull request that preserves branch ancestry. The branch policy is in [CONTRIBUTING.md](../CONTRIBUTING.md#repository-branches).
+## Branches and versions
 
-For a native Linux release, keep the version in `app/state.go`, `build/config.yml` and `frontend/package.json` aligned. Follow [BUILD.md](BUILD.md) to build and validate the executable. The Windows version settings remain in `build/windows/` for future installer work.
+Use `dev` for development and `main` for approved stable code. Before promotion, incorporate any newer `origin/main` commits into `dev` and validate the result. Merge the approved `dev` → `main` pull request with ancestry preserved. Create release tags on `main` after approval. [Branch policy](../CONTRIBUTING.md#repository-branches)
 
-Automated publishing is deferred for the Wails 3 migration. Creating a release or tag requires separate approval.
+For a native Linux release, keep the version in [app/state.go](../app/state.go), [build/config.yml](../build/config.yml) and [frontend/package.json](../frontend/package.json) aligned. Keep both root package version fields in [package-lock.json](../frontend/package-lock.json) consistent when changing the frontend version. Record user-visible changes in the [changelog](../CHANGELOG.md). Windows version and installer templates remain under [build/windows](../build/windows/) for the future Windows build.
+
+## Linux validation and publication
+
+1. Use the toolchain in the [Linux guide](BUILD.md). Run a clean `npm ci` in `frontend/`, then `make build` from the root.
+2. Check that the generated bindings match Git. Run frontend check and lint, `go test ./...` and `go vet ./...` as in [CI](../.github/workflows/ci.yml). Run the [native Linux smoke test](BUILD.md#focused-linux-regression-test) on the production binary.
+3. Verify the desktop entry and install layout, for example with `desktop-file-validate` and a staged `make install` using `DESTDIR`. Confirm any built-in OAuth configuration for the intended distribution build.
+4. Publish the approved native Linux artifacts manually. The current CI workflow validates builds. Release packaging and publishing are separate steps.

@@ -1,5 +1,6 @@
 # ТЗ для Codex: миграция Aerion на shadcn-svelte
-This specification records the original shadcn-svelte migration. Milo supersedes §7 with the [Carbon appearance system](../frontend/README.md#milo-appearance).
+
+> Historical specification for the completed Aerion/Petchkin UI migration. Current Milo UI and appearance guidance lives in the [frontend guide](../../frontend/README.md).
 
 ## 1. Цель
 

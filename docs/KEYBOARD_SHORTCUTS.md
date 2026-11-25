@@ -1,20 +1,15 @@
 # Milo Keyboard Shortcuts
 
-Complete reference of all keyboard shortcuts in Milo.
+Keyboard reference for the native main window, composer and enabled extensions. [Mail handlers](../frontend/src/App.svelte) · [Shared key bindings](../frontend/src/lib/keyboard/shortcuts.ts)
 
 ## Global Shortcuts
 
-These shortcuts work anywhere in the application (unless in composer).
-
-### Application
+These shortcuts apply to the main window outside modal dialogs and the inline composer.
 
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl+Q` | Quit application |
-| `Ctrl+N` | Compose new message |
-| `Ctrl+S` | Focus search bar |
-| `Ctrl+Shift+A` | Sync all accounts |
-| `Ctrl+Shift+S` | Sync selected folder |
+| `Ctrl+S` | Focus the active pane's search field where available |
 | `Ctrl+Tab` | Switch to next extension on the rail (Mail / Contacts / ...) |
 | `` Ctrl+` `` | Switch to previous extension on the rail |
 
@@ -25,6 +20,14 @@ These shortcuts work anywhere in the application (unless in composer).
 | `Alt+Left` / `Alt+H` | Focus previous pane (viewer -> list -> sidebar) |
 | `Alt+Right` / `Alt+L` | Focus next pane (sidebar -> list -> viewer) |
 
+### Mail shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+N` | Compose a new message |
+| `Ctrl+Shift+A` | Toggle synchronization of all accounts |
+| `Ctrl+Shift+S` | Toggle synchronization of the selected folder |
+
 ### Folder Navigation
 
 | Shortcut | Action |
@@ -33,16 +36,16 @@ These shortcuts work anywhere in the application (unless in composer).
 | `Alt+Down` / `Alt+J` | Navigate to next folder |
 | `Alt+G` | Jump to top of sidebar (All Inboxes when present) |
 | `Alt+Shift+G` | Jump to last visible folder (last account header if all trees are collapsed) |
-| `Alt+Enter` | Expand/collapse focused account folder tree |
-| `Alt(L)+Alt(R)` | Brings up context menu for the focused folder |
+| `Alt+Enter` | Expand or collapse the focused account or a folder with children |
+| `Alt(L)+Alt(R)` | Open the selected folder's context menu |
 
 ### Message Actions (when message is selected/focused)
 
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+R` | Reply to last message (requires viewed conversation) |
-| `Ctrl+Shift+R` | Reply All to last message (requires viewed conversation) |
-| `Ctrl+F` | Forward last message (requires viewed conversation) |
+| `Ctrl+R` | Reply to the focused message in the viewer, or to the last message in the open conversation |
+| `Ctrl+Shift+R` | Reply all to the focused message in the viewer, or to the last message in the open conversation |
+| `Ctrl+F` | Forward the focused message in the viewer, or the last message in the open conversation |
 | `Ctrl+U` | Mark as read (keyboard-focused or checked messages) |
 | `Ctrl+Shift+U` | Mark as unread (keyboard-focused or checked messages) |
 | `Ctrl+K` | Archive (keyboard-focused or checked messages) |
@@ -65,7 +68,7 @@ These shortcuts depend on which pane is focused. They are disabled when typing i
 | `Down` / `J` | Navigate to next folder |
 | `Alt+G` / `Alt+Shift+G` | Jump to top of sidebar / last visible folder |
 | `Alt + Enter` / `Space` | Expand/collapse account (when account header is focused) |
-| `Alt(L) + Alt(R)` | Brings up context menu for the focused folder |
+| `Alt(L) + Alt(R)` | Open the selected folder's context menu |
 
 ### Message List
 
@@ -83,7 +86,7 @@ These shortcuts depend on which pane is focused. They are disabled when typing i
 | `CTRL+A` | Select all messages in folder |
 | `Alt+M` | Toggle "Move to folder" dialog for the focused message |
 | `Alt+C` | Toggle "Copy to folder" dialog for the focused message |
-| `Alt(R)` | Brings up context menu for the selected message(s) |
+| `Alt(R)` | Open the message-list context menu. The Context Menu key also works |
 
 `G` / `Shift+G` / `V` also work in extension list panes (e.g., Contacts list, Calendar agenda).
 
@@ -96,7 +99,7 @@ These shortcuts depend on which pane is focused. They are disabled when typing i
 | `Tab` | Cycle through messages when focused on conversation viewer |
 | `Delete` / `Backspace` | Delete focused message when focused on conversation viewer |
 | `Ctrl + A` | Select all text of message in viewport |
-| `Alt(R)` | Brings up context menu for the message focused |
+| `Alt(R)` | Open the focused message's context menu. The Context Menu key also works |
 | `F` | Toggles focus mode on the current thread (conversation) |
 
 ---
@@ -110,13 +113,13 @@ These work when not in an input field. They apply to checked messages (bulk) or 
 | `S` | Toggle star |
 | `Backspace` / `Delete` | Move to trash |
 | `Shift+Backspace` / `Shift+Delete` | Permanently delete |
-| `Escape` | Clear checkboxes (first press), close conversation (second press) |
+| `Escape` | Exit focus mode, dismiss a responsive overlay, clear checked rows or close the conversation, in that order |
 
 ---
 
 ## Composer Shortcuts
 
-These only work when the composer is open.
+These apply when composing. Formatting keys apply in the rich-text editor. [Composer handler](../frontend/src/lib/components/composer/Composer.svelte)
 
 | Shortcut | Action |
 |----------|--------|
@@ -125,7 +128,7 @@ These only work when the composer is open.
 | `Alt+A` | Attach a file |
 | `Alt+P` | Toggle PGP security mode (S = sign, E = encrypt) |
 | `Alt+S` | Toggle S/MIME security mode (S = sign, E = encrypt) |
-| `Ctrl+D` | Pop out/detach composer to separate window |
+| `Ctrl+D` | Move the inline composer to a separate window |
 | `Escape` | Close composer (prompts to save draft if unsaved) |
 
 ---
@@ -138,61 +141,6 @@ These only work when the composer is open.
 | `Ctrl+I` | Italic |
 | `Ctrl+U` | Underline |
 | `Alt+T`  | Toggle toolbar and follow hint to choose |
-
----
-
-## Quick Reference Card
-
-```
-NAVIGATION
-  Alt + Arrow Keys    Pane focus (Left/Right) or Folder nav (Up/Down)
-  Alt + H/J/K/L       Vim-style: pane (H/L) or folder (J/K)
-  Alt + G             Jump to top of sidebar (All Inboxes)
-  Alt + Shift + G     Jump to last visible folder
-  Alt(L) + Alt(R)     Brings context menu up for the focused folder
-  Alt + Enter         Expand/collapse account
-  Ctrl + Tab          Switch to next extension on rail
-  Ctrl + `            Switch to previous extension on rail
-  Arrow Keys / HJKL   Navigate within focused pane
-  Enter               Open conversation / Expand account
-  Space               Toggle checkbox / Expand account
-
-COMPOSE & REPLY
-  Ctrl + N            New message
-  Ctrl + R            Reply
-  Ctrl + Shift + R    Reply All
-  Ctrl + F            Forward
-  Ctrl + Enter        Send (in composer)
-  Ctrl + D            Detach composer
-  Alt  + T            Toggle format toolbar mode
-  Alt + P             PGP mode (S/E to toggle sign/encrypt)
-  Alt + S             S/MIME mode (S/E to toggle sign/encrypt)
-
-SELECTION
-  Ctrl + A            Select all messages (list) / text (viewer)
-
-MESSAGE ACTIONS
-  S                   Star/Unstar
-  Ctrl + U            Mark read
-  Ctrl + Shift + U    Mark unread
-  Ctrl + K            Archive
-  Ctrl + J            Spam
-  V                   View message
-  G / Shift + G       Jump to first / last loaded message
-  Alt + M             Move to folder
-  Alt + C             Copy to folder
-  Delete / D          Trash
-  Shift + Delete      Permanent delete
-  Alt(R)              Context Menu
-
-OTHER
-  Ctrl + Shift + A    Sync all accounts
-  Ctrl + Shift + S    Sync selected folder
-  Ctrl + S            Search
-  Ctrl + L            Load images
-  Ctrl + Q            Quit
-  Escape              Clear/Close
-```
 
 ---
 
@@ -228,20 +176,9 @@ Action shortcuts (Delete, Archive, Spam, Star, Read/Unread) follow this priority
 2. **Keyboard-focused message** - Otherwise, actions apply to the message that's currently focused in the message list (the one with keyboard highlight from j/k navigation)
 3. The message being viewed in the conversation pane is independent - you can navigate to and delete a different message without opening it first
 
-First `Escape` clears checkboxes, second `Escape` closes the conversation viewer.
+With a message focused in the viewer, Delete and Backspace act on that message before list selection.
 
-### Composer Blocking
-
-When the composer is open:
-- `Ctrl+R`, `Ctrl+Shift+R`, `Ctrl+F` are blocked to prevent accidental replies
-- Other global shortcuts continue to work
-
-### Extension Rail Navigation
-
-`Ctrl+Tab` cycles forward through the rail items: Mail → first enabled extension → next → wrap to Mail.
-`` Ctrl+` `` cycles backward. Both are no-ops when no extensions are enabled (only Mail in the rail). Active extension is persisted across launches.
-
-Composer state is preserved across switches: switching to an extension and back does not unmount or clear the composer.
+`Ctrl+Tab` and `` Ctrl+` `` cycle through Mail and enabled extensions. The main-window shortcuts pause when the inline composer owns keyboard input.
 
 ### Unified Inbox
 
@@ -253,9 +190,7 @@ When viewing Unified Inbox and replying:
 
 ## Extensions
 
-Extension shortcuts only fire when the corresponding extension is the active rail pane (selected via `Ctrl+Tab` / `` Ctrl+` ``). They never trigger while Mail is active — so shortcuts that overlap with Mail's (like `Ctrl+N`, `Ctrl+Shift+A`, `Ctrl+Shift+S`) are unambiguous: the active rail decides which handler runs. For example, `Ctrl+Shift+A` syncs accounts in Mail, syncs all calendar sources in Calendar, and syncs all contact sources in Contacts.
-
-Pane-local navigation (Up/Down/J/K, Enter, Space, Alt+H/L for pane cycling, Alt+Up/Down for sidebar) uses the same kit-shared predicates Mail does — they're listed per-extension below for completeness, but they're not extension-specific re-implementations.
+The active rail pane determines which actions run for shared shortcuts such as `Ctrl+N` and `Ctrl+Shift+A`. Pane-local shortcuts use the shared navigation predicates. [Calendar shortcuts](../extensions/calendar/frontend/keyboard/shortcuts.ts) · [Contacts shortcuts](../extensions/contacts/frontend/keyboard/shortcuts.ts)
 
 ### Calendar
 

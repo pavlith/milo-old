@@ -1,6 +1,6 @@
 # UI translations
 
-Milo ships two UI languages: English (`en`) and Russian (`ru`). With no saved preference, the application uses Russian when the WebView reports a Russian system locale (for example, `ru-RU`). Otherwise it uses English. An unsupported saved code falls back to English.
+Milo ships English (`en`) and Russian (`ru`) UI catalogs. With no saved preference, the application uses Russian when the WebView reports a Russian system locale (for example, `ru-RU`). Otherwise it uses English. An unsupported saved code falls back to English.
 
 To change languages, open **Settings → General → Language**, select **English** or **Русский**, and save. The main window and open detached composers update immediately. The choice survives restart and applies to new composer windows.
 
@@ -16,7 +16,7 @@ Use `en.json` as the source of truth. Add or update the corresponding value in `
 
 Keep visible error messages concise and actionable. Preserve shortcut names such as `Ctrl+Enter`, and write short labels for dialogs, tabs and menus. Use `date-fns` with the active UI locale for shared date formatting and pass that locale to browser date formatters.
 
-Extensions register their own `en` and `ru` loaders. Core auto-discovers extension registrars and merges their messages under each extension's namespace. See [extension i18n](EXTENSIONS.md#extension-i18n).
+Extensions register their own `en` and `ru` loaders. The shared frontend auto-discovers extension registrars and merges their messages under each extension's namespace. See [extension i18n](EXTENSIONS.md#extension-i18n).
 
 ## Verification
 
@@ -26,6 +26,6 @@ Review the affected screens in both languages. Check long labels and interpolate
 
 ## Desktop metadata and spellcheck
 
-The Linux launcher (`build/linux/io.github.pavlith.milo.desktop`) uses English base strings and `[ru]` entries. Validate changes with `desktop-file-validate`.
+The [Linux launcher](../build/linux/io.github.pavlith.milo.desktop) uses English base strings and `[ru]` entries. Validate changes with `desktop-file-validate`.
 
 Spellcheck dictionaries are selected separately under **Settings → Composer**. Current dictionaries include US and UK English, Czech, German, French, Italian, Norwegian Bokmål, Dutch and Turkish. The Russian interface uses English spellcheck by default when no dictionaries are selected. A Russian dictionary is currently unavailable.

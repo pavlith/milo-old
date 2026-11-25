@@ -1,82 +1,43 @@
-# Svelte + TS + Vite
+# Milo frontend
 
-Milo uses plain Svelte 5 + Vite inside Wails v3. Follow [AGENTS.md](AGENTS.md) and the root [branch workflow](../CONTRIBUTING.md#repository-branches). The template notes below are background material; they do not authorize adopting SvelteKit.
+Milo uses Svelte 5 and TypeScript with Vite inside Wails 3. Vite builds both windows and includes first-party extension UI. The Wails development configuration serves both entries on loopback. [Linux development setup](../docs/BUILD.md) · [Architecture](../docs/ARCHITECTURE.md)
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+## Entry points
 
-## Recommended IDE Setup
+| Window | HTML and bootstrap | Root component |
+| --- | --- | --- |
+| Main window with Mail, Contacts and Calendar | [index.html](index.html), [main.ts](src/main.ts) | [App.svelte](src/App.svelte) |
+| Detached composer | [composer.html](composer.html), [composerMain.ts](src/composerMain.ts) | [ComposerApp.svelte](src/ComposerApp.svelte) |
 
-[VS Code](https://code.visualstudio.com/)
+Both entries load [app.css](src/app.css) and initialize shared appearance and localization. Go methods and events reach the windows through Wails. Use the generated TypeScript API under [bindings](bindings/) via the `$bindings` alias. After a bound Go API changes, run `make generate` from the repository root and review the generated diff. CI checks that the bindings in Git match the build.
 
-+ [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## UI structure
 
-## Need an official Svelte framework?
-
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its
-serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less,
-and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
-
-## Technical considerations
-
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-  `vite dev` and `vite build` wouldn't work in a SvelteKit environment, for example.
-
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account
-the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the
-other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte
-project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been
-structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash
-references keeps the default TypeScript setting of accepting type information from the entire workspace, while also
-adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to
-install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of
-JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds:
-not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing
-JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr`
-and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the
-details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be
-replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+- [Shared primitives](src/lib/components/ui/) are shadcn-svelte components backed by Bits UI. [components.json](components.json) defines the registry, aliases, and CSS entry. The app uses Iconify icons. Shared pane, list and editor elements live in the [UI kit](src/lib/components/kit/).
+- The Mail shell uses the [rail](src/lib/components/rail/), [folder sidebar](src/lib/components/sidebar/), [message list](src/lib/components/list/) and [viewer](src/lib/components/viewer/). PaneForge powers the shared resizable primitives, and TanStack Virtual windows long mail lists.
+- Formsnap connects account fields to validation and accessible descriptions. Runed provides debounce and event listener cleanup. TipTap powers composition, signature editing and the Calendar rich-text editor.
+- Contacts and Calendar own their Svelte code under [extensions](../extensions/), and the main window mounts their panes through the [extension registry](src/lib/stores/extensionRegistry.svelte.ts). [Extension development](../docs/EXTENSIONS.md)
+- The shared `svelte-i18n` setup loads English and Russian catalogs, including extension namespaces. [Translation guide](../docs/LANGUAGE.md)
 
 ## Milo appearance
 
-Both Vite entries use [app.css](src/app.css) for Carbon White and Gray 100
-semantic tokens, Tailwind utilities and the UI font stack. Use the semantic
-utilities for new components. The application preferences store Light, Dark
-and System, and Mode Watcher applies the mode in each WebView. Mail and compose
-body backgrounds are independent settings. The HTML message frame keeps its own
-content styles.
+Both windows use IBM Carbon White and Gray 100 as the basis of their Light and Dark palettes. System follows the OS preference through Mode Watcher and is the default for new profiles. The settings store maps retired Nord and Dracula values to Dark. [CSS tokens](src/app.css) · [Frontend theme store](src/lib/stores/theme.svelte.ts) · [Go settings store](../internal/settings/store.go)
 
-Bundled WOFF2 subsets come from Fontsource's Inter Variable and JetBrains Mono
-Variable packages, both at 5.3.0. The original font licenses ship alongside the
-[bundled licenses](public/licenses/). The canonical application mark is
-[milo.svg](src/assets/images/milo.svg). Update the Linux and Windows icons in
-[`build/`](../build/) when changing the mark.
+Use shared shadcn-svelte components and semantic utilities such as `bg-background`, `text-foreground` and `border-border`. Mail content and the composer body have independent background preferences. The HTML message body uses its own settings inside the isolated message frame.
+
+The UI bundles local Inter Variable and JetBrains Mono Variable subsets. The font licenses ship with the assets. The canonical mark is [milo.svg](src/assets/images/milo.svg). [Bundled licenses](public/licenses/) · [Platform icons](../build/)
+
+## npm commands
+
+Use Node.js 24 and the checked-in [npm lockfile](package-lock.json). Run these commands from `frontend/`:
+
+| Command | Purpose |
+| --- | --- |
+| `npm ci` | Install locked dependencies |
+| `npm run check` | Validate catalogs and check Svelte and TypeScript |
+| `npm run lint` | Run ESLint |
+| `npm run build` | Produce both Vite entries in `dist/` |
+| `npm run knip` | Inspect unused files, exports and dependencies |
+| `npm run dev` | Run Vite. The root `make dev` starts Vite and the native app together |
+
+The dev and build scripts prepare the bundled spellcheck dictionaries. [Frontend conventions](AGENTS.md)

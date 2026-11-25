@@ -1,6 +1,6 @@
 # Database Rollback Guide
 
-This historical guide covers upstream schema versions. See the [Linux build guide](BUILD.md#existing-profiles) for Milo profile locations.
+> Historical Aerion procedures for the exact upstream schema versions below. For Milo profile paths and backup guidance, see [Existing profiles](../BUILD.md#existing-profiles). Rollback from a current Milo database is unverified.
 
 This guide walks you through rolling back Aerion's database schema after an upgrade. Schema migrations in Aerion are **forward-only by design** — the running application doesn't downgrade automatically. If you upgrade Aerion to a new version that ran a migration and then want to go back to an older version, you need to manually reshape the database so the older version can read it.
 

@@ -8,7 +8,7 @@ body:
       label: Operating System
       options:
         - Linux
-        - Windows
+        - Windows (development)
     validations:
       required: true
 
@@ -49,10 +49,11 @@ body:
     id: install-method
     attributes:
       label: Install Method
+      description: For a prebuilt binary, identify its source in your report.
       options:
-        - Windows Binary
-        - Linux Binary
-        - Compile from Source
+        - Built from source
+        - Prebuilt binary
+        - Other
     validations:
       required: true
 

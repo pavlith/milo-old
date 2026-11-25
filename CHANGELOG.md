@@ -1,4 +1,15 @@
-# CHANGELOG
+# Changelog
+
+## Milo development
+
+- Rebranded the Aerion-derived desktop client to Milo, with existing profile compatibility.
+- Migrated Linux native windows and the detached composer to Wails 3 and GTK4.
+- Updated the Svelte UI with Tailwind CSS 4, shadcn-svelte, and Carbon appearance modes.
+- Fixed desktop `mailto:` activation during startup.
+
+See the [Milo documentation](docs/README.md) for current usage and development.
+
+## Upstream Aerion release history
 
 **v0.3.6 - 11-03-2026**
 ---

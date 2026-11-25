@@ -1,6 +1,8 @@
 # Wails 3 migration on Linux
 
-Aerion uses Wails `v3.2.0-nightly.20261123` for the Go module, CLI and frontend runtime. The Linux application uses native GTK4 windows and WebKitGTK 6.0. See [Build on Linux](BUILD.md) for prerequisites and commands.
+> Historical migration record from the Aerion/Petchkin codebase. See the [current architecture](../ARCHITECTURE.md) for Milo.
+
+At the time of the migration, the project used Wails `v3.2.0-nightly.20261123` for the Go module and CLI, with the matching frontend runtime build. The Linux application uses native GTK4 windows and WebKitGTK 6.0. See [Build on Linux](../BUILD.md) for prerequisites and commands.
 
 ## Windows and Go bindings
 
@@ -18,4 +20,4 @@ A native WebKitGTK 2.52.6 smoke test under Xvfb used a temporary database. It ve
 
 ## Follow-up scope
 
-The migration removes macOS support and Flatpak/Flathub packaging, including their release jobs. Windows-specific platform implementations and the [installer inputs](../build/windows/) remain available for a follow-up build and WebView2 validation. Release automation is tracked in the [release workflow](RELEASE.md). Native Wayland, desktop portals and live IMAP, SMTP, OAuth and calendar services remain outside the Linux smoke test.
+The migration removes macOS support and Flatpak/Flathub packaging, including their release jobs. Windows-specific platform implementations and the [installer inputs](../../build/windows/) remain available for a follow-up build and WebView2 validation. Release automation is tracked in the [release workflow](../RELEASE.md). Native Wayland, desktop portals and live IMAP, SMTP, OAuth and calendar services remain outside the Linux smoke test.

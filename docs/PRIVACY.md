@@ -1,126 +1,22 @@
-# Privacy Policy
+# Milo privacy and local data
 
-**Last Updated:** January 20, 2026
+Milo is a desktop application. This page describes how the current source handles local data and communicates with services.
 
-## Introduction
+## Local data
 
-Aerion ("we," "our," or "the Application") is an open-source desktop email client. The official Aerion website and online documentation is hosted at [https://aerion.3df.io](https://aerion.3df.io). This Privacy Policy explains how Aerion handles your information. Because Aerion is a desktop application that runs entirely on your computer, our approach to privacy is fundamentally different from cloud-based services.
+The profile stores account and application settings, cached mail, drafts, and contact and calendar data. Attachments and cached files may also exist on disk. Contacts and Calendar use extension-owned SQLite files for their own data. See the [profile guide](BUILD.md#existing-profiles) for locations and compatibility with earlier profiles.
 
-**Key Point:** Aerion does not operate any servers that collect, store, or process your data. All your information stays on your device.
+Milo stores passwords and OAuth tokens in the OS keyring when available and uses encrypted database fields as a fallback. The profile holds the key material needed by the fallback. Mail, drafts and other general SQLite data belong to the local profile and should be treated as readable by anyone with access to the relevant files. [Credential store](../internal/credentials/store.go) · [Database](../internal/database/)
 
-## Information We Do Not Collect
+## Network connections
 
-Unlike many applications, Aerion:
+- Mail sync, server search and sending connect to the configured IMAP and SMTP servers. Draft synchronization can write drafts to the configured account.
+- OAuth uses the provider's authorization page in a browser and a loopback callback. The app exchanges authorization codes and refreshes tokens with the configured provider. Built-in and user-configured clients can request different scopes. [OAuth flow](../internal/oauth2/flow.go) · [Build configuration](BUILD.md#build-develop-and-install)
+- Configured contact and calendar sources can exchange data with their CardDAV, CalDAV, Google or Microsoft service, depending on the source and access granted. The provider receives changes when Milo writes to a remote source. [Extension authorization](EXTENSIONS.md#storage-and-authorization)
+- Remote images are blocked by default in the message viewer. Loading them can contact the sender's or a third party's server. OpenPGP key discovery can contact external key services. [Message viewer](../frontend/src/lib/components/viewer/EmailBody.svelte) · [Key discovery](../internal/pgp/lookup.go)
 
-- **Does not collect** any personal information on external servers
-- **Does not transmit** your emails, contacts, or credentials to us
-- **Does not use** analytics, telemetry, or tracking of any kind
-- **Does not display** advertisements
-- **Does not sell or share** any user data (we don't have access to it)
+## Diagnostics and data removal
 
-## Information Stored Locally on Your Device
+The application source has no analytics or telemetry reporting integration. Diagnostic logging is local. A log file is opt-in and may include operational data such as URLs or account and message metadata. Review and redact logs before sharing them. [Logging implementation](../internal/logging/logging.go)
 
-Aerion stores the following information locally on your computer:
-
-### Email Data
-- Email messages synchronized from your email accounts
-- Folder structure and organization
-- Attachments (cached locally)
-- Draft messages
-
-### Account Credentials
-- Email account configurations (server addresses, ports)
-- Authentication tokens (OAuth tokens for Gmail, Outlook)
-- App-specific passwords (stored in your system's secure keyring)
-
-### Contacts
-- Contact information synchronized from CardDAV, Google, or Microsoft accounts
-- Used solely for email address autocomplete
-
-### Application Settings
-- Your preferences and settings
-- Window size and position
-- Theme preferences
-
-**All of this data is stored in your local application data directory and never leaves your device except when communicating directly with your email providers.**
-
-## Google API Services
-
-Aerion uses Google APIs to provide Gmail integration. Our use of information received from Google APIs adheres to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
-
-### Google API Scopes Used
-
-- **IMAP/SMTP Access** - To read, send, and manage your emails via standard IMAP/SMTP protocols (OAuth2 authenticated)
-- **Google People API** - To access your contacts for email autocomplete
-
-### Limited Use Disclosure
-
-Aerion's use and transfer of information received from Google APIs to any other app will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
-
-Specifically:
-- Aerion only uses Google data to provide email functionality to you
-- Aerion does not transfer Google data to third parties
-- Aerion does not use Google data for advertising
-- Aerion does not use Google data to train AI/ML models
-- Human access to Google data is limited to debugging with user consent
-
-## Microsoft API Services
-
-Aerion uses Microsoft Graph APIs to provide Outlook/Microsoft 365 integration.
-
-### Microsoft API Scopes Used
-
-- **Mail.ReadWrite** - To read, send, and manage your emails
-- **Contacts.Read** - To access your contacts for email autocomplete
-- **User.Read** - To access your basic profile information
-- **offline_access** - To maintain your session
-
-All Microsoft data is stored locally and used solely for email functionality.
-
-## Data Security
-
-Your data security depends on:
-
-1. **Your device security** - Aerion stores data locally, so your device's security measures (disk encryption, password protection, etc.) protect your email data
-2. **Secure connections** - All connections to email servers use TLS/SSL encryption
-3. **System keyring** - Sensitive credentials are stored in your operating system's secure credential storage
-4. **No cloud exposure** - Your data is never transmitted to our servers because we don't operate any
-
-## Third-Party Services
-
-Aerion only connects to services you explicitly configure:
-
-- Your email provider (via IMAP/SMTP)
-- Google APIs (if you use Gmail)
-- Microsoft APIs (if you use Outlook/Microsoft 365)
-- CardDAV servers (if you configure contact sync)
-
-We do not integrate with any advertising networks, analytics services, or other third-party data collectors.
-
-## Data Retention and Deletion
-
-Since all data is stored locally on your device:
-
-- **You control retention** - Data remains until you delete it
-- **Uninstalling Aerion** - Removes the application but may leave data in your local application data directory
-- **Complete removal** - Delete the Aerion data directory to remove all locally stored data
-
-## Children's Privacy
-
-Aerion is not directed at children under 13. We do not knowingly collect information from children. Since Aerion stores all data locally and does not transmit data to external servers, parental supervision of the device itself is the appropriate safeguard.
-
-## Changes to This Privacy Policy
-
-We may update this Privacy Policy from time to time. Changes will be reflected in the "Last Updated" date. Since Aerion is open source, you can review any changes in our public repository.
-
-## Open Source Transparency
-
-Aerion is open-source software. You can review exactly how we handle your data by examining our source code at [https://github.com/hkdb/aerion](https://github.com/hkdb/aerion).
-
-## Contact Us
-
-If you have questions about this Privacy Policy, please contact us at:
-
-**Email:** aerion@3df.io
-
-**GitHub Issues:** [https://github.com/hkdb/aerion/issues](https://github.com/hkdb/aerion/issues)
+Removing local profile files affects local data and may discard unsynchronized drafts or changes. Provider data and credentials in the OS keyring are stored separately. For OAuth access removal, use the provider's authorization settings. [Profile and backup guidance](BUILD.md#existing-profiles)
