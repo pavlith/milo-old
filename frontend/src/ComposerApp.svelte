@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ModeWatcher } from 'mode-watcher'
+  import * as Tooltip from '$lib/components/ui/tooltip'
   // Load offline icon data before anything else
   import './lib/iconify-offline'
 
@@ -141,52 +142,54 @@
 
 <ModeWatcher modeStorageKey={COMPOSER_MODE_STORAGE_KEY} disableHeadScriptInjection synchronousModeChanges />
 
-<div class="h-screen flex flex-col bg-background text-foreground">
-  <!-- Custom Title Bar for frameless window -->
-  {#if getShowTitleBar() && !getNativeTitleBar()}
-    <TitleBar title={windowTitle()} onClose={requestClose} />
-  {/if}
-
-  <!-- Main content -->
-  <main class="flex-1 min-h-0 overflow-hidden">
-    {#if loading}
-      <div class="h-full flex items-center justify-center">
-        <div class="flex flex-col items-center gap-3">
-          <Icon icon="mdi:loading" class="w-8 h-8 animate-spin text-primary" />
-          <span class="text-sm text-muted-foreground">{$_('common.loading')}</span>
-        </div>
-      </div>
-    {:else if error}
-      <div class="h-full flex items-center justify-center">
-        <div class="flex flex-col items-center gap-3 text-center px-4">
-          <Icon icon="mdi:alert-circle" class="w-12 h-12 text-destructive" />
-          <p class="text-sm text-destructive">{error}</p>
-          <Button variant="secondary" size="sm" onclick={() => void FinishComposer()}>
-            {$_('window.closeWindow')}
-          </Button>
-        </div>
-      </div>
-    {:else if composeMode}
-      <Composer
-        accountId={composeMode.accountId}
-        initialMessage={initialMessage}
-        draftId={composeMode.draftId || null}
-        messageId={composeMode.messageId || null}
-        onClose={handleComposerClose}
-        onSent={handleMessageSent}
-        api={createComposerWindowApi()}
-        isDetached={true}
-        closeRequested={closeRequested}
-        onCloseHandled={handleCloseHandled}
-        onKeepEditing={() => void KeepComposerOpen()}
-        onTitleChange={handleTitleChange}
-      />
+<Tooltip.Provider delayDuration={0}>
+  <div class="h-screen flex flex-col bg-background text-foreground">
+    <!-- Custom Title Bar for frameless window -->
+    {#if getShowTitleBar() && !getNativeTitleBar()}
+      <TitleBar title={windowTitle()} onClose={requestClose} />
     {/if}
-  </main>
-</div>
 
-<!-- Toast notifications -->
-<ToastContainer />
+    <!-- Main content -->
+    <main class="flex-1 min-h-0 overflow-hidden">
+      {#if loading}
+        <div class="h-full flex items-center justify-center">
+          <div class="flex flex-col items-center gap-3">
+            <Icon icon="mdi:loading" class="w-8 h-8 animate-spin text-primary" />
+            <span class="text-sm text-muted-foreground">{$_('common.loading')}</span>
+          </div>
+        </div>
+      {:else if error}
+        <div class="h-full flex items-center justify-center">
+          <div class="flex flex-col items-center gap-3 text-center px-4">
+            <Icon icon="mdi:alert-circle" class="w-12 h-12 text-destructive" />
+            <p class="text-sm text-destructive">{error}</p>
+            <Button variant="secondary" size="sm" onclick={() => void FinishComposer()}>
+              {$_('window.closeWindow')}
+            </Button>
+          </div>
+        </div>
+      {:else if composeMode}
+        <Composer
+          accountId={composeMode.accountId}
+          initialMessage={initialMessage}
+          draftId={composeMode.draftId || null}
+          messageId={composeMode.messageId || null}
+          onClose={handleComposerClose}
+          onSent={handleMessageSent}
+          api={createComposerWindowApi()}
+          isDetached={true}
+          closeRequested={closeRequested}
+          onCloseHandled={handleCloseHandled}
+          onKeepEditing={() => void KeepComposerOpen()}
+          onTitleChange={handleTitleChange}
+        />
+      {/if}
+    </main>
+  </div>
 
-<!-- Spellcheck right-click suggestion menu -->
-<SpellSuggestionMenu />
+  <!-- Toast notifications -->
+  <ToastContainer />
+
+  <!-- Spellcheck right-click suggestion menu -->
+  <SpellSuggestionMenu />
+</Tooltip.Provider>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { ModeWatcher } from 'mode-watcher'
+  import * as Tooltip from '$lib/components/ui/tooltip'
   import { MAIL_MODE_STORAGE_KEY } from '$lib/stores/theme.svelte'
   import { present } from '$lib/bindingValues'
   // Load offline icon data before anything else
@@ -1518,174 +1519,176 @@
 
 <svelte:window onkeydown={handleGlobalKeyDown} onkeyup={handleGlobalKeyUp} />
 
-<div class="flex flex-col h-full w-full overflow-hidden bg-background">
-  <!-- Custom Title Bar -->
-  {#if getShowTitleBar() && !getNativeTitleBar()}
-    <TitleBar onClose={handleClose} />
+<Tooltip.Provider delayDuration={0}>
+  <div class="flex flex-col h-full w-full overflow-hidden bg-background">
+    <!-- Custom Title Bar -->
+    {#if getShowTitleBar() && !getNativeTitleBar()}
+      <TitleBar onClose={handleClose} />
+    {/if}
+
+    <SidebarUI.Provider class="relative min-h-0 flex-1 overflow-hidden">
+      <ExtensionRail onSettings={() => showSettingsDialog = true} onSync={() => sidebarRef?.toggleSync()} />
+
+      {#if getActiveExtension() === 'contacts'}
+        <ContactsPane />
+      {/if}
+
+      {#if getActiveExtension() === 'calendar'}
+        <CalendarPane />
+      {/if}
+
+      <!-- Keep the mail components mounted while extensions or responsive overlays are active. -->
+      <div class="min-w-0 flex-1" class:hidden={getActiveExtension() !== 'mail'}>
+        <MailLayout>
+          {#snippet sidebar()}
+            <aside
+              class="h-full"
+              role="presentation"
+              onclick={() => handlePaneClick('sidebar')}
+            >
+              <Sidebar
+                bind:this={sidebarRef}
+                onFolderSelect={handleFolderSelect}
+                onUnifiedFolderSelect={handleUnifiedFolderSelect}
+                onCompose={handleCompose}
+                onUnifiedInboxSelect={handleUnifiedInboxSelect}
+                onMessagesMoved={() => messageListRef?.handleActionComplete(false)}
+                selectedAccountId={selectedAccountId}
+                selectedFolderId={selectedFolderId}
+                selectionSource={selectionSource}
+                isFocused={getFocusedPane() === 'sidebar'}
+                isFlashing={isPaneFlashing('sidebar')}
+                showBackButton={getLayoutMode() === 'narrow'}
+                onBack={hideSidebar}
+              />
+            </aside>
+          {/snippet}
+          {#snippet list()}
+            <section
+              bind:this={messageListContainerRef}
+              class="h-full min-w-0 bg-background"
+              role="presentation"
+              data-pane="messageList"
+              tabindex="-1"
+              onclick={() => handlePaneClick('messageList')}
+            >
+              <MessageList
+                bind:this={messageListRef}
+                accountId={selectedAccountId}
+                folderId={selectedFolderId}
+                folderName={selectedFolderName}
+                folderType={selectedFolderType || 'inbox'}
+                onConversationSelect={handleConversationSelect}
+                onReply={handleReply}
+                onRowActionComplete={() => viewerRef?.refreshFlags()}
+                isFocused={getFocusedPane() === 'messageList'}
+                isFlashing={isPaneFlashing('messageList')}
+                showFolderToggle={getLayoutMode() === 'narrow'}
+                onToggleSidebar={showSidebar}
+              />
+            </section>
+          {/snippet}
+          {#snippet viewer()}
+            <main
+              class="{viewerIsOverlay ? `responsive-viewer-overlay bg-background ${viewerIsVisible ? 'responsive-viewer-visible' : ''}` : 'h-full min-w-0 bg-background'}"
+              inert={viewerIsOverlay && !viewerIsVisible}
+              role="presentation"
+              data-pane="viewer"
+              onclick={() => handlePaneClick('viewer')}
+            >
+              <ConversationViewer
+                bind:this={viewerRef}
+                threadId={selectedThreadId}
+                folderId={selectedConversationFolderId}
+                folderType={selectedFolderType}
+                accountId={selectedConversationAccountId}
+                onReply={handleReply}
+                onComposeToAddress={handleComposeToAddress}
+                onEditDraft={handleEditDraft}
+                onActionComplete={(autoSelectNext) => messageListRef?.handleActionComplete(autoSelectNext)}
+                isFocused={getFocusedPane() === 'viewer'}
+                isFlashing={isPaneFlashing('viewer')}
+                showBackButton={isResponsive()}
+                onBack={() => { focusMode = 'off'; focusedMessageIdInFocus = null; hideViewer() }}
+                inFocusMode={focusMode !== 'off'}
+                focusModeKind={focusMode === 'off' ? null : focusMode}
+                focusedMessageIdInFocus={focusedMessageIdInFocus}
+                onToggleThreadFocus={toggleThreadFocus}
+                onToggleMessageFocus={toggleMessageFocus}
+              />
+            </main>
+          {/snippet}
+        </MailLayout>
+      </div>
+    </SidebarUI.Provider>
+  </div>
+
+  <SettingsDialog
+    bind:open={showSettingsDialog}
+    onClose={() => {
+      showSettingsDialog = false
+      setFocusedPane('messageList')
+    }}
+  />
+
+  <!-- Toast notifications -->
+  <ToastContainer />
+
+  <!-- Spellcheck right-click suggestion menu (composer) -->
+  <SpellSuggestionMenu />
+
+  <!-- Per-extension settings dialog dispatcher (Settings → Extensions → Edit) -->
+  <ExtensionSettingsDialog />
+
+  <!-- Composer Modal -->
+  {#if showComposer && composerAccountId}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
+      <div class="{getLayoutMode() === 'narrow' ? 'w-full h-full bg-background overflow-hidden' : 'w-full max-w-3xl h-[80vh] bg-background rounded-lg shadow-xl overflow-hidden'}">
+        <Composer
+          accountId={composerAccountId}
+          initialMessage={composerInitialMessage}
+          draftId={composerDraftId}
+          imagesLoaded={composerImagesLoaded}
+          onClose={closeComposer}
+          onSent={closeComposer}
+        />
+      </div>
+    </div>
   {/if}
 
-  <SidebarUI.Provider class="relative min-h-0 flex-1 overflow-hidden">
-    <ExtensionRail onSettings={() => showSettingsDialog = true} onSync={() => sidebarRef?.toggleSync()} />
-
-    {#if getActiveExtension() === 'contacts'}
-      <ContactsPane />
-    {/if}
-
-    {#if getActiveExtension() === 'calendar'}
-      <CalendarPane />
-    {/if}
-
-    <!-- Keep the mail components mounted while extensions or responsive overlays are active. -->
-    <div class="min-w-0 flex-1" class:hidden={getActiveExtension() !== 'mail'}>
-      <MailLayout>
-        {#snippet sidebar()}
-          <aside
-            class="h-full"
-            role="presentation"
-            onclick={() => handlePaneClick('sidebar')}
-          >
-            <Sidebar
-              bind:this={sidebarRef}
-              onFolderSelect={handleFolderSelect}
-              onUnifiedFolderSelect={handleUnifiedFolderSelect}
-              onCompose={handleCompose}
-              onUnifiedInboxSelect={handleUnifiedInboxSelect}
-              onMessagesMoved={() => messageListRef?.handleActionComplete(false)}
-              selectedAccountId={selectedAccountId}
-              selectedFolderId={selectedFolderId}
-              selectionSource={selectionSource}
-              isFocused={getFocusedPane() === 'sidebar'}
-              isFlashing={isPaneFlashing('sidebar')}
-              showBackButton={getLayoutMode() === 'narrow'}
-              onBack={hideSidebar}
-            />
-          </aside>
-        {/snippet}
-        {#snippet list()}
-          <section
-            bind:this={messageListContainerRef}
-            class="h-full min-w-0 bg-background"
-            role="presentation"
-            data-pane="messageList"
-            tabindex="-1"
-            onclick={() => handlePaneClick('messageList')}
-          >
-            <MessageList
-              bind:this={messageListRef}
-              accountId={selectedAccountId}
-              folderId={selectedFolderId}
-              folderName={selectedFolderName}
-              folderType={selectedFolderType || 'inbox'}
-              onConversationSelect={handleConversationSelect}
-              onReply={handleReply}
-              onRowActionComplete={() => viewerRef?.refreshFlags()}
-              isFocused={getFocusedPane() === 'messageList'}
-              isFlashing={isPaneFlashing('messageList')}
-              showFolderToggle={getLayoutMode() === 'narrow'}
-              onToggleSidebar={showSidebar}
-            />
-          </section>
-        {/snippet}
-        {#snippet viewer()}
-          <main
-            class="{viewerIsOverlay ? `responsive-viewer-overlay bg-background ${viewerIsVisible ? 'responsive-viewer-visible' : ''}` : 'h-full min-w-0 bg-background'}"
-            inert={viewerIsOverlay && !viewerIsVisible}
-            role="presentation"
-            data-pane="viewer"
-            onclick={() => handlePaneClick('viewer')}
-          >
-            <ConversationViewer
-              bind:this={viewerRef}
-              threadId={selectedThreadId}
-              folderId={selectedConversationFolderId}
-              folderType={selectedFolderType}
-              accountId={selectedConversationAccountId}
-              onReply={handleReply}
-              onComposeToAddress={handleComposeToAddress}
-              onEditDraft={handleEditDraft}
-              onActionComplete={(autoSelectNext) => messageListRef?.handleActionComplete(autoSelectNext)}
-              isFocused={getFocusedPane() === 'viewer'}
-              isFlashing={isPaneFlashing('viewer')}
-              showBackButton={isResponsive()}
-              onBack={() => { focusMode = 'off'; focusedMessageIdInFocus = null; hideViewer() }}
-              inFocusMode={focusMode !== 'off'}
-              focusModeKind={focusMode === 'off' ? null : focusMode}
-              focusedMessageIdInFocus={focusedMessageIdInFocus}
-              onToggleThreadFocus={toggleThreadFocus}
-              onToggleMessageFocus={toggleMessageFocus}
-            />
-          </main>
-        {/snippet}
-      </MailLayout>
+  <!-- Shutdown Overlay -->
+  {#if isShuttingDown}
+    <div class="fixed inset-0 z-[100] flex items-center justify-center bg-overlay/80">
+      <p class="text-overlay-foreground text-sm font-medium">{$_('window.shuttingDown')}</p>
     </div>
-  </SidebarUI.Provider>
-</div>
+  {/if}
 
-<SettingsDialog
-  bind:open={showSettingsDialog}
-  onClose={() => {
-    showSettingsDialog = false
-    setFocusedPane('messageList')
-  }}
-/>
+  <!-- Terms Acceptance Dialog -->
+  <TermsDialog bind:open={showTermsDialog} onAccept={handleTermsAccepted} />
 
-<!-- Toast notifications -->
-<ToastContainer />
+  <!-- Launch-time OAuth credentials warning. Shows on every launch when one
+       or more provider credentials weren't compiled in, unless the user
+       opts out via "Don't show again". -->
+  <OAuthMissingDialog
+    bind:open={showOAuthMissingDialog}
+    oauthStatus={oauthBuildStatus}
+    onDismiss={dismissOAuthWarning}
+  />
 
-<!-- Spellcheck right-click suggestion menu (composer) -->
-<SpellSuggestionMenu />
+  <!-- Per-version release announcement. OK click records acknowledgement;
+       closing without OK leaves the version unrecorded so the dialog
+       fires again next launch. -->
+  <WhatsNewDialog
+    bind:open={showWhatsNewDialog}
+    onAcknowledge={acknowledgeWhatsNew}
+  />
 
-<!-- Per-extension settings dialog dispatcher (Settings → Extensions → Edit) -->
-<ExtensionSettingsDialog />
-
-<!-- Composer Modal -->
-{#if showComposer && composerAccountId}
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-overlay/50">
-    <div class="{getLayoutMode() === 'narrow' ? 'w-full h-full bg-background overflow-hidden' : 'w-full max-w-3xl h-[80vh] bg-background rounded-lg shadow-xl overflow-hidden'}">
-      <Composer
-        accountId={composerAccountId}
-        initialMessage={composerInitialMessage}
-        draftId={composerDraftId}
-        imagesLoaded={composerImagesLoaded}
-        onClose={closeComposer}
-        onSent={closeComposer}
-      />
-    </div>
-  </div>
-{/if}
-
-<!-- Shutdown Overlay -->
-{#if isShuttingDown}
-  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-overlay/80">
-    <p class="text-overlay-foreground text-sm font-medium">{$_('window.shuttingDown')}</p>
-  </div>
-{/if}
-
-<!-- Terms Acceptance Dialog -->
-<TermsDialog bind:open={showTermsDialog} onAccept={handleTermsAccepted} />
-
-<!-- Launch-time OAuth credentials warning. Shows on every launch when one
-     or more provider credentials weren't compiled in, unless the user
-     opts out via "Don't show again". -->
-<OAuthMissingDialog
-  bind:open={showOAuthMissingDialog}
-  oauthStatus={oauthBuildStatus}
-  onDismiss={dismissOAuthWarning}
-/>
-
-<!-- Per-version release announcement. OK click records acknowledgement;
-     closing without OK leaves the version unrecorded so the dialog
-     fires again next launch. -->
-<WhatsNewDialog
-  bind:open={showWhatsNewDialog}
-  onAcknowledge={acknowledgeWhatsNew}
-/>
-
-<!-- Certificate TOFU Dialog (for background sync cert errors) -->
-<CertificateDialog
-  bind:open={showCertDialog}
-  certificate={pendingCertificate}
-  onAcceptOnce={handleBgCertAcceptOnce}
-  onAcceptPermanently={handleBgCertAcceptPermanently}
-  onDecline={handleBgCertDecline}
-/>
+  <!-- Certificate TOFU Dialog (for background sync cert errors) -->
+  <CertificateDialog
+    bind:open={showCertDialog}
+    certificate={pendingCertificate}
+    onAcceptOnce={handleBgCertAcceptOnce}
+    onAcceptPermanently={handleBgCertAcceptPermanently}
+    onDecline={handleBgCertDecline}
+  />
+</Tooltip.Provider>
