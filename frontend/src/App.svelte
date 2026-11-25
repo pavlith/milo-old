@@ -784,7 +784,8 @@
 
   // Global keyboard shortcut handler
   function handleGlobalKeyDown(e: KeyboardEvent) {
-    if (e.target instanceof Element && e.target.closest('[data-pane-resizer]')) return
+    // PaneForge consumes resize keys and F6. Other shortcuts still work from its handles.
+    if (e.defaultPrevented && e.target instanceof Element && e.target.closest('[data-pane-resizer]')) return
 
     // Track Left Alt press
     if (e.code === 'AltLeft') {

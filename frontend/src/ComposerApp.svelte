@@ -10,9 +10,9 @@
   import SpellSuggestionMenu from './lib/spellcheck/SpellSuggestionMenu.svelte'
   import { _ } from '$lib/i18n'
   import { createComposerWindowApi } from '$lib/composerApi'
-  import { getShowTitleBar, getNativeTitleBar, setShowTitleBar, setNativeTitleBar, setDarkComposerBody } from '$lib/stores/settings.svelte'
+  import { getShowTitleBar, getNativeTitleBar, setShowTitleBar, setNativeTitleBar, setDarkComposerBody, setComposerFormat } from '$lib/stores/settings.svelte'
   import { applyTheme } from '$lib/stores/theme.svelte'
-  import { GetComposeMode, PrepareComposer, FinishComposer, KeepComposerOpen, GetThemeMode, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, NotifyStartupComplete } from '$bindings/github.com/hkdb/aerion/app/app'
+  import { GetComposeMode, PrepareComposer, FinishComposer, KeepComposerOpen, GetThemeMode, GetShowTitleBar, GetNativeTitleBar, GetDarkComposerBody, GetComposerFormat, NotifyStartupComplete } from '$bindings/github.com/hkdb/aerion/app/app'
   import { smtp, app } from '$lib/models'
   import { WindowMinimise, WindowToggleMaximise, WindowShow, WindowSetTitle, EventsOn, EventsOff } from '$lib/desktop'
 
@@ -75,6 +75,13 @@
       setDarkComposerBody(dcb ?? false)
     } catch (err) {
       console.error('Failed to load title bar settings:', err)
+    }
+
+    // Composer reads this preference once when it mounts.
+    try {
+      setComposerFormat(await GetComposerFormat() === 'plain' ? 'plain' : 'rich')
+    } catch (err) {
+      console.error('Failed to load composer format:', err)
     }
 
     try {
