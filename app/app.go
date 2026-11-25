@@ -381,25 +381,23 @@ type StartupDialogInfo struct {
 // Other backends show the URL as selectable plain text and use the
 // ActionURL field to drive an "Open Docs" button.
 func StartupDialogInfoFor(err error) StartupDialogInfo {
-	const docsRollbackURL = "https://github.com/pavlith/milo/blob/main/docs/SQL_ROLLBACK.md"
+	const docsProfilesURL = "https://github.com/pavlith/milo/blob/main/docs/BUILD.md#existing-profiles"
 
 	var schemaTooNew *database.ErrSchemaTooNew
 	if errors.As(err, &schemaTooNew) {
 		text := fmt.Sprintf(
 			"Milo cannot open your database because its schema (version %d) is newer "+
 				"than this build of Milo supports (max version %d).\n\n"+
-				"This usually means you downgraded Milo. To recover, either reinstall "+
-				"the newer version, or follow the rollback instructions to bring your "+
-				"database back to version %d:\n\n"+
+				"Use a build that supports this database schema or restore a compatible "+
+				"backup. See the existing profile guide:\n\n"+
 				"%s",
-			schemaTooNew.DBVersion, schemaTooNew.BuildVersion, schemaTooNew.BuildVersion,
-			docsRollbackURL,
+			schemaTooNew.DBVersion, schemaTooNew.BuildVersion, docsProfilesURL,
 		)
 		return StartupDialogInfo{
 			Title:       "Milo could not start",
 			Text:        text,
 			ActionLabel: "Open Docs",
-			ActionURL:   docsRollbackURL,
+			ActionURL:   docsProfilesURL,
 		}
 	}
 	return StartupDialogInfo{

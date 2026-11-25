@@ -6,6 +6,8 @@ The entry point resolves the local profile, handles single-instance activation a
 
 The main window loads `index.html` and contains Mail and the enabled Contacts and Calendar panes. Composing can happen inline or in a separate native window that loads `composer.html`. Detached composers share the same process and Go service, with per-window composer state. Wails uses generated Go-to-TypeScript method bindings and events for IPC, including theme and language updates. [Window and frontend entry points](../frontend/README.md#entry-points) · [Detached composer backend](../app/detached_composer.go)
 
+Single-instance activation forwards `mailto:` links to the running app. On Linux, commands that arrive during startup wait until the frontend is ready. Milo opens the inline or detached editor according to the saved preference. [Native entry point](../main.go) · [Main window](../frontend/src/App.svelte)
+
 ## Mail and local state
 
 SQLite holds account settings, cached mail and drafts, and shared contacts data. The platform package selects XDG profile directories on Linux and preserves compatible older profiles in place. The credential store uses the OS keyring when available and encrypted SQLite fields as a fallback. Persistent profile files and cached data stay in their matching directories. [SQLite](../internal/database/) · [Profile paths](../internal/platform/paths.go) · [Credentials](../internal/credentials/) · [Privacy and local data](PRIVACY.md)

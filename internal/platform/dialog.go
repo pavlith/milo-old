@@ -41,8 +41,8 @@ func ShowDialogAsync(icon DialogIcon, title, text string) {
 // Returns after the user dismisses the dialog. If the user clicked the
 // action button, the URL is opened before this function returns.
 //
-// Use this for startup failures that have an associated docs URL — e.g.,
-// the schema-too-new error pointing at docs/SQL_ROLLBACK.md on GitHub.
+// Use this for startup failures that have an associated docs URL, such as
+// the existing profile guide for a database schema newer than the build.
 //
 // Backend behavior:
 //   - Linux (zenity): two-button dialog via --extra-button; URLs inline

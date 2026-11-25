@@ -4,7 +4,7 @@
 
 Use `dev` for development and `main` for approved stable code. Before promotion, incorporate any newer `origin/main` commits into `dev` and validate the result. Merge the approved `dev` → `main` pull request with ancestry preserved. Create release tags on `main` after approval. [Branch policy](../CONTRIBUTING.md#repository-branches)
 
-For a native Linux release, keep the version in [app/state.go](../app/state.go), [build/config.yml](../build/config.yml) and [frontend/package.json](../frontend/package.json) aligned. Keep both root package version fields in [package-lock.json](../frontend/package-lock.json) consistent when changing the frontend version. Record user-visible changes in the [changelog](../CHANGELOG.md). Windows version and installer templates remain under [build/windows](../build/windows/) for the future Windows build.
+Keep the app version in `app/state.go`, `build/config.yml` and `frontend/package.json` aligned. Update both root package version fields in `package-lock.json`. About and `--version` read the Go version. The Windows templates use the Wails product version from `info.version` in `build/config.yml` and append `.0` where Windows requires four parts. Record user-visible changes in the changelog. [Go version](../app/state.go) · [Wails metadata](../build/config.yml) · [npm manifest](../frontend/package.json) · [npm lockfile](../frontend/package-lock.json) · [Windows templates](../build/windows/) · [Changelog](../CHANGELOG.md)
 
 ## Linux validation and publication
 

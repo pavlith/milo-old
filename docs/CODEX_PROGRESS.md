@@ -1,13 +1,24 @@
-# Codex progress
+# Milo status
 
 Updated 2026-11-25.
 
-- Milo is hosted at [pavlith/milo](https://github.com/pavlith/milo). Development uses `dev`, and `main` holds stable code. [Branch workflow](../CONTRIBUTING.md#repository-branches)
-- The Linux Wails 3 and Svelte UI migrations, Carbon rebrand and cold `mailto:` fix passed their local validation. The prior checks and their scope are recorded in the [migration validation record](history/MIGRATION_VALIDATION.md).
-- Consolidated the README, documentation index, architecture, build and release guides, frontend guide and extension references against `dev`. Completed migration documents, upstream credits, the Aerion rollback guide and CASA records are in [history](README.md#historical-documentation).
-- Verified repository-relative Markdown targets and heading anchors, checked the issue form YAML, and matched the documented build commands to the Makefile and Linux CI. This stage used documentation checks only.
-- The GitHub API confirmed private vulnerability reporting is enabled. The security policy now links directly to the GitHub reporting form. [Security reporting](../SECURITY.md)
-- Updated the English and Russian first-run and About notices to link to the owner-approved Milo terms and privacy notice. Both URLs resolve on `main`, which still serves the Aerion versions. Promote the documentation to `main` so those URLs serve the Milo versions. [In-app notices](TERMS.md#in-app-notices)
-- `npm run check`, `npm run lint` and `git diff --check` passed. Native dialog behavior was reviewed in source.
+## Current state
 
-Use the [code map](CODEX_MAP.md) to locate the current implementation and [documentation index](README.md) for usage and development guidance.
+- `dev` prepares the first Milo release, `0.0.1`. Linux is the native build and CI target. Contacts and Calendar are experimental first-party extensions. [Release workflow](RELEASE.md) · [Extension reference](EXTENSIONS.md)
+- GitHub Private Vulnerability Reporting is enabled. The first-run dialog and About use the approved Milo documents at stable GitHub URLs. [Reporting policy](../SECURITY.md) · [In-app notices](TERMS.md#in-app-notices)
+
+## Architecture and compatibility
+
+- Go and SQLite back the Svelte frontend. The main window and detached composers share one Wails 3 service through generated bindings. Linux uses GTK4 and WebKitGTK 6.0. [Architecture](ARCHITECTURE.md) · [Code map](CODEX_MAP.md)
+- Milo opens existing profiles in place and preserves their paths and credentials. SQLite schema versions advance independently of the app version. Both windows share the Carbon appearance and locale settings. [Existing profiles](BUILD.md#existing-profiles) · [Appearance](../frontend/README.md#milo-appearance)
+
+## Limits and next steps
+
+- The legal URLs on `main` still serve the upstream documents. The approved Milo documents will appear there after an approved promotion from `dev`. [Branch workflow](../CONTRIBUTING.md#repository-branches)
+- Before publishing the first release, run the Linux release checks. Windows packaging and runtime validation remain pending. [Release checks](RELEASE.md#linux-validation-and-publication)
+
+## Confirmed checks
+
+- The `0.0.1` reset passed relative Markdown link and anchor checks, version checks across Go, npm and Windows templates, and `git diff --check`. About rendered `0.0.1` in English and Russian in a browser using the output of `GetAppInfo` through a test transport.
+- Database tests and Go vet passed. A focused headless Go test also checked the startup error's profile guide link.
+- The legal-notice change passed `npm run check` with zero errors or warnings, `npm run lint` and `git diff --check`.

@@ -5,7 +5,7 @@ info:
   productName: Milo
   productIdentifier: io.github.pavlith.milo
   description: A lightweight, Linux-first email client
-  version: 0.3.6
+  version: 0.0.1
 
 dev_mode:
   root_path: .

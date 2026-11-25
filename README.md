@@ -57,9 +57,9 @@ The build uses Go 1.26 or newer, Node.js 24 with npm, and the Wails version pinn
 
 Develop on `dev` with `make dev`. The repository uses `main` for stable code. [Contribution guide](CONTRIBUTING.md) · [Frontend guide](frontend/README.md)
 
-## Project history and credits
+## Credits
 
-Milo continues the [Aerion](https://github.com/hkdb/aerion) desktop mail client, originally maintained by [hkdb](https://github.com/hkdb). Development continued under the Petchkin name before the Milo rebrand. Thanks to the upstream developers, translators, and issue contributors. [Changelog](CHANGELOG.md) · [Upstream credits](docs/history/AERION_CREDITS.md)
+Milo is based on the Aerion desktop mail client by hkdb and the Aerion contributors. [Aerion source](https://github.com/hkdb/aerion)
 
 ## License
 

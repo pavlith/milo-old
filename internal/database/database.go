@@ -170,15 +170,14 @@ func (db *DB) Path() string {
 // ErrSchemaTooNew is returned by Migrate when the database's recorded migration
 // version is HIGHER than the highest migration this build knows about. This
 // happens when a user downgrades Milo after a newer version applied a
-// forward-only migration. Callers (App.Startup) surface a friendly dialog
-// pointing the user at docs/SQL_ROLLBACK.md.
+// forward-only migration. The startup dialog points to the existing profile guide.
 type ErrSchemaTooNew struct {
 	DBVersion    int
 	BuildVersion int
 }
 
 func (e *ErrSchemaTooNew) Error() string {
-	return fmt.Sprintf("database schema version %d is newer than this Milo build (max known: %d). See https://github.com/pavlith/milo/blob/main/docs/SQL_ROLLBACK.md", e.DBVersion, e.BuildVersion)
+	return fmt.Sprintf("database schema version %d is newer than this Milo build (max known: %d). See https://github.com/pavlith/milo/blob/main/docs/BUILD.md#existing-profiles", e.DBVersion, e.BuildVersion)
 }
 
 // Migrate runs all pending migrations
