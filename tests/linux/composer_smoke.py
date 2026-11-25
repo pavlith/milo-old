@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Check production Wails shortcuts and composer preferences in a fresh profile."""
+
+import argparse
+from contextlib import contextmanager
+import json
+import os
+from pathlib import Path
+import select
+import shlex
+import signal
+import sqlite3
+import subprocess
+import sys
+from tempfile import TemporaryDirectory
+from time import monotonic, sleep
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def software_graphics():
+    env = {**os.environ, "LIBGL_ALWAYS_SOFTWARE": "1"}
+    mesa_vendor = Path("/usr/share/glvnd/egl_vendor.d/50_mesa.json")
+    if mesa_vendor.is_file():
+        env["__EGL_VENDOR_LIBRARY_FILENAMES"] = str(mesa_vendor)
+    return env
+
+
+@contextmanager
+def run(*command, **options):
+    with subprocess.Popen(command, start_new_session=True, **options) as process:
+        try:
+            yield process
+        finally:
+            if process.poll() is None:
+                os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait(timeout=5)
+
+
+@contextmanager
+def virtual_display():
+    read_fd, write_fd = os.pipe()
+    with os.fdopen(read_fd, "r", encoding="ascii") as display_number:
+        try:
+            with run("Xvfb", "-displayfd", str(write_fd), "-screen", "0", "1440x1050x24",
+                     "-nolisten", "tcp", "-extension", "GLX", pass_fds=(write_fd,),
+                     env=software_graphics()):
+                if not select.select([display_number], [], [], 10)[0]:
+                    raise RuntimeError("Xvfb did not start")
+                display = display_number.readline().strip()
+                if not display.isdecimal():
+                    raise RuntimeError("Xvfb did not report a display number")
+                yield f":{display}"
+        finally:
+            os.close(write_fd)
+
+
+def wait_for(check, description, seconds=12):
+    deadline = monotonic() + seconds
+    while monotonic() < deadline:
+        result = check()
+        if result:
+            return result
+        sleep(0.05)
+    raise AssertionError(description)
+
+
+class WebView:
+    def __init__(self, directory, number=1):
+        self.request = directory / f"{number}.js"
+        self.response = self.request.with_suffix(".json")
+
+    def evaluate(self, expression):
+        self.response.unlink(missing_ok=True)
+        pending = self.request.with_suffix(".pending")
+        pending.write_text(f"JSON.stringify(({expression}) ?? null)", encoding="utf-8")
+        pending.replace(self.request)
+        wait_for(self.response.is_file, f"WebKit did not evaluate {expression}")
+        return json.loads(self.response.read_text(encoding="utf-8"))
+
+    def check(self, expression, description):
+        wait_for(lambda: self.evaluate(expression), description)
+
+
+def seed_profile(database):
+    version = json.loads((ROOT / "frontend/package.json").read_text(encoding="utf-8"))["version"]
+    with sqlite3.connect(database) as connection:
+        connection.executemany(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+            {
+                "terms_accepted": "true",
+                "oauth_warning_disabled": "true",
+                "last_seen_version": version,
+                "language": "en",
+                "composer_mode": "detached",
+                "composer_format": "plain",
+            }.items(),
+        )
+        connection.execute("""
+            INSERT INTO accounts (id, name, email, imap_host, imap_port, smtp_host, smtp_port, username, enabled)
+            VALUES ('smoke', 'Fixture', 'smoke@example.invalid', '127.0.0.1', 1, '127.0.0.1', 1, 'smoke', 1)
+        """)
+        connection.execute("""
+            INSERT INTO identities (id, account_id, name, email, is_default)
+            VALUES ('smoke-identity', 'smoke', 'Fixture', 'smoke@example.invalid', 1)
+        """)
+
+
+def check_composer(binary, directory, display):
+    library = directory / "webview_probe.so"
+    webkit_flags = shlex.split(subprocess.check_output(
+        ["pkg-config", "--cflags", "--libs", "webkitgtk-6.0"], text=True
+    ))
+    subprocess.run([
+        "cc", "-shared", "-fPIC", str(Path(__file__).with_name("webview_probe.c")),
+        "-o", str(library), *webkit_flags, "-ldl",
+    ], check=True)
+    runtime = directory / "runtime"
+    runtime.mkdir(mode=0o700)
+    env = {
+        **software_graphics(),
+        "DISPLAY": display,
+        "GDK_BACKEND": "x11",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "LANGUAGE": "en",
+        "XDG_CONFIG_HOME": str(directory / "config"),
+        "XDG_DATA_HOME": str(directory / "data"),
+        "XDG_CACHE_HOME": str(directory / "cache"),
+        "XDG_RUNTIME_DIR": str(runtime),
+        "TMPDIR": str(runtime),
+        "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime}/no-bus",
+        "NO_AT_BRIDGE": "1",
+        "GTK_USE_PORTAL": "0",
+        "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+        "WEBKIT_DISABLE_COMPOSITING_MODE": "1",
+        "AERION_SMOKE_PROBE_DIR": str(directory),
+        "LD_PRELOAD": str(library),
+    }
+    with (directory / "native.log").open("w", encoding="utf-8") as log:
+        main = WebView(directory)
+        with run(binary, env=env, stdout=log, stderr=log):
+            main.check("!!document.querySelector('#agree-terms')", "A fresh profile should show Terms")
+        seed_profile(directory / "data/aerion/aerion.db")
+
+        with run(binary, env=env, stdout=log, stderr=log):
+            handle = "document.querySelector('[aria-label=\"Resize message list\"]')"
+            main.check(f"!!{handle} && !document.querySelector('[role=dialog],[role=alertdialog]')",
+                       "Mail should open with a keyboard-accessible list separator")
+            result = main.evaluate(f"""(() => {{
+                const handle = {handle};
+                handle.focus();
+                const before = handle.getBoundingClientRect().left;
+                const key = new KeyboardEvent('keydown', {{key: 'ArrowRight', bubbles: true, cancelable: true}});
+                handle.dispatchEvent(key);
+                return {{before, prevented: key.defaultPrevented}};
+            }})()""")
+            assert result["prevented"], "PaneForge should consume its arrow keys"
+            main.check(f"{handle}?.getBoundingClientRect().left > {result['before']} + 1",
+                       "The consumed key should resize the list")
+            assert main.evaluate(f"""(() => {{
+                const handle = {handle};
+                if (document.activeElement !== handle) return false;
+                const key = new KeyboardEvent('keydown', {{key: 'n', ctrlKey: true, bubbles: true, cancelable: true}});
+                handle.dispatchEvent(key);
+                return key.defaultPrevented;
+            }})()"""), "Ctrl+N should open a composer with the separator focused"
+            composer = WebView(directory, 2)
+            composer.check(
+                "location.pathname.endsWith('/composer.html') && "
+                "document.querySelector('.plaintext-editor')?.getBoundingClientRect().height > 0",
+                "The detached composer should honor the saved Plain Text format",
+            )
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--binary", type=Path, default=ROOT / "build/bin/aerion")
+    args = parser.parse_args()
+    with TemporaryDirectory(prefix="aerion-smoke-") as profile, virtual_display() as display:
+        directory = Path(profile)
+        try:
+            check_composer(args.binary.resolve(strict=True), directory, display)
+        except (AssertionError, ValueError):
+            log = directory / "native.log"
+            if log.is_file():
+                print("\n".join(log.read_text(encoding="utf-8", errors="replace").splitlines()[-20:]), file=sys.stderr)
+            raise
+    print("PASS: PaneForge keys, Ctrl+N from a separator, and detached Plain Text preference")
+
+
+if __name__ == "__main__":
+    main()

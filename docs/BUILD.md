@@ -24,3 +24,13 @@ Run `./build/bin/aerion` to launch without installation. `make install` installs
 Built-in OAuth clients need the values documented in `.env.example`. Keep local values in the ignored `.env` file. Password accounts and user-provided OAuth clients remain available with an empty build environment.
 
 For Windows resource status and the validation scope, see [WAILS3_MIGRATION.md](WAILS3_MIGRATION.md).
+
+## Focused Linux regression test
+
+Run this test after building the production binary and installing Python 3 and Xvfb.
+
+```sh
+python3 tests/linux/composer_smoke.py
+```
+
+The test starts Wails with temporary XDG directories and a loopback-only fixture. It checks PaneForge keyboard resizing, Ctrl+N from a focused separator, and the saved Plain Text preference in a detached composer. Pass `--binary PATH` to test a specific production build.
