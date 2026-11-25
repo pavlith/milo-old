@@ -27,6 +27,10 @@ Use shared shadcn-svelte components and semantic utilities such as `bg-backgroun
 
 The UI bundles local Inter Variable and JetBrains Mono Variable subsets. The font licenses ship with the assets. The canonical mark is [milo.svg](src/assets/images/milo.svg). [Bundled licenses](public/licenses/) · [Platform icons](../build/)
 
+### Interaction feedback
+
+Both window roots provide Bits UI tooltips with zero opening delay. The sidebar layout inherits that provider instead of imposing its own delay. Shared buttons, tabs and form controls use immediate color feedback; tooltips do not animate their visibility. Keep motion for meaningful state changes (such as the switch thumb), and respect reduced-motion preferences. Do not disable all application animations globally.
+
 ## npm commands
 
 Use Node.js 24 and the checked-in [npm lockfile](package-lock.json). Run these commands from `frontend/`:

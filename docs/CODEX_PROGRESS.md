@@ -17,6 +17,8 @@ Updated 2026-11-25.
 - The legal URLs on `main` still serve the upstream documents. The approved Milo documents will appear there after an approved promotion from `dev`. [Branch workflow](../CONTRIBUTING.md#repository-branches)
 - Before publishing the first release, run the Linux release checks. Windows packaging and runtime validation remain pending. [Release checks](RELEASE.md#linux-validation-and-publication)
 
+- UI responsiveness: both window roots now provide zero-delay tooltips; removed the sidebar-specific delay and nonessential shared-control transitions. Native Linux responsiveness and frontend build/lint/check still need validation; a full official registry refresh was not performed. [Interaction feedback](../frontend/README.md#interaction-feedback)
+
 ## Confirmed checks
 
 - The `0.0.1` reset passed relative Markdown link and anchor checks, version checks across Go, npm and Windows templates, and `git diff --check`. About rendered `0.0.1` in English and Russian in a browser using the output of `GetAppInfo` through a test transport.
