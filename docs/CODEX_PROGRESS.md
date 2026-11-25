@@ -1,6 +1,6 @@
 # Codex progress
 
-Updated 2026-11-25. Stage 6 consolidates the shared UI after the Stage 5 Linux and Wails 3 work. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
+Updated 2026-11-25. Stage 7 completed migration validation for Linux. UI migration requirements are in [SHADCN_MIGRATION.md](SHADCN_MIGRATION.md) and paths are in [CODEX_MAP.md](CODEX_MAP.md).
 
 ## Milestones
 
@@ -15,7 +15,7 @@ Updated 2026-11-25. Stage 6 consolidates the shared UI after the Stage 5 Linux a
 | Stage 4: shadcn-svelte | Complete | Official registry configured, shared components standardized, and Linux builds and WebKitGTK smoke checks passed. |
 | Stage 5: Application UI | Complete | The [mail layout and ecosystem integrations](#stage-5-mail-layout) passed frontend, native Linux build and WebKitGTK smoke checks covering both windows and extensions. |
 | Stage 6: UI consolidation and cleanup | Complete | [Shared UI and Linux validation](#stage-6-ui-consolidation-and-cleanup). |
-| Stage 7: Validation | Not started | Follow §§10–12; preparation checks are not migration acceptance. |
+| Stage 7: Validation | Complete (PASS on Linux) | [Final validation and regression coverage](#stage-7-final-validation). |
 
 ## Audit and Tailwind decisions
 
@@ -106,6 +106,14 @@ Local Node 26.13.0 with clean `npm ci` before and after. The [baseline GitHub CI
 - Clean `npm ci`, `npm run check` (0 errors and 0 warnings), lint, Vite production build, native Linux `make build`, `go test ./...` and `go vet ./...` passed. Wails regenerated identical bindings. Vite reported the existing chunk-size and dynamic-import warnings. Knip exits 1 with the remaining baseline findings. The unused component and direct dev dependency findings are gone.
 - Native Wails and WebKitGTK under Xvfb exercised Rail navigation, persisted Mail resizing, virtual rows, HTML iframe isolation, Contacts search and resizing, Calendar keyboard navigation, responsive Agenda and the nested event link dialog, Formsnap error announcements, signature tables and HTML editing, both composer windows, offline spellcheck, attachment add/remove, recipient autocomplete, formatting shortcuts and both palettes. Linux testing used isolated data and local fixtures. Live mail and calendar providers were outside the run.
 
+## Stage 7 final validation
+
+- The latest CI run on `dev` passed for the Stage 6 baseline `04eea97`. Locally, clean `npm ci`, frontend check (0 errors and 0 warnings), lint, production build, `make generate`, `make build`, `go test ./...`, `go vet ./...` and `git diff --check` passed with Node 24, Go 1.27 and the pinned Wails CLI. Wails bindings and the npm lockfile match the baseline. [Baseline Linux CI](https://github.com/pavlith/petchkin/actions/runs/45535851368).
+- PaneForge now retains its resize keys while application shortcuts such as Ctrl+N work from a focused separator. Detached composers read the saved Plain Text preference before mounting. Contacts lets Runed cancel pending search on teardown, including when typing and a rail switch share a Svelte update. The focused native smoke test covers these cases. Each failure was reproduced with a production binary before its fix. [Run the Linux smoke test](BUILD.md#focused-linux-regression-test).
+- Native Wails on GTK4 and WebKitGTK 2.52.6 under Xvfb verified startup, multiple accounts and folders, Unified Inbox badges, virtualized mail and search, selection and menus, responsive overlays and restored pane widths. An HTTP loopback image stayed blocked until opt-in, and the message iframe kept its isolated origin. Contacts editing and resizing, Calendar views and keyboard navigation, responsive Agenda, nested event dialogs, Formsnap error announcements, and tooltip focus and Escape passed.
+- Both composer windows, formatting shortcuts, rich and plain text, links, lists, tables, inline images, signatures, offline spellcheck, recipient selection, attachment add/remove and draft save to SQLite passed. Nord and Dracula persisted across restart. Theme and English/Russian updates reached the open detached window. The sampled foreground, muted text and primary action colors exceeded 4.5:1 in both palettes.
+- Knip retains the baseline findings. Vite retains chunk-size and dynamic-import warnings, and Wails retains its binding warning about function types. npm reported 56 audit findings on the unchanged lockfile. Native tests used temporary profiles and local fixtures. Live IMAP, SMTP, OAuth, address book and calendar providers, Wayland, desktop portals, Windows and screen readers were outside the run.
+
 ## Next action
 
-Follow [Stage 7 validation](SHADCN_MIGRATION.md#этап-7--validation).
+Use the [Linux build and smoke commands](BUILD.md) as the baseline for future changes to pane, composer or extension behavior.
